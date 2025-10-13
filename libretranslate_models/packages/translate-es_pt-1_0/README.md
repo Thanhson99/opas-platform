@@ -1,1 +1,0 @@
-# Spanish - Portuguese version 1.0

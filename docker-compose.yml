@@ -63,14 +63,12 @@ services:
 
   # LibreTranslate - Translation API
   libretranslate:
-    image: libretranslate/libretranslate
+    build:
+      context: .
+      dockerfile: libretranslate/Dockerfile
     container_name: libretranslate
-    stdin_open: true
-    tty: true
-    volumes:
-      - ./libretranslate_models:/home/libretranslate/.local/share/argos-translate
-    command: >
-      --host 0.0.0.0 --port 5000 --debug
+    ports:
+      - "5001:5000"
     networks:
       - backend
 
