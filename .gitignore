@@ -1,6 +1,6 @@
 # ---- Laravel ----
-/laravel/vendor/
-/laravel/node_modules/
+laravel/vendor/
+laravel/node_modules/
 laravel/.env
 laravel/storage/*.key
 laravel/storage/logs/*
@@ -21,19 +21,22 @@ laravel/tests/_output/
 laravel/.phpunit.result.cache
 
 # ---- N8N ----
-/n8n/.n8n
-/n8n/files
-/n8n/database.sqlite
-/n8n/.env
-/n8n/nodes/
-/n8n/nodes/node_modules/
-/n8n/tmp/
+n8n/.n8n
+n8n/files
+n8n/database.sqlite
+n8n/.env
+n8n/nodes/
+n8n/nodes/node_modules/
+n8n/tmp/
 
 # ---- Docker ----
 docker/mysql/
 docker/postgres/
 *.pid
 *.sock
+
+# ---- Python ----
+/python-services/__pycache__/
 
 # ---- Global ----
 *.log

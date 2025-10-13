@@ -1,9 +1,0 @@
-{
-    "package_version": "1.9",
-    "argos_version": "1.9",
-    "from_code": "ru",
-    "from_name": "Russian",
-    "to_code": "en",
-    "to_name": "English",
-    "reference": "https://community.libretranslate.com/t/new-argos-model-en-ru-and-ru-en/872/"
-}
