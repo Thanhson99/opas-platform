@@ -28,6 +28,9 @@ n8n/.env
 n8n/nodes/
 n8n/nodes/node_modules/
 n8n/tmp/
+n8n/crash.journal
+n8n-backup
+n8n/workflows
 
 # ---- Docker ----
 docker/mysql/
