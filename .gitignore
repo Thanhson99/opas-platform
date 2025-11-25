@@ -32,6 +32,14 @@ n8n/crash.journal
 n8n-backup
 n8n/workflows
 
+# ---- Videos ----
+videos/
+videos/*.mp4
+videos/*.mov
+videos_uploaded/
+videos_uploaded/*.mp4
+videos_uploaded/*.mov
+
 # ---- Docker ----
 docker/mysql/
 docker/postgres/
