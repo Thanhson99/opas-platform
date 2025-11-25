@@ -1,0 +1,1 @@
+from shared_libs.config.settings import settings

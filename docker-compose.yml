@@ -33,7 +33,7 @@ services:
       POSTGRES_USER: root
       POSTGRES_PASSWORD: root
     volumes:
-      - postgres-data:/var/lib/postgresql/data
+      - ./docker/postgres/data:/var/lib/postgresql/data
     networks:
       - backend
 
@@ -50,12 +50,14 @@ services:
 
   # n8n Automation Tool
   n8n:
-    image: n8nio/n8n
+    image: n8nio/n8n:latest
     container_name: n8n
     ports:
       - "5678:5678"
     volumes:
       - ./n8n:/home/node/.n8n
+      - ./videos:/data/videos
+      - ./videos_uploaded:/data/videos_uploaded
     env_file:
       - ./n8n/.env
     networks:
