@@ -2,6 +2,7 @@
   "name": "installed-nodes",
   "private": true,
   "dependencies": {
+    "@igabm/n8n-nodes-tiktok": "^1.5.0",
     "n8n-nodes-puppeteer": "1.4.1"
   }
 }
