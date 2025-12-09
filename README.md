@@ -13,39 +13,70 @@
 ![Laravel](https://img.shields.io/badge/Laravel-Framework-FF2D20?logo=laravel)
 ![n8n](https://img.shields.io/badge/n8n-Automation-EA4C89?logo=n8n)
 ![Python](https://img.shields.io/badge/Python-Microservices-3776AB?logo=python&logoColor=white)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Database-4169E1?logo=postgresql&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Database-4169E1?logo=postgresql)
+![LibreTranslate](https://img.shields.io/badge/LibreTranslate-Local%20Translation-2AA876)
+![AI](https://img.shields.io/badge/Local%20AI-Ollama-000000)
 ![CI/CD](https://img.shields.io/badge/GitHub%20Actions-CI%2FCD-2088FF?logo=githubactions)
 ![License](https://img.shields.io/badge/License-Custom-blue)
 
-# Laravel + N8N Automation Lab
+# Laravel + n8n Automation Lab (OPAS)
 
-> 🔧 A DevOps & Automation playground combining **Laravel**, **n8n**, **Python microservices**, **PostgreSQL**, and **Docker** – for real-world workflows such as multi-platform video uploads, translation systems, trading bots, dropshipping automation, and more.
+> A personal automation lab where **workflows become systems** — combining Laravel, n8n, Python microservices, PostgreSQL, and Docker to orchestrate content, data, and growth.  
+> Built for today’s automation… but designed to scale into tomorrow’s “hands-off” operations.
 
 ---
 
 ## ✨ What is this repository?
 
-This repository is my personal **automation lab** — a place to build, test, and grow real-world workflows using:
+This repo is my evolving **automation ecosystem** — a place to experiment, build, and harden real workflows into reliable pipelines.
 
-- **Laravel** → Main web interface & user dashboard  
-- **n8n** → Workflow automation engine (running hidden in background)  
-- **Python services** → Helper APIs for automation & data processing  
-- **PostgreSQL** → Shared database  
-- **LibreTranslate** → Local translation service (Vietnamese support included)  
-- **Docker** → The entire environment is containerized  
-- **GitHub Actions** → CI/CD pipelines  
-- **Cross-platform scripts** → Tools for macOS & Windows
+It brings together:
 
-It serves as a base for automating:
+- **Laravel** → Web UI, control panel, dashboards, job tracking  
+- **n8n** → Automation engine (workflows, schedulers, connectors)  
+- **Python services** → Helper APIs for parsing, enrichment, automation tasks  
+- **PostgreSQL** → Shared data backbone (jobs, logs, content, dedupe, metadata)  
+- **LibreTranslate** → Local translation service for **multi-language workflows** (not limited to Vietnamese)  
+- **Local AI Runtime (Ollama)** → Offline-first LLM workflows (writing, rewriting, reviewing, SEO polishing)  
+- **Docker** → Everything containerized, reproducible, portable  
+- **GitHub Actions** → CI/CD and automation hygiene  
+- **Cross-platform scripts** → macOS + Windows helpers
 
-- 📹 Multi-platform video publishing (YouTube, TikTok, …)  
-- 🛒 Dropshipping & affiliate marketing  
-- 📈 Trading bot infrastructure  
-- ✉️ Notification / alert pipelines  
-- 🗂 Data processing & migration  
-- 🧹 DevOps tooling & code quality automation  
+This is not a single-purpose tool. It’s a sandbox for building automation that can grow into production-grade systems:
+- Content pipelines
+- Multi-language publishing
+- Data enrichment
+- Notifications
+- Business operations automation
 
-This is **not** a simple demo — it’s a growing automation ecosystem.
+---
+
+## 🌍 Multilingual by design (not “just Vietnamese”)
+
+LibreTranslate is included to enable **multilingual automation** at the infrastructure level:
+- Translate content into multiple languages
+- Local + private translation
+- Easy to swap with paid providers later if needed
+
+The goal is to treat language as a *first-class feature*, not an afterthought.
+
+---
+
+## 🤖 AI layer (local-first, future-ready)
+
+This repo includes a Local AI runtime (Ollama) so you can build AI workflows without being locked into a paid API from day one.
+
+Typical AI uses here:
+- Rewrite RSS/news into more readable articles
+- Generate SEO-friendly structure (headings, excerpt, meta description)
+- Create “editor mode” review checklists
+- Cross-review content with **two different models** (writer + critic)
+
+Model strategy (inside one Ollama container):
+- **Writer model**: `qwen2.5:7b`  
+- **Critic/editor model**: `mistral:7b`  
+
+You can later switch to any paid provider (OpenAI/Gemini/...) without redesigning your pipeline — the workflow is built around stable JSON outputs and modular “AI provider” nodes.
 
 ---
 
@@ -57,24 +88,32 @@ This is **not** a simple demo — it’s a growing automation ecosystem.
 │      (Laravel App)       │
 └────────────┬─────────────┘
              │ HTTP / API
-┌────────────▼─────────────┐       ┌─────────────────────────┐
-│        NGINX Proxy       │──────▶│   n8n (Workflows)       │
-└────────────┬─────────────┘       └─────────────────────────┘
-             │
-             │                  ┌─────────────────────────────┐
-             │────────────────▶ │ Python microservices        │
-             │                  │ Helper APIs for automation  │
-             │                  └─────────────────────────────┘
-             │
-             │                  ┌─────────────────────────────┐
-             └────────────────▶ │ LibreTranslate (local AI)   │
-                                │ VI/EN translation workflows │
-                                └─────────────────────────────┘
+┌────────────▼─────────────┐
+│        NGINX Proxy       │
+└───────┬─────────┬────────┘
+        │         │
+        │         │
+┌───────▼───┐   ┌─▼─────────────────────┐
+│    n8n    │   │  Python Microservices │
+│ Workflows │   │ Enrichment / Utilities│
+└───────┬───┘   └───────────────────────┘
+        │
+        │
+┌───────▼──────────────────────────────┐
+│     LibreTranslate (Local Translate) │
+│     Multi-language workflow support  │
+└──────────────────────────────────────┘
+        │
+        │
+┌───────▼──────────────────────────────┐
+│         Ollama (Local AI Runtime)    │
+│ Writer + Critic models for content   │
+└──────────────────────────────────────┘
 
-               ┌────────────────────────────────────────────┐
-               │               PostgreSQL DB                │
-               │ Shared by Laravel + n8n + Python services  │
-               └────────────────────────────────────────────┘
+┌──────────────────────────────────────┐
+│            PostgreSQL Database       │
+│ Shared by Laravel + n8n + services   │
+└──────────────────────────────────────┘
 ```
 
 ---
@@ -90,10 +129,11 @@ This is **not** a simple demo — it’s a growing automation ecosystem.
 - 🌐 NGINX Reverse Proxy
 
 ### **Automation & Integrations**
-- 📹 YouTube Upload (YouTube Data API v3 + OAuth)
-- 🎵 TikTok Upload / Automation (planned)
-- 💾 Database Pipelines
-- 🌍 Translation workflows via LibreTranslate
+- 📹 Multi-platform publishing (YouTube today, more later)
+- 🧾 Content ingestion (RSS/news → enrichment → publish)
+- 🌍 Translation pipelines (LibreTranslate)
+- 🧠 Local AI writing/review pipelines (Ollama)
+- 🔔 Notifications (Telegram/Email/etc. planned)
 - 🔑 OAuth integrations
 
 ### **Tooling**
@@ -109,6 +149,7 @@ This is **not** a simple demo — it’s a growing automation ecosystem.
 LARAVEL-N8N-AUTOMATION/
 ├── .github/                 # CI/CD pipelines
 ├── docker/                  # Docker-related configs
+├── docker/ollama/           # Ollama model storage (persistent)
 ├── laravel/                 # Laravel application
 ├── libretranslate/          # LibreTranslate service
 ├── libretranslate_models/   # Local translation models (e.g. VI)
@@ -116,8 +157,6 @@ LARAVEL-N8N-AUTOMATION/
 ├── nginx/                   # nginx configuration
 ├── python-services/         # Python helper microservices
 ├── scripts/                 # Automation scripts (macOS + Windows)
-├── videos/                  # Raw videos to process
-├── videos_uploaded/         # Videos after upload automation
 ├── .gitignore
 ├── .pr-agent.yaml           # AI code review config (optional)
 ├── docker-compose.yml
@@ -153,10 +192,18 @@ LARAVEL-N8N-AUTOMATION/
 
 #### 🌍 Translation / NLP Workflows
 - Local **LibreTranslate** instance (fast, private)
-- Vietnamese optimized workflows
+- Multi-language content workflows (not limited to Vietnamese)
+- Can be swapped with paid translation APIs later
 - Laravel + n8n endpoint wrappers
 - Python microservices for advanced text processing  
   (e.g., cleanup, metadata extraction)
+
+#### 🧠 AI-Assisted Content Pipelines (Local-first)
+- RSS/news ingestion → normalization → dedupe
+- Draft generation (writer model)
+- Cross-review + improvements (critic model)
+- SEO structuring (headings, excerpt, metadata)
+- Safe fallback mode if AI is disabled
 
 #### 🐍 Python Automation Layer
 - Custom microservices called by n8n or Laravel
@@ -183,7 +230,7 @@ LARAVEL-N8N-AUTOMATION/
 ## 🧭 Roadmap
 
 ### 🚀 Short-Term
-- TikTok auto-upload workflow  
+- RSS → WordPress publishing workflow (SEO + media handling)  
 - System-wide logging & monitoring dashboard  
 - Workflow triggers from Laravel UI  
 - Integrated notification system (Telegram, Email, Zalo)
@@ -203,7 +250,8 @@ LARAVEL-N8N-AUTOMATION/
 - Replace AdminLTE → Modern UI (Tailwind / Vue / React)
 - Multi-tenant automation workspace
 - Public API for workflow orchestration
-- Advanced analytics dashboard
+- Analytics dashboards that explain “why the system did what it did”
+- Pluggable AI providers (local + paid) as interchangeable modules
 
 ---
 

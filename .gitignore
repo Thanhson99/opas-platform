@@ -46,6 +46,12 @@ docker/postgres/
 *.pid
 *.sock
 
+# ---- AI ----
+docker/ollama/id*
+docker/ollama/.*
+docker/ollama/models/
+docker/ollama/data/
+
 # ---- Python ----
 /python-services/__pycache__/
 
