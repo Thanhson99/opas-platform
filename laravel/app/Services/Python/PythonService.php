@@ -2,6 +2,7 @@
 
 namespace App\Services\Python;
 
+use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -65,10 +66,16 @@ class PythonService
      */
     protected function call(string $url): array
     {
+        /** @var Response $response */
         $response = Http::get($url);
 
         if ($response->failed()) {
-            Log::error("Python service call failed: {$url}", (array) $response->json());
+            // Some failures may return HTML/text; avoid assuming JSON.
+            $body = $response->body();
+            Log::error("Python service call failed: {$url}", [
+                'status' => $response->status(),
+                'body' => mb_substr($body, 0, 2000),
+            ]);
 
             return [];
         }
@@ -79,6 +86,7 @@ class PythonService
             return [];
         }
 
+        /** @var array<string, mixed> $data */
         return array_combine(
             array_map('strval', array_keys($data)),
             array_values($data)

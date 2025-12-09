@@ -60,6 +60,25 @@ services:
       - ./videos_uploaded:/data/videos_uploaded
     env_file:
       - ./n8n/.env
+    depends_on:
+      - ollama
+    networks:
+      - backend
+
+  # Ollama (Local LLM runtime)
+  # We will run two models inside this ONE container:
+  # - qwen2.5:7b  (writer)
+  # - mistral:7b  (critic/editor)
+  #
+  # In n8n, call: http://ollama:11434/api/chat
+  # and set "model" to either "qwen2.5:7b" or "mistral:7b"
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ./docker/ollama:/root/.ollama
     networks:
       - backend
 
@@ -82,7 +101,7 @@ services:
       - "8881:8881"  # Laravel
       # - "8882:8882"  # n8n (uncomment if exposed)
       - "8883:8883"  # LibreTranslate
-      - "8884:8884" # Python API
+      - "8884:8884"  # Python API
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./nginx/conf.d:/etc/nginx/conf.d:ro

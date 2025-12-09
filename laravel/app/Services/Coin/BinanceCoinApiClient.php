@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Coin;
 
+use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 
 /**
@@ -29,6 +30,7 @@ class BinanceCoinApiClient implements CoinApiClientInterface
      */
     public function fetchTopCoins(): array
     {
+        /** @var Response $response */
         $response = Http::get($this->baseUrl.'/api/v3/ticker/24hr');
 
         if ($response->successful()) {
@@ -55,6 +57,7 @@ class BinanceCoinApiClient implements CoinApiClientInterface
      */
     public function fetchCoinDetail(string $coinId): ?array
     {
+        /** @var Response $response */
         $response = Http::get($this->baseUrl.'/api/v3/ticker/24hr', [
             'symbol' => strtoupper($coinId),
         ]);
