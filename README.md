@@ -311,6 +311,28 @@ Launches browser with:
 - isolated profile  
 - Puppeteer-ready environment  
 
+### 🤖 Ollama Model Bootstrap (Local AI)
+
+Pull required local models into the persistent Ollama volume (`./docker/ollama`) so n8n can call them.
+
+- macOS/Linux: `ollama-pull-models.sh`
+- Windows: `ollama-pull-models.ps1`
+
+Usage (macOS/Linux):
+```bash
+bash scripts/ollama-pull-models.sh
+```
+
+Usage (Windows PowerShell):
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\ollama-pull-models.ps1
+```
+
+Verify:
+```bash
+docker exec -it ollama ollama list
+```
+
 ### 🔧 Other helpers coming soon:
 - db sync scripts  
 - translation pipelines  
