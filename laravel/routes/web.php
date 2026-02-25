@@ -4,6 +4,8 @@ use App\Http\Controllers\Coins\CoinAlertSettingsController;
 use App\Http\Controllers\Coins\CoinController;
 use App\Http\Controllers\Coins\FavoriteCoinController;
 use App\Http\Controllers\Coins\FeedKeywordController;
+use App\Http\Controllers\Stocks\FavoriteStockController;
+use App\Http\Controllers\Stocks\StockController;
 use App\Http\Controllers\VideoAutomation\TrendingVideoController;
 use Illuminate\Support\Facades\Route;
 
@@ -45,6 +47,22 @@ Route::prefix('coins')->name('coins.')->group(function () {
         Route::patch('/{id}/toggle', 'toggleStatus')->name('toggle'); // Toggle on/off
     });
 
+});
+
+// Stock module routes (all under 'stocks' prefix)
+Route::prefix('stocks')->name('stocks.')->group(function () {
+
+    // StockController routes
+    Route::controller(StockController::class)->group(function () {
+        Route::get('/', 'index')->name('index'); // List Vietnam stocks
+    });
+
+    // FavoriteStockController routes
+    Route::controller(FavoriteStockController::class)->group(function () {
+        Route::post('favorites/add', 'favoritesAdd')->name('favorites.add'); // AJAX add favorite
+        Route::post('favorites/remove', 'favoritesRemove')->name('favorites.remove'); // AJAX remove favorite
+        Route::post('favorites/toggle', 'favoritesToggle')->name('favorites.toggle'); // AJAX toggle favorite
+    });
 });
 
 // Video Automation routes

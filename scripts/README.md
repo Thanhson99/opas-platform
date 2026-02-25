@@ -3,6 +3,7 @@
 This folder contains reusable helper scripts for:
 - Git branch cleanup
 - Puppeteer / Browser automation (Chromium, Chrome, Edge, Brave)
+- Docker image update & container restart (n8n, Ollama, etc.)
 
 Scripts are separated by platform:
 
@@ -21,6 +22,8 @@ scripts/
 ├── git-clean-branches.ps1         # Windows: clean Git branches
 ├── launch-browser-connector.sh    # macOS: Chromium + Puppeteer launcher
 ├── launch-browser-connector.bat   # Windows: Chrome/Edge/Brave launcher
+├── update-images-and-restart.sh
+├── update-images-and-restart.ps1
 └── README.md
 ```
 
@@ -142,12 +145,59 @@ launch-browser-connector.bat --browser brave --headless
 
 ---
 
-# 3. Best Practices
+# 3. Docker Image Update & Restart Scripts
+
+Scripts for pulling the latest Docker images and restarting containers,
+working whether containers are running or stopped.
+
+---
+
+## 3.1 macOS / Linux — `update-images-and-restart.sh`
+
+**Type:** Bash  
+**Location:** `scripts/update-images-and-restart.sh`
+
+### Features
+
+- Pulls latest images from registry
+- Recreates containers to apply updates
+- Safe to run multiple times
+- Keeps volumes and persistent data intact
+
+### Usage
+
+```bat
+chmod +x scripts/update-images-and-restart.sh
+scripts/update-images-and-restart.sh
+```
+
+---
+
+## 3.2 Windows — `update-images-and-restart.ps1`
+
+**Type:** PowerShell  
+**Location:** `scripts/update-images-and-restart.ps1`
+
+### First-time setup
+
+```powershell
+Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
+```
+
+### Usage
+
+```powershell
+.\scripts\update-images-and-restart.ps1
+```
+
+---
+# 4. Best Practices
 
 - Use consistent naming (`xxx.sh`, `xxx.ps1`, `xxx.bat`)
 - One responsibility per script
+- Avoid hard-coding environment-specific paths
 - Add usage instructions at top of each script
-- Keep this README updated whenever adding new scripts
+- Keep this README updated when adding new utilities
 
 ---
 

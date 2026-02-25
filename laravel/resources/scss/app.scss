@@ -1,2 +1,3 @@
-@use './pages/coins/index';
-@use './errors/page-404.scss'
+@use './pages/coins/index' as coins;
+@use './pages/stocks/index' as stocks;
+@use './errors/page-404.scss' as page404;

@@ -34,6 +34,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 await import('./pages/coins/keywords/keywords-create.js');
                 break;
 
+            // stocks-favorites → ./pages/stocks/favorites/stock-favorites-table.js
+            // Handles Vietnam stocks table display and favorites
+            case 'stocks-favorites':
+                await import('./pages/stocks/favorites/stock-favorites-table.js');
+                break;
+
             // Add more pages below using the same pattern
             // example-page → ./pages/example/example-page.js → Description
             // case 'example-page':
