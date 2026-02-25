@@ -1,0 +1,27 @@
+#stocks-favorites {
+    .stock-search {
+        max-width: 360px;
+    }
+
+    .table-responsive {
+        overflow-x: unset;
+
+        table.dataTable thead th {
+            position: relative;
+            padding-right: 24px;
+
+            &::after {
+                content: '';
+                font-family: "Font Awesome 5 Free";
+                font-weight: 900;
+                font-size: 0.75rem;
+                position: absolute;
+                right: 8px;
+                top: 50%;
+                transform: translateY(-50%);
+                opacity: 0.4;
+                pointer-events: none;
+            }
+        }
+    }
+}

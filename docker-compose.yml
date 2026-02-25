@@ -64,6 +64,7 @@ services:
       - ollama
     networks:
       - backend
+      - shared_net
 
   # Ollama (Local LLM runtime)
   # We will run two models inside this ONE container:
@@ -120,3 +121,5 @@ volumes:
 networks:
   backend:
     driver: bridge
+  shared_net:
+    external: true

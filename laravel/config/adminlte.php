@@ -319,6 +319,18 @@ return [
                 ],
             ],
         ],
+        // Stocks section
+        ['header' => 'STOCK MANAGER'],
+        [
+            'text' => 'Stocks',
+            'icon' => 'fas fa-chart-line',
+            'submenu' => [
+                [
+                    'text' => 'Vietnam Stocks',
+                    'route' => 'stocks.index',
+                ],
+            ],
+        ],
         // Video Automation
         ['header' => 'VIDEO AUTOMATION'],
         [

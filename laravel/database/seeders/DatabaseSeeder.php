@@ -15,5 +15,6 @@ class DatabaseSeeder extends Seeder
         // Create a feed keywords
         $this->call(FeedKeywordSeeder::class);
         $this->call(CoinAlertSettingsSeeder::class);
+        $this->call(StockSeeder::class);
     }
 }

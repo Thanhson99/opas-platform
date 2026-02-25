@@ -10,11 +10,19 @@ use App\Repositories\Coin\Interfaces\FavoriteCoinRepositoryInterface;
 use App\Repositories\Coin\Interfaces\FeedKeywordRepositoryInterface;
 use App\Repositories\Coin\Interfaces\TagRepositoryInterface;
 use App\Repositories\Coin\TagRepository;
+use App\Repositories\Stock\FavoriteStockRepository;
+use App\Repositories\Stock\Interfaces\FavoriteStockRepositoryInterface;
+use App\Repositories\Stock\Interfaces\StockRepositoryInterface;
+use App\Repositories\Stock\StockRepository;
 use App\Services\Coin\BinanceCoinApiClient;
 use App\Services\Coin\CoinApiClientInterface;
 use App\Services\Coin\CoinServiceFactory;
 use App\Services\Coin\FavoriteCoinService;
 use App\Services\Coin\FavoriteCoinServiceInterface;
+use App\Services\Stock\FavoriteStockService;
+use App\Services\Stock\FavoriteStockServiceInterface;
+use App\Services\Stock\StockService;
+use App\Services\Stock\StockServiceInterface;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Support\ServiceProvider;
 
@@ -36,6 +44,12 @@ class AppServiceProvider extends ServiceProvider
         // Bind the FavoriteCoin repository and service
         $this->app->bind(FavoriteCoinRepositoryInterface::class, FavoriteCoinRepository::class);
         $this->app->bind(FavoriteCoinServiceInterface::class, FavoriteCoinService::class);
+
+        // Bind the Stock repositories and services
+        $this->app->bind(StockRepositoryInterface::class, StockRepository::class);
+        $this->app->bind(FavoriteStockRepositoryInterface::class, FavoriteStockRepository::class);
+        $this->app->bind(StockServiceInterface::class, StockService::class);
+        $this->app->bind(FavoriteStockServiceInterface::class, FavoriteStockService::class);
 
         // Bind the Tag repository
         $this->app->bind(TagRepositoryInterface::class, TagRepository::class);
