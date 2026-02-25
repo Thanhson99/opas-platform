@@ -82,8 +82,6 @@ class FavoriteStockController extends Controller
 
     /**
      * Normalize and validate stock symbol from request.
-     *
-     * @return string|JsonResponse
      */
     private function normalizeSymbol(Request $request): string|JsonResponse
     {
