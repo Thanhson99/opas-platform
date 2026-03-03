@@ -31,6 +31,10 @@ n8n/tmp/
 n8n/crash.journal
 n8n-backup
 n8n/workflows
+n8n/database*
+n8n/database.sqlite-shm
+n8n/database.sqlite-wal
+n8n/config
 
 # ---- Videos ----
 videos/
