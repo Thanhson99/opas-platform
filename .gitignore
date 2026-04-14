@@ -35,6 +35,7 @@ n8n/database*
 n8n/database.sqlite-shm
 n8n/database.sqlite-wal
 n8n/config
+n8n/data-table/
 
 # ---- Videos ----
 videos/

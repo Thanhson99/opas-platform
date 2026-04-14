@@ -1,5 +1,5 @@
 from urllib.parse import urlparse
 
 def normalize_url(url: str) -> str:
-    # hook để chuẩn hóa link rút gọn, bỏ utm, v.v.
+    # Placeholder hook for normalizing short links, stripping tracking params, and similar cleanup.
     return url.strip()

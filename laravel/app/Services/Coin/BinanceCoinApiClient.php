@@ -114,7 +114,7 @@ class BinanceCoinApiClient implements CoinApiClientInterface
     /**
      * Keep only standard USDT spot symbols and skip leveraged/stablecoin pairs.
      *
-     * @param array<string, mixed> $ticker
+     * @param  array<string, mixed>  $ticker
      */
     private function isValidUsdtSpotTicker(array $ticker): bool
     {
