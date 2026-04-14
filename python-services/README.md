@@ -1,36 +1,53 @@
+# Python Services
+
+```text
 python-services/
-│
-├── main.py
-│
-├── tool-download-video-douyin/         # Service 1 - Douyin video downloader
-│   ├── main.py                         # Entry point
-│   ├── downloader/                     # Video download logic
-│   ├── scraper/                        # Crawl video links from Douyin
-│   ├── utils/                          # Helper functions (parse, format, validate)
-│   ├── views/                          # API or CLI interfaces
-│   ├── requirements.txt                # Dependencies for this service
-│   ├── README.md                       # Service documentation
-│   └── __init__.py                     # Mark package as Python module
-│
-├── tool-ai-video-caption/              # Service 2 - AI video caption generator
-│   ├── main.py
-│   ├── caption_generator/              # Caption generation logic
-│   ├── utils/
-│   ├── requirements.txt
-│   ├── README.md
-│   └── __init__.py
-│
-├── tool-trending-keywords/             # Service 3 - Trending keywords crawler
-│   ├── main.py
-│   ├── scraper/                        # Crawl trending keywords
-│   ├── utils/
-│   ├── requirements.txt
-│   ├── README.md
-│   └── __init__.py
-│
-└── shared-libs/                        # Shared libraries
-    ├── logger.py                       # Standard logging for all services
-    ├── http_client.py                  # HTTP requests wrapper
-    ├── config.py                       # Load config from .env
-    ├── __init__.py
-    └── constants.py                    # Common constants
+|
++-- main.py
++-- router.py
++-- Dockerfile
++-- README.md
++-- init_python_services.sh
++-- tool_download_video_douyin/
+|   +-- main.py
+|   +-- requirements.txt
+|   +-- README.md
+|   +-- __init__.py
+|   +-- downloader/
+|   +-- models/
+|   +-- scraper/
+|   +-- services/
+|   +-- utils/
+|   `-- views/
++-- tool_ai_video_caption/
+|   +-- main.py
+|   +-- requirements.txt
+|   +-- README.md
+|   `-- __init__.py
++-- tool_cn_proxy_gateway/
+|   +-- main.py
+|   +-- router.py
+|   +-- service.py
+|   +-- config.py
+|   +-- models.py
+|   +-- requirements.txt
+|   +-- README.md
+|   `-- __init__.py
++-- tool_trending_keywords/
+|   +-- main.py
+|   +-- requirements.txt
+|   +-- README.md
+|   `-- __init__.py
+`-- shared-libs/
+    +-- __init__.py
+    +-- config/
+    `-- utils/
+```
+
+## Notes
+
+- `tool_download_video_douyin`: service for crawling and downloading Douyin videos.
+- `tool_ai_video_caption`: service for generating video captions.
+- `tool_cn_proxy_gateway`: service that forwards requests through an upstream China proxy for Douyin.
+- `tool_trending_keywords`: service for collecting trending keywords.
+- `shared-libs`: shared libraries used by the Python services.

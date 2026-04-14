@@ -1,6 +1,10 @@
 from fastapi import APIRouter
 
+from tool_cn_proxy_gateway.router import router as china_proxy_router
+
 router = APIRouter()
+
+router.include_router(china_proxy_router, prefix="/china-proxy", tags=["china-proxy"])
 
 # ---- Douyin route ----
 @router.get("/douyin/hello")
