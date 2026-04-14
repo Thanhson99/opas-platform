@@ -22,6 +22,8 @@ class FavoriteStockController extends Controller
 
     /**
      * Add a stock to favorites.
+     *
+     * @param  Request  $request  Incoming HTTP request.
      */
     public function favoritesAdd(Request $request): JsonResponse
     {
@@ -42,6 +44,8 @@ class FavoriteStockController extends Controller
 
     /**
      * Remove a stock from favorites.
+     *
+     * @param  Request  $request  Incoming HTTP request.
      */
     public function favoritesRemove(Request $request): JsonResponse
     {
@@ -62,6 +66,8 @@ class FavoriteStockController extends Controller
 
     /**
      * Toggle favorite status for a stock.
+     *
+     * @param  Request  $request  Incoming HTTP request.
      */
     public function favoritesToggle(Request $request): JsonResponse
     {
@@ -82,6 +88,8 @@ class FavoriteStockController extends Controller
 
     /**
      * Normalize and validate stock symbol from request.
+     *
+     * @param  Request  $request  Incoming HTTP request.
      */
     private function normalizeSymbol(Request $request): string|JsonResponse
     {

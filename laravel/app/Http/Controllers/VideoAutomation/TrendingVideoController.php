@@ -18,6 +18,12 @@ class TrendingVideoController extends Controller
 {
     private $pythonService;
 
+    /**
+     * Create a new controller instance.
+     *
+     * @param  PythonService  $pythonService  Python service client.
+     * @return void
+     */
     public function __construct(PythonService $pythonService)
     {
         $this->pythonService = $pythonService;
@@ -25,6 +31,8 @@ class TrendingVideoController extends Controller
 
     /**
      * Display trending Douyin videos.
+     *
+     * @param  Request  $request  Incoming HTTP request.
      */
     public function index(Request $request): JsonResponse
     {

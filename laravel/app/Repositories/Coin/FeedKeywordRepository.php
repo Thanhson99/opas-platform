@@ -22,6 +22,7 @@ class FeedKeywordRepository extends BaseRepository implements FeedKeywordReposit
      * FeedKeywordRepository constructor.
      *
      * @param  FeedKeyword  $model  FeedKeyword model instance.
+     * @return void
      */
     public function __construct(FeedKeyword $model)
     {
