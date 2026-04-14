@@ -48,13 +48,18 @@ class BinanceCoinApiClient implements CoinApiClientInterface
         $response = Http::get($this->baseUrl.'/api/v3/ticker/24hr');
 
         if ($response->successful()) {
-            /** @var array<int, array<string, mixed>> $data */
             $data = $response->json();
+            if (! is_array($data)) {
+                return [];
+            }
+
+            /** @var array<int, array<string, mixed>> $tickers */
+            $tickers = array_values(array_filter($data, 'is_array'));
 
             /** @var array<int, array<string, mixed>> $rankedByVolume */
-            $rankedByVolume = collect($data)
+            $rankedByVolume = collect($tickers)
                 ->filter(fn (array $ticker): bool => $this->isValidUsdtSpotTicker($ticker))
-                ->sortByDesc(fn (array $ticker): float => (float) ($ticker['quoteVolume'] ?? 0))
+                ->sortByDesc(fn (array $ticker): float => $this->toFloat($ticker['quoteVolume'] ?? null))
                 ->values()
                 ->toArray();
 
@@ -64,7 +69,7 @@ class BinanceCoinApiClient implements CoinApiClientInterface
 
             /** @var array<string, array<string, mixed>> $tickerBySymbol */
             $tickerBySymbol = collect($rankedByVolume)
-                ->keyBy(fn (array $ticker): string => (string) $ticker['symbol'])
+                ->keyBy(fn (array $ticker): string => $this->toString($ticker['symbol'] ?? null))
                 ->toArray();
 
             /** @var array<int, array<string, mixed>> $prioritized */
@@ -76,7 +81,7 @@ class BinanceCoinApiClient implements CoinApiClientInterface
 
             /** @var array<int, array<string, mixed>> $remaining */
             $remaining = collect($rankedByVolume)
-                ->reject(fn (array $ticker): bool => in_array((string) $ticker['symbol'], self::LARGE_CAP_USDT_PAIRS, true))
+                ->reject(fn (array $ticker): bool => in_array($this->toString($ticker['symbol'] ?? null), self::LARGE_CAP_USDT_PAIRS, true))
                 ->values()
                 ->toArray();
 
@@ -114,11 +119,11 @@ class BinanceCoinApiClient implements CoinApiClientInterface
     /**
      * Keep only standard USDT spot symbols and skip leveraged/stablecoin pairs.
      *
-     * @param array<string, mixed> $ticker
+     * @param  array<string, mixed>  $ticker
      */
     private function isValidUsdtSpotTicker(array $ticker): bool
     {
-        $symbol = strtoupper((string) ($ticker['symbol'] ?? ''));
+        $symbol = strtoupper($this->toString($ticker['symbol'] ?? null));
 
         if ($symbol === '' || ! str_ends_with($symbol, 'USDT')) {
             return false;
@@ -146,5 +151,15 @@ class BinanceCoinApiClient implements CoinApiClientInterface
     private function isStablecoin(string $asset): bool
     {
         return in_array($asset, ['USDT', 'USDC', 'FDUSD', 'BUSD', 'TUSD', 'DAI', 'USDP'], true);
+    }
+
+    private function toFloat(mixed $value): float
+    {
+        return is_numeric($value) ? (float) $value : 0.0;
+    }
+
+    private function toString(mixed $value): string
+    {
+        return is_scalar($value) ? (string) $value : '';
     }
 }

@@ -31,7 +31,7 @@ class BinanceCoinApiClientTest extends TestCase
             ], 200),
         ]);
 
-        $client = new BinanceCoinApiClient();
+        $client = new BinanceCoinApiClient;
         $result = $client->fetchTopCoins();
 
         $this->assertCount(10, $result);
