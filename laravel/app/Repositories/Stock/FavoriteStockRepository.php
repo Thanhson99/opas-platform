@@ -19,6 +19,9 @@ class FavoriteStockRepository extends BaseRepository implements FavoriteStockRep
 {
     /**
      * FavoriteStockRepository constructor.
+     *
+     * @param  FavoriteStock  $model  Favorite stock model instance.
+     * @return void
      */
     public function __construct(FavoriteStock $model)
     {

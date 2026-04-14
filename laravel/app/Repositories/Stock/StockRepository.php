@@ -19,6 +19,9 @@ class StockRepository extends BaseRepository implements StockRepositoryInterface
 {
     /**
      * StockRepository constructor.
+     *
+     * @param  Stock  $model  Stock model instance.
+     * @return void
      */
     public function __construct(Stock $model)
     {

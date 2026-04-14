@@ -24,6 +24,8 @@ class CoinController extends Controller
 
     /**
      * Display a list of popular coins from selected source.
+     *
+     * @param  Request  $request  Incoming HTTP request.
      */
     public function index(Request $request): View
     {
@@ -36,6 +38,8 @@ class CoinController extends Controller
 
     /**
      * Display detail of a single coin.
+     *
+     * @param  string  $symbol  Coin symbol.
      */
     public function show(string $symbol): View
     {

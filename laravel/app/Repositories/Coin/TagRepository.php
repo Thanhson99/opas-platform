@@ -21,6 +21,7 @@ class TagRepository extends BaseRepository implements TagRepositoryInterface
      * TagRepository constructor.
      *
      * @param  Tag  $model  The Tag model instance.
+     * @return void
      */
     public function __construct(Tag $model)
     {

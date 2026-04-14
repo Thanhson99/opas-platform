@@ -82,6 +82,8 @@ class FeedKeywordController extends Controller
 
     /**
      * Delete a feed keyword and its tags.
+     *
+     * @param  int  $id  Feed keyword identifier.
      */
     public function destroy(int $id): RedirectResponse
     {

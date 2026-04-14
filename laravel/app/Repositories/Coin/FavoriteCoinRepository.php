@@ -19,6 +19,9 @@ class FavoriteCoinRepository extends BaseRepository implements FavoriteCoinRepos
 {
     /**
      * FavoriteCoinRepository constructor.
+     *
+     * @param  FavoriteCoin  $model  Favorite coin model instance.
+     * @return void
      */
     public function __construct(FavoriteCoin $model)
     {

@@ -25,6 +25,7 @@ abstract class BaseRepository
      * BaseRepository constructor.
      *
      * @param  TModel  $model
+     * @return void
      */
     public function __construct(Model $model)
     {

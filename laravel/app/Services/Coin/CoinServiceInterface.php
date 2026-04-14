@@ -21,7 +21,8 @@ interface CoinServiceInterface
     /**
      * Get detailed info for a specific coin.
      *
-     * @return array<string, mixed>
+     * @param  string  $coinId  Coin symbol or identifier.
+     * @return array<string, mixed>|null
      */
     public function getCoinById(string $coinId): ?array;
 }

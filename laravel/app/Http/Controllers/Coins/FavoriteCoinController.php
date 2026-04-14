@@ -22,6 +22,8 @@ class FavoriteCoinController extends Controller
 
     /**
      * Toggle favorite status for a coin.
+     *
+     * @param  Request  $request  Incoming HTTP request.
      */
     public function favoritesToggle(Request $request): JsonResponse
     {
