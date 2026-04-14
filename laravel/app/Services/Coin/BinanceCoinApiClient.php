@@ -14,7 +14,12 @@ use Illuminate\Support\Facades\Http;
  */
 class BinanceCoinApiClient implements CoinApiClientInterface
 {
-    /** @var array<int, string> */
+    /**
+     * Large-cap spot pairs should always be considered first when building
+     * the top-coin list, even if smaller assets briefly lead by raw volume.
+     *
+     * @var array<int, string>
+     */
     private const LARGE_CAP_USDT_PAIRS = [
         'BTCUSDT',
         'ETHUSDT',
@@ -30,6 +35,11 @@ class BinanceCoinApiClient implements CoinApiClientInterface
 
     protected string $baseUrl;
 
+    /**
+     * Create a new Binance coin API client instance.
+     *
+     * @return void
+     */
     public function __construct()
     {
         $baseUrl = config('services.binance.base_url', 'https://api.binance.com');
@@ -97,6 +107,7 @@ class BinanceCoinApiClient implements CoinApiClientInterface
     /**
      * Get detailed info for a specific coin.
      *
+     * @param  string  $coinId  Coin symbol or identifier.
      * @return array<string, mixed>|null
      */
     public function fetchCoinDetail(string $coinId): ?array
@@ -137,6 +148,11 @@ class BinanceCoinApiClient implements CoinApiClientInterface
         return true;
     }
 
+    /**
+     * Exclude Binance leveraged token suffixes from the spot market ranking.
+     *
+     * @param  string  $baseAsset  Base asset symbol without the quote currency.
+     */
     private function isLeveragedToken(string $baseAsset): bool
     {
         foreach (['UP', 'DOWN', 'BULL', 'BEAR'] as $suffix) {
@@ -148,16 +164,31 @@ class BinanceCoinApiClient implements CoinApiClientInterface
         return false;
     }
 
+    /**
+     * Filter out quote pairs backed by stablecoins rather than tradable assets.
+     *
+     * @param  string  $asset  Base asset symbol.
+     */
     private function isStablecoin(string $asset): bool
     {
         return in_array($asset, ['USDT', 'USDC', 'FDUSD', 'BUSD', 'TUSD', 'DAI', 'USDP'], true);
     }
 
+    /**
+     * Safely normalize loosely typed numeric payload values from the Binance API.
+     *
+     * @param  mixed  $value  Raw API value.
+     */
     private function toFloat(mixed $value): float
     {
         return is_numeric($value) ? (float) $value : 0.0;
     }
 
+    /**
+     * Safely normalize scalar API values before they are used as symbols or keys.
+     *
+     * @param  mixed  $value  Raw API value.
+     */
     private function toString(mixed $value): string
     {
         return is_scalar($value) ? (string) $value : '';

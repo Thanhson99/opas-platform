@@ -10,6 +10,11 @@ use PHPUnit\Framework\TestCase;
 
 class BinanceCoinServiceTest extends TestCase
 {
+    /**
+     * Verify that the service delegates the top-coin request to the API client.
+     *
+     * @return void
+     */
     public function test_get_top_coins_returns_data()
     {
         $mockClient = $this->createMock(CoinApiClientInterface::class);
@@ -23,6 +28,11 @@ class BinanceCoinServiceTest extends TestCase
         $this->assertEquals('BTCUSDT', $result[0]['symbol']);
     }
 
+    /**
+     * Verify that the service returns the expected coin detail payload.
+     *
+     * @return void
+     */
     public function test_get_coin_by_id_returns_correct_coin()
     {
         $mockClient = $this->createMock(CoinApiClientInterface::class);

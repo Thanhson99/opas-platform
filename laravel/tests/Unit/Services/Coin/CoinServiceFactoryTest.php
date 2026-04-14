@@ -11,6 +11,11 @@ use Tests\TestCase;
 
 class CoinServiceFactoryTest extends TestCase
 {
+    /**
+     * Ensure the factory returns the Binance implementation for the Binance source.
+     *
+     * @return void
+     */
     public function test_make_returns_binance_service()
     {
         $service = CoinServiceFactory::make('binance');
@@ -19,6 +24,11 @@ class CoinServiceFactoryTest extends TestCase
         $this->assertInstanceOf(BinanceCoinService::class, $service);
     }
 
+    /**
+     * Ensure an unsupported source raises an explicit exception.
+     *
+     * @return void
+     */
     public function test_make_throws_exception_for_unsupported_source()
     {
         $this->expectException(\InvalidArgumentException::class);

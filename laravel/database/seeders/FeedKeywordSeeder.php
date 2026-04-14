@@ -63,6 +63,8 @@ class FeedKeywordSeeder extends Seeder
 
     /**
      * Load keyword and tag data from a JSON file.
+     *
+     * @return array<int, array<string, mixed>>
      */
     protected function loadKeywordDataFromJson(): array
     {
@@ -82,6 +84,8 @@ class FeedKeywordSeeder extends Seeder
 
     /**
      * Seed keywords and their associated tags.
+     *
+     * @param  array<int, array<string, mixed>>  $keywords  Keyword records from the seed file.
      */
     protected function seedKeywordsWithTags(array $keywords): void
     {

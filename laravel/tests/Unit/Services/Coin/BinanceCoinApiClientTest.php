@@ -10,6 +10,10 @@ use Tests\TestCase;
 
 class BinanceCoinApiClientTest extends TestCase
 {
+    /**
+     * Large-cap USDT pairs should remain prioritized in the returned result
+     * while the underlying ranking still respects numeric quote volume.
+     */
     public function test_fetch_top_coins_sorts_by_numeric_volume_and_prioritizes_large_caps(): void
     {
         Http::fake([

@@ -13,6 +13,11 @@ class PythonService
 {
     protected string $baseUrl;
 
+    /**
+     * Create a new Python service client instance.
+     *
+     * @return void
+     */
     public function __construct()
     {
         // Ensure base URL is always a string
@@ -62,6 +67,7 @@ class PythonService
     /**
      * Generic HTTP GET call to Python service.
      *
+     * @param  string  $url  Fully qualified endpoint URL.
      * @return array<string, mixed>
      */
     protected function call(string $url): array

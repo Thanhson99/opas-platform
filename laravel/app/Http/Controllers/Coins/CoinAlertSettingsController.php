@@ -34,6 +34,8 @@ class CoinAlertSettingsController extends Controller
 
     /**
      * Show the edit form for a specific alert setting.
+     *
+     * @param  int  $id  Alert setting identifier.
      */
     public function edit(int $id): View
     {
@@ -44,6 +46,9 @@ class CoinAlertSettingsController extends Controller
 
     /**
      * Update the specified alert setting in the database.
+     *
+     * @param  UpdateCoinAlertSettingRequest  $request  Validated update request.
+     * @param  int  $id  Alert setting identifier.
      */
     public function update(UpdateCoinAlertSettingRequest $request, int $id): RedirectResponse
     {
@@ -74,6 +79,8 @@ class CoinAlertSettingsController extends Controller
 
     /**
      * Toggle the active status for a specific alert setting.
+     *
+     * @param  int  $id  Alert setting identifier.
      */
     public function toggleStatus(int $id): JsonResponse
     {
