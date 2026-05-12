@@ -1,0 +1,442 @@
+{
+  "name": "Crypto Auto Alert",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 10
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -48,
+        48
+      ],
+      "id": "f5133e19-ca9a-4474-85ca-f72683b110cb",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT \n    fc.symbol,\n    fc.last_price,\n    array_agg(\n        CASE \n            WHEN cas.mode = 'auto' THEN 'auto'\n            ELSE CAST(cas.threshold_percent AS TEXT)\n        END\n        ORDER BY cas.threshold_percent\n    ) AS alert_percent_list\nFROM favorite_coins fc\nLEFT JOIN coin_alert_settings cas \n    ON cas.is_active = TRUE\nGROUP BY fc.symbol, fc.last_price\nORDER BY fc.symbol;\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        176,
+        48
+      ],
+      "id": "3d6148d9-9471-4a38-a02d-3b27aa7898a2",
+      "name": "Execute a SQL query",
+      "credentials": {
+        "postgres": {
+          "id": "QFXWiCK61TUePukI",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        480,
+        304
+      ],
+      "id": "e7a43339-c287-4002-8b8a-43466f01294d",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "name": "Replace Me",
+      "typeVersion": 1,
+      "position": [
+        736,
+        320
+      ],
+      "id": "b526fbc8-5d9c-4e0b-bd71-91c4f53ba955"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.binance.com/api/v3/ticker/price?symbol={{$json[\"symbol\"]}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1104,
+        192
+      ],
+      "id": "d8dfbb9d-ef7a-4d24-9aff-f554da729159",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "jsCode": "return items\n    .map(item => {\n        const price = parseFloat(item.json.price);\n        const lastPrice = parseFloat(item.json.last_price);\n        const changePercent = ((price - lastPrice) / lastPrice) * 100;\n\n        let alertList = item.json.alert_percent_list || [];\n        let matchedPercents = [];\n\n        for (let alertPercent of alertList) {\n            if (alertPercent === 'auto') {\n                alertPercent = getAutoAlertPercent(price);\n            } else {\n                alertPercent = parseFloat(alertPercent);\n            }\n\n            if (Math.abs(changePercent) >= alertPercent) {\n                matchedPercents.push(alertPercent);\n            }\n        }\n\n        // Lấy mức % lớn nhất thoả mãn\n        let matchedPercent = matchedPercents.length > 0 \n            ? Math.max(...matchedPercents) \n            : null;\n\n        // Add fields to output\n        item.json.change_percent = changePercent.toFixed(2);\n        item.json.should_alert = matchedPercent !== null;\n        item.json.matched_alert_percent = matchedPercent; // Mức % được chọn\n\n        return item;\n    })\n    .filter(item => item.json.should_alert);\n\n// Function for auto alert\nfunction getAutoAlertPercent(price) {\n    if (price >= 50000) return 0.5;\n    if (price >= 1000) return 1;\n    return 2;\n}\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        688,
+        -160
+      ],
+      "id": "af9e576b-f4fb-4364-a81b-d32f040e8a61",
+      "name": "Code",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "chatId": "1535260408",
+        "text": "=🚨 *PRICE ALERT!* 🚨\n\n💱 *Symbol:* `{{ $json.symbol }}`\n💰 *Current:* `${{ $json.price }}`\n📉 *Last:* `${{ $json.last_price }}`\n\n📊 *Change:* {{ $json.change_percent >= 0 ? \"🟢\" : \"🔴\" }} `{{ $json.change_percent }}%`\n🎯 *Threshold Hit:* `{{ $json.matched_alert_percent }}%`\n\n🕒 _{{ $now }}_\n",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        992,
+        -160
+      ],
+      "id": "1e68528d-5358-47c0-a1c7-b2ac4ffddece",
+      "name": "Send a text message",
+      "webhookId": "794762b8-9e0d-41f5-8660-c7151dd154c6",
+      "credentials": {
+        "telegramApi": {
+          "id": "PqSxTp1aIWuVzdTk",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1280,
+        -160
+      ],
+      "id": "4359cc09-b55b-48ac-89bf-0395efc372e6",
+      "name": "No Operation, do nothing"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "schema": {
+          "__rl": true,
+          "value": "public",
+          "mode": "list",
+          "cachedResultName": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "favorite_coins",
+          "mode": "list",
+          "cachedResultName": "favorite_coins"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "last_price": "={{ $json.price }}",
+            "symbol": "={{ $json.symbol }}"
+          },
+          "matchingColumns": [
+            "symbol"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "symbol",
+              "displayName": "symbol",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "updated_at",
+              "displayName": "updated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "last_price",
+              "displayName": "last_price",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        624,
+        -320
+      ],
+      "id": "84226786-7161-4b1c-9940-93960fe488b6",
+      "name": "Update rows in a table",
+      "credentials": {
+        "postgres": {
+          "id": "QFXWiCK61TUePukI",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1280,
+        -320
+      ],
+      "id": "78455d5f-098c-4487-ba7c-71cf930b5a6c",
+      "name": "No Operation, do nothing1"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "fieldsToMatchString": "symbol",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1104,
+        432
+      ],
+      "id": "4f24f1d8-e460-4382-b97a-eaaa14d88ce2",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "content": "## 🗄️ Fetch Data from Database\nTrigger scheduled job and retrieve coin list from PostgreSQL.",
+        "height": 320,
+        "width": 480,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -144,
+        -80
+      ],
+      "id": "6ccd722f-0333-47e7-beab-0e27b1e44bf6",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Iterate Through Coins\nLoop through each coin from the query result for individual processing.",
+        "height": 640,
+        "width": 960,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        368,
+        64
+      ],
+      "id": "34cb7ce5-a77b-458d-87a4-dec925b293aa",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Check Coin Price & Alert & Update Database Status\n- Fetch coin price via API, evaluate condition, and send Telegram alert if needed.\n- Update coin record in PostgreSQL after alert or price check.",
+        "height": 432,
+        "width": 976,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        528,
+        -432
+      ],
+      "id": "832b75d9-499e-4307-b671-8274b7eba37b",
+      "name": "Sticky Note2"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Update rows in a table",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Replace Me",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Replace Me": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a text message": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update rows in a table": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "No Operation, do nothing": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "4cf5a45c-b33a-4869-8992-49ebfa233846",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "8b6d2a98faebbe17d06c5d851a9e731d0da49aa412f64bcfe6f86dad1210df39"
+  },
+  "id": "DgsGhlTzusjrU67g",
+  "tags": [
+    {
+      "updatedAt": "2025-11-20T03:57:46.167Z",
+      "createdAt": "2025-11-20T03:57:46.167Z",
+      "id": "nIWKUCReeMUM1H4X",
+      "name": "thanhson99"
+    }
+  ]
+}

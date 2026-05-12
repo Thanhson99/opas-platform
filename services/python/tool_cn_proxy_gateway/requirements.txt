@@ -1,0 +1,2 @@
+requests>=2.32,<3
+pydantic-settings>=2.2,<3

@@ -42,43 +42,43 @@ jobs:
       - name: ♻️ Cache Node Modules
         uses: actions/cache@v3
         with:
-          path: ./laravel/node_modules
-          key: ${{ runner.os }}-node-${{ hashFiles('./laravel/package-lock.json') }}
+          path: ./apps/laravel/node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('./apps/laravel/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
 
       - name: 📦 Install PHP dependencies
-        working-directory: ./laravel
+        working-directory: ./apps/laravel
         run: composer install --prefer-dist --no-progress --no-suggest
 
       - name: 📦 Install NPM dependencies
-        working-directory: ./laravel
+        working-directory: ./apps/laravel
         run: npm install
 
       - name: 🛠 Copy .env
-        working-directory: ./laravel
+        working-directory: ./apps/laravel
         run: cp .env.example .env
 
       - name: 🔐 Generate app key
-        working-directory: ./laravel
+        working-directory: ./apps/laravel
         run: php artisan key:generate
 
       - name: 🧱 Build Vite assets
-        working-directory: ./laravel
+        working-directory: ./apps/laravel
         run: npm run build
 
       - name: 🧱 Run migrations
-        working-directory: ./laravel
+        working-directory: ./apps/laravel
         run: php artisan migrate --force
 
       - name: 🧪 Run Pint (format check)
-        working-directory: ./laravel
+        working-directory: ./apps/laravel
         run: vendor/bin/pint --test
 
       - name: 🧠 Run PHPStan (static analysis)
-        working-directory: ./laravel
+        working-directory: ./apps/laravel
         run: vendor/bin/phpstan analyse --memory-limit=-1 --no-progress --configuration=phpstan.neon
 
       - name: 🧪 Run tests
-        working-directory: ./laravel
+        working-directory: ./apps/laravel
         run: php artisan test

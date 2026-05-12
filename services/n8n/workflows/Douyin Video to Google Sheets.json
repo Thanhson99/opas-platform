@@ -1,0 +1,232 @@
+{
+  "name": "Douyin Video to Google Sheets",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {}
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -208,
+        -96
+      ],
+      "id": "e8fa931a-9615-4b9d-a8e4-c6f2688aedfe",
+      "name": "Start"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "6d38ff26-e439-466d-ad04-3389901d5cbe",
+              "name": "Set Limit",
+              "value": "={{$json[\"limit\"] || 10}}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        16,
+        -96
+      ],
+      "id": "9c184418-78b9-486a-b879-28aeda6317c3",
+      "name": "Set Limit"
+    },
+    {
+      "parameters": {
+        "url": "=https://www.iesdouyin.com/web/api/v2/aweme/post/?sec_uid=<SEC_UID>&count={{$json[\"limit\"]}}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.82 Safari/537.36"
+            },
+            {
+              "name": "Cookie",
+              "value": "<cookie_của_bạn>"
+            },
+            {
+              "name": "Response Format",
+              "value": "JSON"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        240,
+        -96
+      ],
+      "id": "da2625d2-8a97-4e6e-84db-a6b21aa9ef21",
+      "name": "Get Douyin Videos"
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * Format Douyin video data for Google Sheets\n */\nconst videos = items[0].json.aweme_list || [];\nreturn videos.slice(0, $json[\"limit\"]).map(v => {\n  return {\n    json: {\n      title: v.desc,\n      video_url: v.video.play_addr.url_list[0],\n      download_url: v.video.download_addr.url_list[0],\n      created_time: new Date().toISOString()\n    }\n  }\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        464,
+        -96
+      ],
+      "id": "d64761e4-d4c8-4de6-97aa-566cc0358379",
+      "name": "Format Video Data"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://snaptik.app/action.php",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "=application/x-www-form-urlencoded"
+            },
+            {
+              "name": "url",
+              "value": "={{$json[\"video_url\"]}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        672,
+        -96
+      ],
+      "id": "6938a91f-2d7c-476a-b6ff-95ae2226c6b0",
+      "name": "Download from SnapTik"
+    },
+    {
+      "parameters": {
+        "jsCode": "return items.map(item => {\n  return {\n    json: {\n      original_link: item.json.url,\n      download_link: item.json.download_link,\n      created_time: new Date().toISOString()\n    }\n  }\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        -96
+      ],
+      "id": "8ac62054-955e-4aaf-85d8-00be979c777e",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        1072,
+        -96
+      ],
+      "id": "325afc3e-f164-4023-bf52-1db1a7b50580",
+      "name": "Append or update row in sheet"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Set Limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Limit": {
+      "main": [
+        [
+          {
+            "node": "Get Douyin Videos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Douyin Videos": {
+      "main": [
+        [
+          {
+            "node": "Format Video Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Video Data": {
+      "main": [
+        [
+          {
+            "node": "Download from SnapTik",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download from SnapTik": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "fdb39c76-935d-4459-9302-c4f7130715d2",
+  "meta": {
+    "instanceId": "4291e928c9bb5c38fda6eb33170b3dd8560c49ca88920757d2ed40a8bbd22803"
+  },
+  "id": "zoC9i5B0S2OX5ov4",
+  "tags": []
+}
