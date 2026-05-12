@@ -1,14 +1,12 @@
-version: "3.8"
-
 services:
   # Laravel PHP Application
   laravel:
     build:
-      context: ./laravel
+      context: ./apps/laravel
       dockerfile: Dockerfile
     container_name: laravel-app
     volumes:
-      - ./laravel:/var/www
+      - ./apps/laravel:/var/www
     depends_on:
       - postgres
       - python-services
@@ -40,11 +38,11 @@ services:
   # Python microservices (FastAPI / Flask)
   python-services:
     build:
-      context: ./python-services
+      context: ./services/python
       dockerfile: Dockerfile
     container_name: python-services
     volumes:
-      - ./python-services:/app
+      - ./services/python:/app
     networks:
       - backend
 
@@ -55,11 +53,11 @@ services:
     ports:
       - "5678:5678"
     volumes:
-      - ./n8n:/home/node/.n8n
+      - ./services/n8n:/home/node/.n8n
       - ./videos:/data/videos
       - ./videos_uploaded:/data/videos_uploaded
     env_file:
-      - ./n8n/.env
+      - ./services/n8n/.env
     depends_on:
       - ollama
     networks:
@@ -86,8 +84,8 @@ services:
   # LibreTranslate - Translation API
   libretranslate:
     build:
-      context: .
-      dockerfile: libretranslate/Dockerfile
+      context: ./services/libretranslate
+      dockerfile: Dockerfile
     container_name: libretranslate
     ports:
       - "5001:5000"
@@ -106,7 +104,7 @@ services:
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./nginx/conf.d:/etc/nginx/conf.d:ro
-      - ./laravel:/var/www
+      - ./apps/laravel:/var/www
     depends_on:
       - laravel
       - n8n

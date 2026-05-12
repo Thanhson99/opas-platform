@@ -1,0 +1,1301 @@
+{
+  "name": "Stock news daily",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {}
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -1280,
+        640
+      ],
+      "id": "392d26e3-7327-44e0-a57b-916115ada508",
+      "name": "00 - Trigger Daily"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT\n  COALESCE(\n    JSONB_AGG(x.obj ORDER BY x.symbol),\n    '[]'::jsonb\n  ) AS stocks\nFROM (\n  SELECT DISTINCT\n    s.symbol,\n    JSONB_BUILD_OBJECT(\n      'id', s.id,\n      'symbol', s.symbol,\n      'name', s.name,\n      'exchange', s.exchange\n    ) AS obj\n  FROM favorite_stocks fs\n  JOIN stocks s ON s.symbol = fs.symbol\n) x;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -1024,
+        640
+      ],
+      "id": "e8558e64-25cd-4e65-839b-c3b7093ae50a",
+      "name": "01 - Load Watchlist (Postgres/Laravel)",
+      "credentials": {
+        "postgres": {
+          "id": "V0DGYhnXXyd7Og1Y",
+          "name": "Database laravel"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "1935fb13-424e-485c-be53-9428c3b21e34",
+              "leftValue": "={{ ($json.stocks || []).length }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -784,
+        640
+      ],
+      "id": "13da67f0-f22f-4ba0-bca7-3c7d6c9a12d0",
+      "name": "02 - Has Watchlist?"
+    },
+    {
+      "parameters": {
+        "content": "## WATCHLIST SOURCE\n[EN]\n\nPurpose:\n- Trigger workflow execution (daily schedule)\n- Load favorite stock symbols from Laravel (Postgres)\n- Validate watchlist existence\n- Fan-out each symbol into separate items\n\nFlow:\n- Schedule Trigger\n- Execute SQL (load watchlist)\n- IF no symbols → send Telegram alert\n- Split Out Items (1 symbol = 1 item)\n\nNotes:\n- Split does NOT guarantee true parallel execution\n- Each symbol becomes an independent processing branch\n- Downstream nodes will run per item\n\n[VI]\n\nMục đích:\n- Chạy workflow theo lịch\n- Lấy danh sách mã yêu thích từ Laravel DB\n- Nếu chưa có mã → gửi Telegram\n- Tách mỗi mã thành 1 item xử lý riêng\n\nLưu ý:\n- Split không đảm bảo song song thật sự\n- Mỗi mã sẽ trở thành 1 nhánh xử lý riêng",
+        "height": 816,
+        "width": 1808,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1808,
+        224
+      ],
+      "id": "dabd237e-82fd-4922-8089-0c69fc14c7b5",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## WORKFLOW STATE CONTROL\n[EN]\n\nPurpose:\n- Maintain last_run_at timestamp\n- Control incremental news window\n\nLogic:\n- Read workflow_state (scope=stocks, workflow=stock_news_daily)\n- IF not exists → insert initial record\n- Build time context:\n    - last_run_at\n    - now_iso\n\nWhy:\n- Prevent reprocessing old news\n- Enable incremental daily updates\n\nBest Practice:\n- Always update last_run_at at the END of workflow\n- Use ISO format (UTC recommended)\n\n[VI]\n\nMục đích:\n- Quản lý mốc thời gian chạy gần nhất\n- Giúp lọc tin theo khoảng thời gian\n\nÝ nghĩa:\n- Tránh gửi lại tin cũ\n- Chỉ xử lý tin mới từ lần chạy trước",
+        "height": 704,
+        "width": 1648,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -704,
+        1024
+      ],
+      "id": "5ad17183-c846-44c3-ac81-2c869612d6d1",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## NORMALIZE NEWS DATA\n[EN]\n\nPurpose:\n- Transform RSS raw data into structured news objects\n\nMapping:\n- symbol\n- title\n- url\n- published_at (ISO)\n- source\n- exchange\n- name\n\nOutput:\n- Clean and consistent news items\n- Ready for filtering and deduplication\n\nWhy:\n- Standardized structure simplifies downstream logic\n- Prevent inconsistent RSS field formats\n\n[VI]\n\nMục đích:\n- Chuẩn hoá dữ liệu RSS thành format chuẩn\n\nKết quả:\n- Dữ liệu tin tức có cấu trúc rõ ràng\n- Sẵn sàng cho bước filter & hash",
+        "height": 1232,
+        "width": 672
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        912,
+        192
+      ],
+      "id": "fd1c9720-4ce5-4db4-92b1-49747eade64d",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "##TIME WINDOW FILTER\n[EN]\n\nPurpose:\n- Filter news by time window\n- Enforce max 10 news per symbol\n- Sort newest first\n\nWindow Logic:\n- window_from = max(last_run_at, now - 30 days)\n- window_to = now\n\nRules:\n- published_at must be valid\n- published_at > window_from\n- published_at <= window_to\n- Limit 10 per symbol\n\nWhy:\n- Avoid spam\n- Control Telegram message volume\n- Ensure relevance\n\n[VI]\n\nMục đích:\n- Lọc tin theo khoảng thời gian\n- Giới hạn 10 tin mỗi mã\n- Sắp xếp tin mới nhất trước",
+        "height": 1232,
+        "width": 416,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1584,
+        192
+      ],
+      "id": "efb801df-8fb1-42ea-a098-bda361d9493a",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "## GOOGLE NEWS FETCH\n[EN]\n\nPurpose:\n- Fetch Google News RSS per symbol\n- Convert XML response to JSON\n\nProcess:\n- HTTP Request (Google News RSS endpoint)\n- XML node (Parse XML → JSON)\n\nOutput:\n- Raw RSS feed items\n- rss.channel.item array\n\nImportant:\n- Each execution is scoped to a single symbol\n- Network latency affects total execution time\n\n[VI]\n\nMục đích:\n- Gọi RSS Google News cho từng mã\n- Parse XML sang JSON\n\nKết quả:\n- Nhận được danh sách tin dạng array\n- rss.channel.item",
+        "height": 1024,
+        "width": 1104,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "825d9ca6-1ff7-4eb5-86a9-507efa614fad",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## NEWS DEDUPLICATION\n\n[EN]\n\nPurpose:\n- Prevent duplicate news from being processed\n- Use URL hash as unique identifier\n\nProcess:\n- Generate hash from article URL\n- Check if hash exists in data table\n- Skip duplicates\n- Insert new events\n\nCritical:\n- Hash must be deterministic\n- Prevent duplicate inserts\n\n[VI]\n\nMục đích:\n- Ngăn tin trùng lặp\n- Sử dụng hash URL làm khóa duy nhất\n\nQuy trình:\n- Tạo hash từ URL\n- Kiểm tra hash đã tồn tại\n- Bỏ qua tin trùng\n- Insert tin mới\n\nLưu ý:\n- Hash phải ổn định\n- Không insert trùng dữ liệu",
+        "height": 1888,
+        "width": 1792,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2000,
+        192
+      ],
+      "id": "f8b8994b-21bb-4bbd-abdb-2655b157b473",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "content": "## NEWS FILTERING\n\n[EN]\n\nPurpose:\n- Filter news results before AI processing\n- Detect if there are new articles\n\nLogic:\n- If no news → send notification\n- If news exists → continue pipeline\n\nCritical:\n- Avoid sending empty news to AI\n\n[VI]\n\nMục đích:\n- Lọc kết quả tin trước khi gửi AI\n- Kiểm tra có tin mới hay không\n\nLogic:\n- Nếu không có tin → gửi thông báo\n- Nếu có tin → tiếp tục xử lý\n\nLưu ý:\n- Không gửi dữ liệu rỗng cho AI",
+        "height": 1360,
+        "width": 1024,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2992,
+        -192
+      ],
+      "id": "f99e2264-2a9f-463b-aa6c-591ec3dce126",
+      "name": "Sticky Note6"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        -208,
+        384
+      ],
+      "id": "3fa2c70e-6f49-44e9-85d6-18d398e38747",
+      "name": "90 - End: No Watchlist"
+    },
+    {
+      "parameters": {
+        "chatId": "-1003533379235",
+        "text": "={{ \n`━━━━━━━━━━━━━━━━━━\n\n📊 <b>BẢN TIN CHỨNG KHOÁN</b>\n\n━━━━━━━━━━━━━━━━━━\n\n🚫 <b>CHƯA CÓ MÃ YÊU THÍCH</b>\n\nHiện tại hệ thống chưa tìm thấy cổ phiếu nào trong danh sách theo dõi.\n\n👉 <b>Hãy thêm mã để bắt đầu nhận tin tức.</b>\n\n━━━━━━━━━━━━━━━━━━`\n}}",
+        "additionalFields": {
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -448,
+        384
+      ],
+      "id": "2ad84bc1-c061-472c-9357-85917a868345",
+      "name": "03 - Telegram: No Watchlist",
+      "webhookId": "de3bd1b7-2b17-43d4-a85b-0c0a8ee11122",
+      "credentials": {
+        "telegramApi": {
+          "id": "QiLxo1DWYUnV2eEu",
+          "name": "Stock bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "stocks",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        -448,
+        656
+      ],
+      "id": "65db3954-6a0f-4b32-bcd6-222ab7bb6686",
+      "name": "04 - For Each Symbol (Split Items)"
+    },
+    {
+      "parameters": {
+        "url": "https://news.google.com/rss/search",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "q",
+              "value": "=cổ phiếu {{ $json.symbol }} OR {{ $json.symbol }} {{ $json.exchange }} OR {{ $json.name }}"
+            },
+            {
+              "name": "hl",
+              "value": "vi"
+            },
+            {
+              "name": "gl",
+              "value": "VN"
+            },
+            {
+              "name": "ceid",
+              "value": "VN:vi"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        224,
+        656
+      ],
+      "id": "d5a027e9-2adc-43d7-8fb6-5e0683bc8503",
+      "name": "10 - Fetch Google News RSS"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.xml",
+      "typeVersion": 1,
+      "position": [
+        544,
+        656
+      ],
+      "id": "ca7bd3e1-4d38-47ee-a3f2-8c78e7a91286",
+      "name": "11 - Parse RSS (XML → JSON)"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "1QJmdzjtH5mPmqPo",
+          "mode": "list",
+          "cachedResultName": "workflow_state",
+          "cachedResultUrl": "/projects/0Y5UpVIF1jb904eR/datatables/1QJmdzjtH5mPmqPo"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "scope",
+              "keyValue": "stocks"
+            },
+            {
+              "keyName": "workflow",
+              "keyValue": "stock_news_daily"
+            },
+            {
+              "keyName": "key",
+              "keyValue": "last_run_at"
+            }
+          ]
+        },
+        "limit": 1
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        -96,
+        1360
+      ],
+      "id": "921e8933-4525-4e2a-b66c-594098d25673",
+      "name": "20 - State: Get last_run_at",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "bc8673f0-d575-4c18-8fe9-dddebe11d75c",
+              "leftValue": "={{ !!$json.value }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        176,
+        1360
+      ],
+      "id": "ba530c30-1145-4f6b-b66c-e27c227de64f",
+      "name": "21 - State Exists?"
+    },
+    {
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "value": "1QJmdzjtH5mPmqPo",
+          "mode": "list",
+          "cachedResultName": "workflow_state",
+          "cachedResultUrl": "/projects/0Y5UpVIF1jb904eR/datatables/1QJmdzjtH5mPmqPo"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "scope": "stocks",
+            "workflow": "stock_news_daily",
+            "key": "last_run_at",
+            "value": "={{ $now.toISO() }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "scope",
+              "displayName": "scope",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "workflow",
+              "displayName": "workflow",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "key",
+              "displayName": "key",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "value",
+              "displayName": "value",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        432,
+        1184
+      ],
+      "id": "98c0a837-89f1-4f91-8851-7c7559277e78",
+      "name": "22 - State: Insert Init Row"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "8f950598-56bb-4108-b044-c9fae30c3150",
+              "name": "last_run_at",
+              "value": "={{ $json.value }}",
+              "type": "string"
+            },
+            {
+              "id": "3c57fb24-aa7b-4a50-82f4-f871f4e3a6a9",
+              "name": "now_iso",
+              "value": "={{ $now }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        688,
+        1376
+      ],
+      "id": "21227dfd-35e6-49f3-82d0-f28f9d5389ff",
+      "name": "23 - Build Time Context"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1040,
+        1040
+      ],
+      "id": "845c921a-f50e-480e-9602-6dfb86b319b4",
+      "name": "30 - Merge: RSS + Time Context"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Google News RSS sau XML node: $json.rss.channel.item là array\nconst feedItems = $json?.rss?.channel?.item ?? [];\n\n// lấy metadata của stock từ item trước đó (Split Out Items)\nconst stock = $item(0).$node[\"04 - For Each Symbol (Split Items)\"].json; \n// Nếu node split của bạn tên khác, đổi \"Split Out Items\" đúng tên node.\n\nreturn feedItems.map(it => ({\n  json: {\n    scope: \"stocks\",\n    topic: stock.symbol,\n    symbol: stock.symbol,\n    name: stock.name,\n    exchange: stock.exchange,\n\n    title: it.title,\n    url: typeof it.link === \"string\" ? it.link : it.link?.[0] ?? \"\",\n    published_at_raw: it.pubDate,\n    published_at: it.pubDate ? new Date(it.pubDate).toISOString() : null,\n\n    source: it.source?._ ?? it.source ?? \"google_news\",\n  }\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1344,
+        1040
+      ],
+      "id": "dc84ddf2-eed0-414f-97a3-42882fb40a0b",
+      "name": "31 - Map RSS → Structured News"
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n Code node (JavaScript)\n// Expect each item is a news item and ALSO contains workflow_state.value as last_run_at.\n// Fields used: json.published_at (ISO), json.symbol, json.value (last_run_at)\n// Output: filtered, sorted desc, limited 10 per symbol.\n\nconst input = $input.all();\nif (input.length === 0) return [];\n\n// Find last_run_at from any item (after merge it should exist on all items)\nconst lastRunRaw = input.find(i => i.json?.value)?.json?.value;\nconst from = lastRunRaw ? new Date(lastRunRaw) : null;\nconst to = new Date(); // now\n\nconst isValidDate = (d) => d instanceof Date && !isNaN(d.getTime());\n\n// Hard cap 30 days\nconst thirtyDaysAgo = new Date(to.getTime() - 30 * 24 * 60 * 60 * 1000);\n\n// windowFrom = max(last_run_at, thirtyDaysAgo) (fallback if last_run_at invalid)\nconst windowFrom = (from && isValidDate(from))\n  ? new Date(Math.max(from.getTime(), thirtyDaysAgo.getTime()))\n  : thirtyDaysAgo;\n\nconst windowTo = to;\n\n// Parse + filter\nconst parsed = input\n  .map(i => {\n    const pub = new Date(i.json.published_at);\n    return {\n      item: i,\n      pub,\n      ok: isValidDate(pub),\n    };\n  })\n  .filter(x => x.ok && x.pub > windowFrom && x.pub <= windowTo);\n\n// Sort desc by published_at\nparsed.sort((a, b) => b.pub.getTime() - a.pub.getTime());\n\n// Limit per symbol\nconst MAX_PER_SYMBOL = 10;\nconst count = new Map();\nconst out = [];\n\nfor (const x of parsed) {\n  const sym = x.item.json.symbol || 'UNKNOWN';\n  const c = count.get(sym) || 0;\n  if (c >= MAX_PER_SYMBOL) continue;\n\n  count.set(sym, c + 1);\n\n  // Attach window info for debugging/downstream\n  x.item.json.window_from = windowFrom.toISOString();\n  x.item.json.window_to = windowTo.toISOString();\n\n  out.push(x.item);\n}\n\nreturn out;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1728,
+        1040
+      ],
+      "id": "79cd24ee-7579-484d-aab9-39fb44e52442",
+      "name": "40 - Filter by Time Window"
+    },
+    {
+      "parameters": {
+        "jsCode": "function simpleHash(str) {\n  let hash = 0;\n  for (let i = 0; i < str.length; i++) {\n    const chr = str.charCodeAt(i);\n    hash = ((hash << 5) - hash) + chr;\n    hash |= 0; // convert to 32bit int\n  }\n  return hash.toString();\n}\n\nreturn $input.all().map(item => {\n  const url = item.json.url || '';\n  item.json.hash = simpleHash(url);\n  return item;\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2192,
+        1040
+      ],
+      "id": "e5784853-7abc-46d4-b06f-880152f5d718",
+      "name": "50 - Add URL Hash"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "HL7PTGTfY5wYBZHR",
+          "mode": "list",
+          "cachedResultName": "news_events",
+          "cachedResultUrl": "/projects/0Y5UpVIF1jb904eR/datatables/HL7PTGTfY5wYBZHR"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "scope",
+              "keyValue": "={{ $json.scope }}"
+            },
+            {
+              "keyName": "hash",
+              "keyValue": "={{ $json.hash }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        3552,
+        1296
+      ],
+      "id": "2ee7a9e3-5bd3-445e-98a2-5c927316e625",
+      "name": "51 - Check Existing by Hash",
+      "retryOnFail": false,
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "02117f7b-43c2-4b92-9de9-094d40192db1",
+              "leftValue": "={{ $json.id !== undefined && $json.id !== null }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        2816,
+        1600
+      ],
+      "id": "21cfbdad-f1b9-46c3-8a3e-418c1462cbcd",
+      "name": "52 - IF: Duplicate?"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        2656,
+        1040
+      ],
+      "id": "9bbe2108-9302-45c5-ab50-79d7d375fd74",
+      "name": "50.5 - Split In Batches"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "name": "50.6 - (Replace Me) Keep Original News",
+      "typeVersion": 1,
+      "position": [
+        2816,
+        1296
+      ],
+      "id": "11ef4d1d-b044-4f62-93cf-0621f72d692e"
+    },
+    {
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "value": "HL7PTGTfY5wYBZHR",
+          "mode": "list",
+          "cachedResultName": "news_events",
+          "cachedResultUrl": "/projects/0Y5UpVIF1jb904eR/datatables/HL7PTGTfY5wYBZHR"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "scope": "={{$node[\"50.6 - (Replace Me) Keep Original News\"].json.scope}}",
+            "topic": "={{$node[\"50.6 - (Replace Me) Keep Original News\"].json.topic }}",
+            "source": "={{$node[\"50.6 - (Replace Me) Keep Original News\"].json.source }}",
+            "title": "={{$node[\"50.6 - (Replace Me) Keep Original News\"].json.title }}",
+            "url": "={{$node[\"50.6 - (Replace Me) Keep Original News\"].json.url }}",
+            "published_at": "={{$node[\"50.6 - (Replace Me) Keep Original News\"].json.published_at }}",
+            "hash": "={{$node[\"50.6 - (Replace Me) Keep Original News\"].json.hash }}",
+            "processed_at": "={{new Date().toISOString()}}",
+            "send_to": "telegram",
+            "workflow": "stock_news_daily"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "scope",
+              "displayName": "scope",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "topic",
+              "displayName": "topic",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "source",
+              "displayName": "source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "title",
+              "displayName": "title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "url",
+              "displayName": "url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "published_at",
+              "displayName": "published_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "hash",
+              "displayName": "hash",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "processed_at",
+              "displayName": "processed_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "send_to",
+              "displayName": "send_to",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "workflow",
+              "displayName": "workflow",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        3552,
+        1840
+      ],
+      "id": "dac94aa2-8288-428d-a67a-a0215ccdd6dc",
+      "name": "54 - Insert news_events"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3552,
+        1584
+      ],
+      "id": "05516450-fdc2-4229-a1b2-ed0331298aa5",
+      "name": "90 - Skip Duplicate (Return Empty)",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Remove empty objects {} from Data Table lookup output\nconst items = $input.all();\n\nconst cleaned = items.filter(i => {\n  const j = i.json ?? {};\n  return Object.keys(j).length > 0;  // keep only non-empty rows\n});\n\nreturn cleaned;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3152,
+        528
+      ],
+      "id": "41bc28cc-ef53-4dfb-8312-67c660b29fce",
+      "name": "55 - Clean Lookup Results (Remove Empty Items)",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "cb6d0c60-7155-40b1-8557-d061442384b8",
+              "leftValue": "={{ $input.all().some(i => Object.keys(i.json).length > 0) }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        3680,
+        528
+      ],
+      "id": "b0dbb2e2-1e46-46ec-af65-fa5e4ae0a2c1",
+      "name": "56 - IF: Has News?"
+    },
+    {
+      "parameters": {
+        "chatId": "-1003533379235",
+        "text": "=━━━━━━━━━━━━━━━━━━\n\n📊 <b>BẢN TIN CHỨNG KHOÁN</b>\n\n━━━━━━━━━━━━━━━━━━\n\n🕒 <b>KHÔNG CÓ TIN MỚI</b>\n\nKhông tìm thấy bài viết mới cho các mã trong danh sách theo dõi\ntrong khoảng thời gian cập nhật gần nhất.\n\n✅ Hệ thống đã kiểm tra và sẽ tiếp tục theo dõi.\n\n━━━━━━━━━━━━━━━━━━",
+        "additionalFields": {
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        3424,
+        896
+      ],
+      "id": "2462f833-c05c-4a63-9626-72e7bbb17643",
+      "name": "57 - Telegram: No News",
+      "webhookId": "cd3beb75-91ed-4285-8db5-065a5fb3503e",
+      "credentials": {
+        "telegramApi": {
+          "id": "QiLxo1DWYUnV2eEu",
+          "name": "Stock bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://ollama:11434/api/chat",
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ JSON.stringify({\n  model: \"qwen2.5:7b\",\n  stream: false,\n  raw: false,\n  messages: [\n    {\n      role: \"system\",\n      content: \"Bạn là chuyên gia phân tích chứng khoán Việt Nam. Chỉ trả về nội dung bản tin theo đúng yêu cầu, không giải thích thêm.\"\n    },\n    {\n      role: \"user\",\n      content: $json.final_prompt\n    }\n  ]\n}) }}",
+        "options": {
+          "timeout": 900000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        4672,
+        928
+      ],
+      "id": "23201054-7c9e-436c-bc9b-d3967ac76a10",
+      "name": "60 - AI: Summarize with Ollama"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Lấy toàn bộ items\nconst items = $input.all();\n\n// Nhóm theo topic (mã cổ phiếu)\nconst grouped = {};\n\nfor (const item of items) {\n  const news = item.json;\n  const topic = news.topic || \"UNKNOWN\";\n\n  if (!grouped[topic]) {\n    grouped[topic] = [];\n  }\n\n  grouped[topic].push({\n    title: news.title,\n    source: news.source,\n    published_at: news.published_at,\n    url: news.url\n  });\n}\n\n// Build text block cho AI\nlet formattedText = \"\";\n\nfor (const [symbol, articles] of Object.entries(grouped)) {\n  formattedText += `\\n\\nMã cổ phiếu: ${symbol}\\n`;\n\n  articles.forEach((a, index) => {\n    formattedText += `${index + 1}. ${a.title}\\n`;\n    formattedText += `   Nguồn: ${a.source}\\n`;\n    formattedText += `   Link: ${a.url}\\n`;\n  });\n}\n\n// Trả về 1 item duy nhất\nreturn [\n  {\n    json: {\n      ai_input: formattedText\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4192,
+        928
+      ],
+      "id": "4c832b94-0456-448d-a7c2-e4c7ac5bba38",
+      "name": "59 - Format News For AI"
+    },
+    {
+      "parameters": {
+        "jsCode": "const instruction =\n  \"Bạn là chuyên gia phân tích chứng khoán Việt Nam.\\n\" +\n  \"Hãy tổng hợp bản tin theo format Telegram.\\n\\n\" +\n  \"Yêu cầu:\\n\" +\n  \"- Nhóm theo mã cổ phiếu\\n\" +\n  \"- Tối đa 5 gạch đầu dòng/mã\\n\" +\n  \"- Mỗi gạch đầu dòng: tiêu đề rút gọn + (Tích cực/Trung lập/Tiêu cực) + 1 câu nhận định\\n\" +\n  \"- Cuối mỗi gạch đầu dòng kèm nguồn\\n\" +\n  \"- Không quá 1200 ký tự\\n\\n\" +\n  \"Dữ liệu tin:\\n\";\n\nreturn [\n  {\n    json: {\n      final_prompt: instruction + $json.ai_input + \"\\nChỉ trả về nội dung bản tin (không giải thích thêm).\"\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4432,
+        928
+      ],
+      "id": "97318d1f-b994-4f32-864d-72052f5c29fc",
+      "name": "59.5 - Build AI Prompt"
+    },
+    {
+      "parameters": {
+        "chatId": "-1003533379235",
+        "text": "={{ $json.telegram_body }}",
+        "additionalFields": {
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        5152,
+        928
+      ],
+      "id": "aa69ed78-1ce0-40f3-8b8f-78fd129f787f",
+      "name": "62 - Telegram: Send Final News",
+      "webhookId": "5777f871-2a8a-46f5-beee-99105a6759cc",
+      "credentials": {
+        "telegramApi": {
+          "id": "QiLxo1DWYUnV2eEu",
+          "name": "Stock bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw =\n  $json?.message?.content ??\n  $json?.response ??\n  $json?.choices?.[0]?.message?.content ??\n  \"\";\n\nconst text = (raw || \"\").trim();\n\nconst header =\n  \"━━━━━━━━━━━━━━━━━━\\n\\n\" +\n  \"📊 <b>BẢN TIN CHỨNG KHOÁN</b>\\n\\n\" +\n  \"━━━━━━━━━━━━━━━━━━\\n\\n\";\n\nconst footer = \"\\n\\n━━━━━━━━━━━━━━━━━━\";\n\n// No content => no-news template (optional)\nif (!text) {\n  const noNews =\n    header +\n    \"🕒 <b>KHÔNG CÓ TIN MỚI</b>\\n\\n\" +\n    \"Không tìm thấy bài viết mới cho các mã trong danh sách theo dõi\\n\" +\n    \"trong khoảng thời gian cập nhật gần nhất.\\n\\n\" +\n    \"✅ Hệ thống đã kiểm tra và sẽ tiếp tục theo dõi.\" +\n    footer;\n\n  return [{ json: { telegram_body: noNews } }];\n}\n\n// -------- helpers ----------\nconst normSent = (s) => {\n  const t = (s || \"\").toLowerCase();\n  if (t.includes(\"tích cực\")) return \"Tích cực\";\n  if (t.includes(\"tiêu cực\")) return \"Tiêu cực\";\n  if (t.includes(\"trung lập\")) return \"Trung lập\";\n  return \"Trung lập\";\n};\n\nconst iconTitle = (sent) => {\n  if (sent === \"Tích cực\") return \"📈 <b>Tích cực</b>\";\n  if (sent === \"Tiêu cực\") return \"📉 <b>Tiêu cực</b>\";\n  return \"➖ <b>Trung lập</b>\";\n};\n\n// -------- extract ticker ----------\nlet ticker = \"\";\n\n// Format 1: \"Mã cổ phiếu: FPT\"\nlet m = text.match(/Mã cổ phiếu:\\s*([A-Z0-9.\\-]+)/i);\nif (m) ticker = m[1].toUpperCase();\n\n// Format 2: \"FPT (Tích cực) - ...\"\nif (!ticker) {\n  m = text.match(/^([A-Z0-9.\\-]{2,10})\\s*\\(/);\n  if (m) ticker = m[1].toUpperCase();\n}\n\n// Format 3: \"FPT - Trung lập - ...\"\nif (!ticker) {\n  m = text.match(/^([A-Z0-9.\\-]{2,10})\\s*-\\s*(Tích cực|Trung lập|Tiêu cực)\\s*-/i);\n  if (m) ticker = m[1].toUpperCase();\n}\n\n// fallback\nif (!ticker) ticker = \"NEWS\";\n\n// -------- extract sources ----------\nlet sources = \"\";\nm = text.match(/Nguồn:\\s*(.+)$/i);\nif (m) sources = m[1].trim();\n\n// -------- parse items ----------\nconst pos = [];\nconst neu = [];\nconst neg = [];\n\n// Split lines; if only 1 line, still works\nconst lines = text.split(\"\\n\").map(s => s.trim()).filter(Boolean);\n\n// Function to push bullet by sentiment\nconst pushBySent = (sent, title) => {\n  const s = normSent(sent);\n  const cleanTitle = (title || \"\")\n    .replace(/\\s+Nguồn:\\s*.+$/i, \"\") // strip inline source part\n    .trim();\n\n  if (!cleanTitle) return;\n\n  if (s === \"Tích cực\") pos.push(`• ${cleanTitle}`);\n  else if (s === \"Tiêu cực\") neg.push(`• ${cleanTitle}`);\n  else neu.push(`• ${cleanTitle}`);\n};\n\n// Try parse each line with multiple patterns\nfor (let line of lines) {\n  // ignore \"Nguồn: ...\"\n  if (/^Nguồn:/i.test(line)) continue;\n\n  // Pattern A: \"- <source>: <sent> - <title> ...\"\n  let mm = line.match(/^-?\\s*([^:]+):\\s*(Tích cực|Trung lập|Tiêu cực)\\s*-\\s*(.+)$/i);\n  if (mm) {\n    const sent = mm[2];\n    const title = mm[3];\n    pushBySent(sent, title);\n    continue;\n  }\n\n  // Pattern B: \"FPT (Tích cực) - <title> ...\"\n  mm = line.match(/^[A-Z0-9.\\-]{2,10}\\s*\\((Tích cực|Trung lập|Tiêu cực)\\)\\s*-\\s*(.+)$/i);\n  if (mm) {\n    const sent = mm[1];\n    const title = mm[2];\n    pushBySent(sent, title);\n    continue;\n  }\n\n  // Pattern C: \"FPT - Tích cực - <title> ...\"\n  mm = line.match(/^[A-Z0-9.\\-]{2,10}\\s*-\\s*(Tích cực|Trung lập|Tiêu cực)\\s*-\\s*(.+)$/i);\n  if (mm) {\n    const sent = mm[1];\n    const title = mm[2];\n    pushBySent(sent, title);\n    continue;\n  }\n\n  // Pattern D: nếu AI trả kiểu \"• ...\" thì giữ nguyên vào trung lập\n  if (line.startsWith(\"•\")) {\n    neu.push(line);\n    continue;\n  }\n}\n\n// If nothing parsed, treat whole text (without sources) as one neutral bullet\nif (pos.length + neu.length + neg.length === 0) {\n  const fallbackTitle = text.replace(/Nguồn:\\s*.+$/i, \"\").trim();\n  if (fallbackTitle) neu.push(`• ${fallbackTitle}`);\n}\n\n// -------- build message ----------\nlet body = header + `🏢 <b>${ticker}</b>\\n\\n`;\n\nif (pos.length) body += `${iconTitle(\"Tích cực\")}\\n${pos.join(\"\\n\")}\\n\\n`;\nif (neu.length) body += `${iconTitle(\"Trung lập\")}\\n${neu.join(\"\\n\")}\\n\\n`;\nif (neg.length) body += `${iconTitle(\"Tiêu cực\")}\\n${neg.join(\"\\n\")}\\n\\n`;\n\nif (sources) {\n  body += `🔎 <b>Nguồn:</b>\\n${sources}`;\n} else {\n  // optional: không bắt buộc phải có\n  body = body.trimEnd();\n}\n\nbody += footer;\n\nreturn [{ json: { telegram_body: body } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4912,
+        928
+      ],
+      "id": "06f40b6c-9913-48c3-84e8-2b65f01e3a34",
+      "name": "61 - Extract AI Output (telegram_text)"
+    },
+    {
+      "parameters": {
+        "content": "## AI NEWS SUMMARIZATION\n\n[EN]\n\nPurpose:\n- Use AI to summarize stock news\n- Convert multiple articles into concise insights\n\nProcess:\n- Prepare input news data\n- Generate structured prompt\n- Send to Ollama model\n\nOutput:\n- Structured summary grouped by stock\n\nCritical:\n- Limit token size\n- Ensure output format consistency\n\n[VI]\n\nMục đích:\n- Sử dụng AI để tổng hợp tin chứng khoán\n- Biến nhiều bài báo thành bản tin ngắn gọn\n\nQuy trình:\n- Chuẩn bị dữ liệu đầu vào\n- Tạo prompt\n- Gửi tới model Ollama\n\nKết quả:\n- Bản tin được tổng hợp theo mã cổ phiếu\n\nLưu ý:\n- Giới hạn kích thước prompt\n- Giữ format output ổn định",
+        "height": 1104,
+        "width": 816
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        4016,
+        64
+      ],
+      "id": "8df370d3-61da-40e5-b134-68f1674e3d62",
+      "name": "Sticky Note7"
+    },
+    {
+      "parameters": {
+        "content": "## DELIVERY & FINALIZATION\n\n[EN]\n\nPurpose:\n- Send formatted news to Telegram\n- Store processed news if needed\n- Update last_run_at\n\nFinal Steps:\n- Format Telegram message\n- Send message\n- Update workflow_state.last_run_at\n\nCritical:\n- Update last_run_at ONLY after successful processing\n- Prevent partial-state corruption\n\n[VI]\n\nMục đích:\n- Gửi tin qua Telegram\n- Cập nhật last_run_at\n- Hoàn tất workflow",
+        "height": 1104,
+        "width": 768,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        4832,
+        64
+      ],
+      "id": "a74a11f3-79aa-4d95-85f0-0129ed2e1a3b",
+      "name": "Sticky Note8"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "00 - Trigger Daily": {
+      "main": [
+        [
+          {
+            "node": "01 - Load Watchlist (Postgres/Laravel)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "01 - Load Watchlist (Postgres/Laravel)": {
+      "main": [
+        [
+          {
+            "node": "02 - Has Watchlist?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "02 - Has Watchlist?": {
+      "main": [
+        [
+          {
+            "node": "03 - Telegram: No Watchlist",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "04 - For Each Symbol (Split Items)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "03 - Telegram: No Watchlist": {
+      "main": [
+        [
+          {
+            "node": "90 - End: No Watchlist",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "04 - For Each Symbol (Split Items)": {
+      "main": [
+        [
+          {
+            "node": "10 - Fetch Google News RSS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "10 - Fetch Google News RSS": {
+      "main": [
+        [
+          {
+            "node": "11 - Parse RSS (XML → JSON)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "11 - Parse RSS (XML → JSON)": {
+      "main": [
+        [
+          {
+            "node": "20 - State: Get last_run_at",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "30 - Merge: RSS + Time Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "20 - State: Get last_run_at": {
+      "main": [
+        [
+          {
+            "node": "21 - State Exists?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "21 - State Exists?": {
+      "main": [
+        [
+          {
+            "node": "22 - State: Insert Init Row",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "23 - Build Time Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "22 - State: Insert Init Row": {
+      "main": [
+        [
+          {
+            "node": "23 - Build Time Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "23 - Build Time Context": {
+      "main": [
+        [
+          {
+            "node": "30 - Merge: RSS + Time Context",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "30 - Merge: RSS + Time Context": {
+      "main": [
+        [
+          {
+            "node": "31 - Map RSS → Structured News",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "31 - Map RSS → Structured News": {
+      "main": [
+        [
+          {
+            "node": "40 - Filter by Time Window",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "40 - Filter by Time Window": {
+      "main": [
+        [
+          {
+            "node": "50 - Add URL Hash",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "50 - Add URL Hash": {
+      "main": [
+        [
+          {
+            "node": "50.5 - Split In Batches",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "51 - Check Existing by Hash": {
+      "main": [
+        [
+          {
+            "node": "52 - IF: Duplicate?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "50.5 - Split In Batches": {
+      "main": [
+        [
+          {
+            "node": "55 - Clean Lookup Results (Remove Empty Items)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "50.6 - (Replace Me) Keep Original News",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "50.6 - (Replace Me) Keep Original News": {
+      "main": [
+        [
+          {
+            "node": "51 - Check Existing by Hash",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "52 - IF: Duplicate?": {
+      "main": [
+        [
+          {
+            "node": "90 - Skip Duplicate (Return Empty)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "54 - Insert news_events",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "54 - Insert news_events": {
+      "main": [
+        [
+          {
+            "node": "50.5 - Split In Batches",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "90 - Skip Duplicate (Return Empty)": {
+      "main": [
+        [
+          {
+            "node": "50.5 - Split In Batches",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "55 - Clean Lookup Results (Remove Empty Items)": {
+      "main": [
+        [
+          {
+            "node": "56 - IF: Has News?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "56 - IF: Has News?": {
+      "main": [
+        [
+          {
+            "node": "59 - Format News For AI",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "57 - Telegram: No News",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "59 - Format News For AI": {
+      "main": [
+        [
+          {
+            "node": "59.5 - Build AI Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "59.5 - Build AI Prompt": {
+      "main": [
+        [
+          {
+            "node": "60 - AI: Summarize with Ollama",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "60 - AI: Summarize with Ollama": {
+      "main": [
+        [
+          {
+            "node": "61 - Extract AI Output (telegram_text)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "61 - Extract AI Output (telegram_text)": {
+      "main": [
+        [
+          {
+            "node": "62 - Telegram: Send Final News",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "9fc08f43-152e-4bcb-ad63-fff2a6c08f08",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "8b6d2a98faebbe17d06c5d851a9e731d0da49aa412f64bcfe6f86dad1210df39"
+  },
+  "id": "90VPgH5H8fxITSVC",
+  "tags": [
+    {
+      "name": "thanhson99",
+      "id": "aQKGQiO3zzpxxPv5",
+      "updatedAt": "2026-03-04T02:34:14.271Z",
+      "createdAt": "2026-03-04T02:34:14.271Z"
+    }
+  ]
+}

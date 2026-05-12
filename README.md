@@ -85,35 +85,33 @@ You can later switch to any paid provider (OpenAI/Gemini/...) without redesignin
 ```text
 ┌──────────────────────────┐
 │        Users / UI        │
-│      (Laravel App)       │
+│   apps/laravel (Web UI)  │
 └────────────┬─────────────┘
-             │ HTTP / API
-┌────────────▼─────────────┐
+             │
+             │ HTTP / internal calls
+             ▼
+┌──────────────────────────┐
 │        NGINX Proxy       │
-└───────┬─────────┬────────┘
-        │         │
-        │         │
-┌───────▼───┐   ┌─▼─────────────────────┐
-│    n8n    │   │  Python Microservices │
-│ Workflows │   │ Enrichment / Utilities│
-└───────┬───┘   └───────────────────────┘
-        │
-        │
-┌───────▼──────────────────────────────┐
-│     LibreTranslate (Local Translate) │
-│     Multi-language workflow support  │
-└──────────────────────────────────────┘
-        │
-        │
-┌───────▼──────────────────────────────┐
-│         Ollama (Local AI Runtime)    │
-│ Writer + Critic models for content   │
-└──────────────────────────────────────┘
+└───────┬────────┬─────────┘
+        │        │
+        │        │
+        ▼        ▼
+┌──────────────┐  ┌──────────────────────┐
+│ services/n8n │  │ services/python      │
+│ Workflows    │  │ Utility APIs         │
+└──────┬───────┘  └──────────┬───────────┘
+       │                     │
+       ├──────────────┐      │
+       ▼              ▼      ▼
+┌──────────────┐  ┌──────────────┐
+│ Ollama       │  │ LibreTranslate│
+│ Local LLM    │  │ Translation   │
+└──────────────┘  └──────────────┘
 
-┌──────────────────────────────────────┐
-│            PostgreSQL Database       │
-│ Shared by Laravel + n8n + services   │
-└──────────────────────────────────────┘
+┌──────────────────────────┐
+│       PostgreSQL         │
+│ Shared application data  │
+└──────────────────────────┘
 ```
 
 ---
@@ -147,21 +145,41 @@ You can later switch to any paid provider (OpenAI/Gemini/...) without redesignin
 
 ```text
 LARAVEL-N8N-AUTOMATION/
-├── .github/                 # CI/CD pipelines
-├── docker/                  # Docker-related configs
-├── docker/ollama/           # Ollama model storage (persistent)
-├── laravel/                 # Laravel application
-├── libretranslate/          # LibreTranslate service
-├── libretranslate_models/   # Local translation models (e.g. VI)
-├── n8n/                     # n8n data, credentials, workflows
-├── nginx/                   # nginx configuration
-├── python-services/         # Python helper microservices
-├── scripts/                 # Automation scripts (macOS + Windows)
+├── .github/                      # CI/CD pipelines
+├── ai-local/                     # Local AI prompts and control docs
+├── apps/
+│   └── laravel/                  # Laravel application
+├── docker/                       # Docker-related configs and persistent data
+│   ├── ollama/                   # Ollama model storage (persistent)
+│   └── postgres/
+├── docs/                         # Architecture and runbooks
+├── nginx/                        # nginx configuration
+├── services/
+│   ├── libretranslate/           # LibreTranslate service + Argos models
+│   ├── n8n/                      # n8n data, credentials, workflows
+│   └── python/                   # Python helper microservices
+├── scripts/                      # Automation scripts (macOS + Windows)
+├── videos/
+├── videos_uploaded/
 ├── .gitignore
-├── .pr-agent.yaml           # AI code review config (optional)
 ├── docker-compose.yml
 └── README.md
 ```
+
+### Notes on the new structure
+
+- `apps/laravel/` replaces the old root `laravel/` folder
+- `services/python/` replaces the old `python-services/` folder
+- `services/n8n/` replaces the old root `n8n/` folder
+- `services/libretranslate/` now contains both the LibreTranslate Docker setup and local Argos model packages
+
+### Internal docs
+
+- **Architecture Overview**: `docs/ARCHITECTURE.md`
+- **Folder Organization**: `docs/FOLDER-ORGANIZATION.md`
+- **Integration Flow**: `docs/INTEGRATION-FLOW.md`
+- **Local AI Runbook**: `docs/LOCAL-AI-RUNBOOK.md`
+- **AI Prompt Pack**: `ai-local/README.md`
 
 ---
 

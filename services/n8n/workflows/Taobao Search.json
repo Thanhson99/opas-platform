@@ -1,0 +1,564 @@
+{
+  "name": "Taobao Search",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -320,
+        0
+      ],
+      "id": "a2113152-8f60-457e-971c-94df2e33a7d1",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "{\n  \"key_word\": \"giày\"\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -112,
+        0
+      ],
+      "id": "3078c04f-34cb-4c96-9ba2-549202d8d98f",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:5678/webhook/translate-vi-zh",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"key_word\": \"{{ $json.key_word }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        96,
+        0
+      ],
+      "id": "61d124b9-9f23-456d-816b-4f3fd8e87e8a",
+      "name": "Translate VI -> ZH"
+    },
+    {
+      "parameters": {
+        "url": "https://taobao-datahub.p.rapidapi.com/item_search",
+        "sendQuery": true,
+        "specifyQuery": "json",
+        "jsonQuery": "={\n  \"q\": \"{{ $json.translatedText }}\",\n  \"page\": \"1\",\n  \"loc\": \"上海\",\n  \"startPrice\": \"20\",\n  \"endPrice\": \"49\",\n  \"switches\": \"tmall\",\n  \"pageSize\": \"20\"\n}",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{\n  \"x-rapidapi-host\": \"taobao-datahub.p.rapidapi.com\",\n  \"x-rapidapi-key\": \"a6647aabccmsh93c6a938e327c2ap19b2bbjsnc0fffc3110aa\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        352,
+        0
+      ],
+      "id": "da6b2dba-6edc-4654-86c2-49da79152c1f",
+      "name": "Taobao API"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get product list safely\nconst list = $json.result?.resultList || [];\n\n// Format output\nreturn list.map(item => {\n  const data = item.item || {};\n  return {\n    title_zh: data.title,\n    price: data.sku?.def?.promotionPrice || data.sku?.def?.price,\n    image: `https:${data.image}`,\n    store: item.seller?.storeTitle,\n    shipping: item.delivery?.shippingFrom,\n  };\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        608,
+        -192
+      ],
+      "id": "213c71c5-3928-4c9b-9a86-81bce272a692",
+      "name": "Format Taobao Result"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        912,
+        -192
+      ],
+      "id": "ed78ab9c-0658-4ed0-a59c-8b7e819127af",
+      "name": "Loop Over Items1"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "name": "Replace Me",
+      "typeVersion": 1,
+      "position": [
+        944,
+        336
+      ],
+      "id": "eabfe046-d188-4b5b-9b64-f959602d9dea"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:5678/webhook/translate-zh-vi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"key_word\": \"{{ $json.title_zh }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1232,
+        32
+      ],
+      "id": "d5015e8e-0143-419e-be29-47be07102f27",
+      "name": "Translate Title"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:5678/webhook/translate-zh-vi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"key_word\": \"{{ $json.store }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1232,
+        208
+      ],
+      "id": "f3438b9b-51ee-4a51-b17f-eeea2119e8ac",
+      "name": "Translate Store"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:5678/webhook/translate-zh-vi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"key_word\": \"{{ $json.shipping }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1232,
+        464
+      ],
+      "id": "b11daab2-e024-4e8f-92ee-5322981641ef",
+      "name": "Translate Shipping"
+    },
+    {
+      "parameters": {
+        "numberInputs": 5
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1936,
+        288
+      ],
+      "id": "1184a6fd-756b-49af-8ed3-0e64fd0bcbfb",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:5678/webhook/convert",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"from\": \"CNY\",\n  \"to\": \"VND\",\n  \"amount\": {{ $json.price }}\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1232,
+        656
+      ],
+      "id": "8c07a098-beb2-4b57-a7e3-31af5aebb1a5",
+      "name": "Convert Currency"
+    },
+    {
+      "parameters": {
+        "jsCode": "return {\n  \"title\": $input.first().json.translatedText\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1600,
+        32
+      ],
+      "id": "52b5cd2f-fb73-45d0-a106-db394173b427",
+      "name": "Format title"
+    },
+    {
+      "parameters": {
+        "jsCode": "return {\n  \"store\": $input.first().json.translatedText\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1600,
+        208
+      ],
+      "id": "92d3b582-6d76-4999-87ad-29111fb988a0",
+      "name": "Format store"
+    },
+    {
+      "parameters": {
+        "jsCode": "return {\n  \"image\": $input.first().json.image\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1424,
+        336
+      ],
+      "id": "db7a2fe0-2b1f-46b6-a659-803cc27a9f01",
+      "name": "Format image"
+    },
+    {
+      "parameters": {
+        "jsCode": "return {\n  \"shipping\": $input.first().json.translatedText\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1600,
+        464
+      ],
+      "id": "200069f4-321a-485d-a540-83f7e88dbe2b",
+      "name": "Format shipping"
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1600,
+        656
+      ],
+      "id": "11ba24c3-ee21-4601-9a1d-96e51871d02e",
+      "name": "Format price"
+    },
+    {
+      "parameters": {
+        "jsCode": "return {\n  \"title\": $input.all()[0].json.title,\n  \"store\": $input.all()[1].json.store,\n  \"shipping\": $input.all()[3].json.shipping,\n  \"image\": $input.all()[2].json.image,\n  \"price\": {\n    \"from\": $input.all()[4].json.from,\n    \"to\": $input.all()[4].json.to,\n    \"amount\": $input.all()[4].json.amount,\n    \"converted\": $input.all()[4].json.converted,\n    \"rate\": $input.all()[4].json.rate\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1952,
+        688
+      ],
+      "id": "95388d35-4e40-4e0c-acf3-1857c133d873",
+      "name": "Format result"
+    },
+    {
+      "parameters": {
+        "content": "## Input & Translation\nReceive keyword from user input → edit parameters → translate Vietnamese → Chinese (for Taobao API query).",
+        "height": 400,
+        "width": 640
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -368,
+        -160
+      ],
+      "id": "4c950c7d-06d2-4347-b780-81cc47c0cedb",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Taobao Data Fetching\nSend request to Taobao API → receive raw data → format structure → prepare each item for loop.",
+        "height": 800,
+        "width": 816,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        288,
+        -320
+      ],
+      "id": "8f4723be-9865-47fa-bd45-fff220f95743",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Item Translation & Conversion\nFor each product item: translate title, store, and shipping; format images; convert currency and format final price.",
+        "height": 944,
+        "width": 704,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1120,
+        -112
+      ],
+      "id": "d578c1ca-99a1-4099-a28a-c85fe055585b",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## Merge & Final Output\nCombine all formatted product data and create the final result for display or API response.",
+        "height": 784,
+        "width": 320,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1840,
+        112
+      ],
+      "id": "f55e2026-84a6-4653-a18c-ed0eb3e85723",
+      "name": "Sticky Note3"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Translate VI -> ZH",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Translate VI -> ZH": {
+      "main": [
+        [
+          {
+            "node": "Taobao API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Taobao API": {
+      "main": [
+        [
+          {
+            "node": "Format Taobao Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Taobao Result": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items1": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Replace Me",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Replace Me": {
+      "main": [
+        [
+          {
+            "node": "Translate Title",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Translate Store",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Translate Shipping",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Convert Currency",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Format image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Translate Title": {
+      "main": [
+        [
+          {
+            "node": "Format title",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Translate Store": {
+      "main": [
+        [
+          {
+            "node": "Format store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Translate Shipping": {
+      "main": [
+        [
+          {
+            "node": "Format shipping",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Format result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert Currency": {
+      "main": [
+        [
+          {
+            "node": "Format price",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format title": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format store": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Format image": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Format shipping": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 3
+          }
+        ]
+      ]
+    },
+    "Format price": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 4
+          }
+        ]
+      ]
+    },
+    "Format result": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "7251c022-78f5-4fe9-92c9-f957ed98a240",
+  "meta": {
+    "instanceId": "4291e928c9bb5c38fda6eb33170b3dd8560c49ca88920757d2ed40a8bbd22803"
+  },
+  "id": "mHYmXq9U8zPdnUnV",
+  "tags": []
+}

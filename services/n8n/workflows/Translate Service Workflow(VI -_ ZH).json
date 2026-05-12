@@ -1,0 +1,164 @@
+{
+  "name": "Translate Service Workflow(VI -> ZH)",
+  "nodes": [
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://libretranslate:5000/translate",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n    \"q\": \"{{ $json.body.key_word }}\",\n    \"source\": \"vi\",\n    \"target\": \"en\",\n    \"format\": \"text\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        272,
+        0
+      ],
+      "id": "1e10fe31-ed57-4b04-b4e0-2ead25d9fd63",
+      "name": "Translate VI → EN"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://libretranslate:5000/translate",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n    \"q\": \"{{ $json.translatedText }}\",\n    \"source\": \"en\",\n    \"target\": \"zh\",\n    \"format\": \"text\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        496,
+        0
+      ],
+      "id": "8a8f6f34-cec7-43c7-81fd-319f0910bcb9",
+      "name": "Translate EN → ZH"
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        752,
+        0
+      ],
+      "id": "27bb6a98-e721-45c2-869d-13fed0e83ff0",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "/translate-vi-zh",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "9c1f5d1a-c6ff-4ce0-a375-dd2c9030bcba",
+      "name": "Input",
+      "webhookId": "4f871690-8829-461e-b3bc-32a7dd8adc50"
+    },
+    {
+      "parameters": {
+        "content": "## Receive Input via Webhook\nReceive incoming text via Webhook (source: POST request).",
+        "height": 320,
+        "width": 256
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        -144
+      ],
+      "id": "2edc6b1b-6ce6-4779-a126-746b27fcd9a0",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Multi-Language Translation Process\nSequentially translate text from Vietnamese to English, then English to Chinese using LibreTranslate.",
+        "height": 320,
+        "width": 496,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        192,
+        -144
+      ],
+      "id": "3ac38f92-05e5-4cd9-bbc1-c574c17be191",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Return Translated Result\nSend back the translated Vietnamese text as Webhook response.",
+        "height": 320,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        704,
+        -144
+      ],
+      "id": "ecd35619-d0f9-4a22-9fcf-e0befdb154ff",
+      "name": "Sticky Note2"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Translate VI → EN": {
+      "main": [
+        [
+          {
+            "node": "Translate EN → ZH",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Translate EN → ZH": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Input": {
+      "main": [
+        [
+          {
+            "node": "Translate VI → EN",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1dbd5c60-b720-439d-aadf-4c307c310428",
+  "meta": {
+    "instanceId": "4291e928c9bb5c38fda6eb33170b3dd8560c49ca88920757d2ed40a8bbd22803"
+  },
+  "id": "lcIMHQXoKU6LLqtQ",
+  "tags": []
+}

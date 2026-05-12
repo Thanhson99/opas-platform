@@ -1,0 +1,182 @@
+{
+  "name": "Convert Currency",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "/convert",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "68874a0c-221f-46a6-80d0-b6556f6097e0",
+      "name": "Webhook",
+      "webhookId": "2805b188-2a58-4a64-9692-a52ec2597569"
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        752,
+        -80
+      ],
+      "id": "ddf9281b-94c1-4c2a-9b75-7bcdac407a1d",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        320,
+        -80
+      ],
+      "id": "5cff3016-0b47-4c97-863c-d71b647475f2",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "url": "=https://v6.exchangerate-api.com/v6/dff5fae8e336c46633cea963/latest/{{ $json.body.from }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        0,
+        -192
+      ],
+      "id": "141015c1-d5da-48c4-83a4-051c327b0b43",
+      "name": "Get the exchange rate"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get data from input\nconst from = $input.all()[1].json.body.from;\nconst amount = $input.all()[1].json.body.amount;\nconst to = $input.all()[1].json.body.to;\nconst rates = $input.first().json.conversion_rates;\n\nif (!rates[to]) {\n  throw new Error(`Unsupported target currency: ${to}`);\n}\n\n// Calculate converted amount\nconst converted = amount * rates[to];\n\nreturn [{\n  from: from,\n  to,\n  amount,\n  converted,\n  rate: rates[to]\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        528,
+        -80
+      ],
+      "id": "0fc37734-4986-45d4-9d10-f86be6d4e834",
+      "name": "Format result"
+    },
+    {
+      "parameters": {
+        "content": "## Receive Request & Fetch Exchange Rate\nReceive conversion request via Webhook and fetch the latest exchange rate from API.",
+        "height": 576,
+        "width": 336
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -112,
+        -336
+      ],
+      "id": "14f76521-d3c1-4e02-af80-ece2809510e2",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Combine & Format Data\nMerge request and rate data, then calculate and format the conversion result.",
+        "height": 336,
+        "width": 448,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        240,
+        -224
+      ],
+      "id": "edbe5b7d-4200-4cef-8c7d-83921653909a",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Respond with Conversion Result\nSend back the converted currency value as Webhook response.",
+        "height": 336,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        704,
+        -224
+      ],
+      "id": "507afb21-3d74-4e42-a1fb-5b9e22240503",
+      "name": "Sticky Note2"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Get the exchange rate",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Format result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get the exchange rate": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format result": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "128d8566-4b49-4ec7-89e8-06bcb87e6bb6",
+  "meta": {
+    "instanceId": "4291e928c9bb5c38fda6eb33170b3dd8560c49ca88920757d2ed40a8bbd22803"
+  },
+  "id": "sNa9LVuHpNOFMNbs",
+  "tags": []
+}
