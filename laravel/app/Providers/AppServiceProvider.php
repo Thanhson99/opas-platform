@@ -17,6 +17,7 @@ use App\Repositories\Stock\StockRepository;
 use App\Services\Coin\BinanceCoinApiClient;
 use App\Services\Coin\CoinApiClientInterface;
 use App\Services\Coin\CoinServiceFactory;
+use App\Services\Coin\CoinServiceInterface;
 use App\Services\Coin\FavoriteCoinService;
 use App\Services\Coin\FavoriteCoinServiceInterface;
 use App\Services\Stock\FavoriteStockService;
@@ -58,7 +59,7 @@ class AppServiceProvider extends ServiceProvider
 
         // Dynamically bind CoinServiceInterface based on the "source" query parameter
         $this->app->bind(
-            \App\Services\Coin\CoinServiceInterface::class,
+            CoinServiceInterface::class,
             function () {
                 $rawSource = Request::get('source');
                 $source = is_string($rawSource) ? $rawSource : 'binance';

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
@@ -14,8 +15,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  * @property string $keyword
  * @property string|null $type
  * @property bool $active
- * @property \Carbon\Carbon $created_at
- * @property \Carbon\Carbon $updated_at
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
  */
 class FeedKeyword extends Model
 {
@@ -52,8 +53,8 @@ class FeedKeyword extends Model
      * @return BelongsToMany<Tag>
      *
      * @phpstan-return BelongsToMany<
-     *     \App\Models\Tag,
-     *     \App\Models\FeedKeyword
+     *     Tag,
+     *     FeedKeyword
      * >
      */
     public function tags(): BelongsToMany
