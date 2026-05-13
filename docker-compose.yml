@@ -99,8 +99,7 @@ services:
     ports:
       - "8881:8881"  # Laravel
       # - "8882:8882"  # n8n (uncomment if exposed)
-      - "8883:8883"  # LibreTranslate
-      - "8884:8884"  # Python API
+      - "8884:8884"  # LibreTranslate
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./nginx/conf.d:/etc/nginx/conf.d:ro
