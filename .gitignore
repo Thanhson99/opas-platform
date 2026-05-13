@@ -70,6 +70,7 @@ python-services/__pycache__/
 *.log
 *.env
 .DS_Store
+.codex-tmp/
 *.bak
 *.swp
 *.zip

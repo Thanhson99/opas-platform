@@ -6,6 +6,7 @@ class ProxyGatewaySettings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=".env",
         case_sensitive=False,
+        extra="ignore",
     )
 
     china_proxy_url: str = Field("", env="CHINA_PROXY_URL")

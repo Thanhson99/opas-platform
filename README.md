@@ -276,10 +276,9 @@ LARAVEL-N8N-AUTOMATION/
 ## 💻 Local Development Guide
 
 ### 1. Requirements
-- Docker + Docker Compose
+- Docker Desktop with `docker compose`
 - Git
-- Node.js (optional, for local testing)
-- Python 3.x (optional)
+- macOS Terminal or Windows PowerShell / CMD
 
 ### 2. Clone project
 ```bash
@@ -287,16 +286,53 @@ git clone https://github.com/<your-username>/laravel-n8n-automation.git
 cd laravel-n8n-automation
 ```
 
-### 3. Start all services
+### 3. Start local web with one command
+
+macOS:
 ```bash
-docker compose up -d
+chmod +x scripts/start-local.sh
+./scripts/start-local.sh
 ```
 
+Windows PowerShell:
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\start-local.ps1
+```
+
+Windows CMD:
+```bat
+scripts\start-local.bat
+```
+
+Force rebuild / full bootstrap again:
+
+macOS:
+```bash
+./scripts/start-local.sh --fresh
+```
+
+Windows:
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\start-local.ps1 --fresh
+```
+
+What the startup script does:
+- copies missing `.env` files from `.env.example`
+- creates the shared Docker network if needed
+- starts containers using existing Docker cache by default
+- installs Laravel PHP dependencies only when needed
+- builds Laravel frontend assets only when needed
+- generates `APP_KEY` only when missing
+- runs database migrations
+- waits for the app to be ready, then opens the browser automatically
+
+The script prints only high-level loading steps. It does not echo secret values to the terminal.
+For day-to-day use, it behaves closer to `docker compose up -d` than `docker compose up -d --build`.
+
 ### 4. Accessing services
-- **Laravel App** → http://localhost:8881  
-- **n8n** → http://localhost:5678  
-- **LibreTranslate** → http://localhost:8883  
-- **Python Services** → http://localhost:8884  
+- [Laravel App](http://localhost:8881)
+- [n8n](http://localhost:5678)
+- [LibreTranslate](http://localhost:8884)
 
 ### 5. Useful commands
 ```bash
@@ -310,6 +346,13 @@ docker compose down
 ## 🧾 Scripts Overview
 
 Located in `/scripts` — fully portable.
+
+### 🚀 One-Command Local Startup
+- macOS: `./scripts/start-local.sh`
+- Windows PowerShell: `powershell -ExecutionPolicy Bypass -File .\scripts\start-local.ps1`
+- Windows CMD: `scripts\start-local.bat`
+
+These scripts bootstrap the local environment and open the Laravel web app automatically when ready.
 
 ### 🧹 Git Branch Cleanup Scripts
 - `git-clean-branches.sh` (macOS/Linux)
