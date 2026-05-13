@@ -1,13 +1,13 @@
 # ---- Laravel ----
-laravel/vendor/
-laravel/node_modules/
-laravel/.env
-laravel/storage/*.key
-laravel/storage/logs/*
-laravel/bootstrap/cache/*
-laravel/public/storage
-laravel/.idea/
-laravel/.vscode/
+apps/laravel/vendor/
+apps/laravel/node_modules/
+apps/laravel/.env
+apps/laravel/storage/*.key
+apps/laravel/storage/logs/*
+apps/laravel/bootstrap/cache/*
+apps/laravel/public/storage
+apps/laravel/.idea/
+apps/laravel/.vscode/
 
 # Composer / NPM
 composer.lock
@@ -15,27 +15,33 @@ package-lock.json
 npm-debug.log
 
 # Laravel test coverage
-laravel/tests/_output/
+apps/laravel/tests/_output/
 
 # Laravel Docker
-laravel/.phpunit.result.cache
+apps/laravel/.phpunit.result.cache
 
 # ---- N8N ----
-n8n/.n8n
-n8n/files
-n8n/database.sqlite
-n8n/.env
-n8n/nodes/
-n8n/nodes/node_modules/
-n8n/tmp/
-n8n/crash.journal
-n8n-backup
-n8n/workflows
-n8n/database*
-n8n/database.sqlite-shm
-n8n/database.sqlite-wal
-n8n/config
-n8n/data-table/
+services/n8n/.n8n
+services/n8n/.env
+services/n8n/files
+services/n8n/tmp/
+services/n8n/config
+services/n8n/crash.journal
+services/n8n/database*
+services/n8n/database.sqlite
+services/n8n/database.sqlite-shm
+services/n8n/database.sqlite-wal
+services/n8n/data-table/
+services/n8n/nodes/node_modules/
+services/n8n/workflows/
+services/n8n-backup
+
+# ---- Python Services ----
+services/python/.env
+services/python/.venv/
+services/python/**/__pycache__/
+services/python/**/*.pyc
+services/python/**/*.pyo
 
 # ---- Videos ----
 videos/
@@ -58,7 +64,7 @@ docker/ollama/models/
 docker/ollama/data/
 
 # ---- Python ----
-/python-services/__pycache__/
+python-services/__pycache__/
 
 # ---- Global ----
 *.log

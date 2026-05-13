@@ -12,11 +12,11 @@ services:
       - python-services
     environment:
       DB_CONNECTION: pgsql
-      DB_HOST: postgres
-      DB_PORT: 5432
-      DB_DATABASE: laravel
-      DB_USERNAME: root
-      DB_PASSWORD: root
+      DB_HOST: ${LARAVEL_DB_HOST:-postgres}
+      DB_PORT: ${LARAVEL_DB_PORT:-5432}
+      DB_DATABASE: ${LARAVEL_DB_DATABASE:-laravel}
+      DB_USERNAME: ${LARAVEL_DB_USERNAME:-root}
+      DB_PASSWORD: ${LARAVEL_DB_PASSWORD}
     networks:
       - backend
 
@@ -27,9 +27,9 @@ services:
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_DB: laravel
-      POSTGRES_USER: root
-      POSTGRES_PASSWORD: root
+      POSTGRES_DB: ${POSTGRES_DB:-laravel}
+      POSTGRES_USER: ${POSTGRES_USER:-root}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - ./docker/postgres/data:/var/lib/postgresql/data
     networks:
@@ -121,3 +121,4 @@ networks:
     driver: bridge
   shared_net:
     external: true
+    name: ${SHARED_NET_NAME:-shared_net}
