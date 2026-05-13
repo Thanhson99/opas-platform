@@ -2,12 +2,11 @@
     "$schema": "https://getcomposer.org/schema.json",
     "name": "laravel/laravel",
     "type": "project",
-    "description": "The skeleton application for the Laravel framework.",
+    "description": "OPAS Laravel REST API backend for the React SPA frontend.",
     "keywords": ["laravel", "framework"],
     "license": "MIT",
     "require": {
         "php": "^8.2",
-        "jeroennoten/laravel-adminlte": "^3.15",
         "laravel/framework": "^12.0",
         "laravel/tinker": "^2.10.1"
     },
@@ -57,6 +56,28 @@
         "test": [
             "@php artisan config:clear --ansi",
             "@php artisan test"
+        ],
+        "check": [
+            "@composer lint",
+            "@composer test"
+        ],
+        "frontend:check": [
+            "npm run check"
+        ],
+        "frontend:build": [
+            "npm run build"
+        ],
+        "ci": [
+            "@composer check",
+            "@composer frontend:check",
+            "@composer frontend:build"
+        ],
+        "lint": [
+            "@php ./vendor/bin/pint --test",
+            "@php ./vendor/bin/phpstan analyse --memory-limit=1G --no-progress --debug"
+        ],
+        "format": [
+            "@php ./vendor/bin/pint"
         ]
     },
     "extra": {

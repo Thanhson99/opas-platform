@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Coin;
 
+use App\Support\AllowedHostUrlGuard;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 
@@ -36,6 +37,11 @@ class BinanceCoinApiClient implements CoinApiClientInterface
     protected string $baseUrl;
 
     /**
+     * @var array<int, string>
+     */
+    protected array $allowedHosts;
+
+    /**
      * Create a new Binance coin API client instance.
      *
      * @return void
@@ -43,8 +49,12 @@ class BinanceCoinApiClient implements CoinApiClientInterface
     public function __construct()
     {
         $baseUrl = config('services.binance.base_url', 'https://api.binance.com');
+        $allowedHosts = config('services.binance.allowed_hosts', ['api.binance.com']);
 
         $this->baseUrl = is_string($baseUrl) ? $baseUrl : 'https://api.binance.com';
+        $this->allowedHosts = is_array($allowedHosts)
+            ? array_values(array_filter($allowedHosts, 'is_string'))
+            : ['api.binance.com'];
     }
 
     /**
@@ -54,8 +64,13 @@ class BinanceCoinApiClient implements CoinApiClientInterface
      */
     public function fetchTopCoins(): array
     {
+        AllowedHostUrlGuard::assert($this->baseUrl, $this->allowedHosts);
+
         /** @var Response $response */
-        $response = Http::get($this->baseUrl.'/api/v3/ticker/24hr');
+        $response = Http::acceptJson()
+            ->timeout(10)
+            ->retry(2, 200)
+            ->get($this->baseUrl.'/api/v3/ticker/24hr');
 
         if ($response->successful()) {
             $data = $response->json();
@@ -112,10 +127,15 @@ class BinanceCoinApiClient implements CoinApiClientInterface
      */
     public function fetchCoinDetail(string $coinId): ?array
     {
+        AllowedHostUrlGuard::assert($this->baseUrl, $this->allowedHosts);
+
         /** @var Response $response */
-        $response = Http::get($this->baseUrl.'/api/v3/ticker/24hr', [
-            'symbol' => strtoupper($coinId),
-        ]);
+        $response = Http::acceptJson()
+            ->timeout(10)
+            ->retry(2, 200)
+            ->get($this->baseUrl.'/api/v3/ticker/24hr', [
+                'symbol' => strtoupper($coinId),
+            ]);
 
         if ($response->successful()) {
             /** @var array<string, mixed> $result */

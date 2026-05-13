@@ -1,0 +1,74 @@
+import AppIcon from '../icons/AppIcon';
+import { useAuth } from '../../features/auth/context/AuthContext';
+import { Link, useNavigate } from 'react-router-dom';
+import { useLanguage } from '../../features/i18n/context/LanguageContext';
+import LanguageSelect from './LanguageSelect';
+
+export default function Header({ title, description, onToggleSidebar }) {
+    const navigate = useNavigate();
+    const { user, loading, logout } = useAuth();
+    const { t } = useLanguage();
+
+    const handleLogout = async () => {
+        await logout();
+        navigate('/', { replace: true });
+    };
+
+    return (
+        <header className="opas-header">
+            <button
+                type="button"
+                className="opas-header__toggle"
+                id="sidebar-toggle"
+                aria-label="Toggle navigation"
+                onClick={onToggleSidebar}
+            >
+                <AppIcon name="menu" />
+            </button>
+
+            <div className="opas-header__intro">
+                <p className="opas-header__eyebrow">OPAS</p>
+                <h1 className="opas-header__title">{title}</h1>
+                {description ? <p className="opas-header__text">{description}</p> : null}
+            </div>
+
+            <div className="opas-header__actions">
+                {loading ? (
+                    <div className="opas-account opas-account--muted">
+                        {t('common.loadingAccount')}
+                    </div>
+                ) : user ? (
+                    <div className="opas-account">
+                        <div className="opas-account__meta">
+                            <strong>{user.name}</strong>
+                            <span>
+                                {user.role_label} • {user.email}
+                            </span>
+                        </div>
+                        <button
+                            type="button"
+                            className="app-button app-button--ghost"
+                            onClick={handleLogout}
+                        >
+                            {t('common.logout')}
+                        </button>
+                    </div>
+                ) : (
+                    <div className="opas-account">
+                        <div className="opas-account__meta">
+                            <strong>{t('header.guest')}</strong>
+                            <span>{t('header.guestHint')}</span>
+                        </div>
+                        <Link to="/login" className="app-button app-button--ghost">
+                            {t('common.login')}
+                        </Link>
+                        <Link to="/register" className="app-button app-button--primary">
+                            {t('common.register')}
+                        </Link>
+                    </div>
+                )}
+                <LanguageSelect />
+            </div>
+        </header>
+    );
+}

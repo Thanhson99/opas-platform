@@ -24,6 +24,9 @@ use App\Services\Stock\FavoriteStockService;
 use App\Services\Stock\FavoriteStockServiceInterface;
 use App\Services\Stock\StockService;
 use App\Services\Stock\StockServiceInterface;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request as HttpRequest;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Support\ServiceProvider;
 
@@ -74,6 +77,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // No boot logic required for now
+        RateLimiter::for('api', function (HttpRequest $request): Limit {
+            return Limit::perMinute(120)->by($request->ip());
+        });
     }
 }

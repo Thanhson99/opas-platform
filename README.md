@@ -85,7 +85,7 @@ You can later switch to any paid provider (OpenAI/Gemini/...) without redesignin
 ```text
 ┌──────────────────────────┐
 │        Users / UI        │
-│   apps/laravel (Web UI)  │
+│ React SPA + Laravel API  │
 └────────────┬─────────────┘
              │
              │ HTTP / internal calls
@@ -103,10 +103,10 @@ You can later switch to any paid provider (OpenAI/Gemini/...) without redesignin
        │                     │
        ├──────────────┐      │
        ▼              ▼      ▼
-┌──────────────┐  ┌──────────────┐
+┌──────────────┐  ┌───────────────┐
 │ Ollama       │  │ LibreTranslate│
 │ Local LLM    │  │ Translation   │
-└──────────────┘  └──────────────┘
+└──────────────┘  └───────────────┘
 
 ┌──────────────────────────┐
 │       PostgreSQL         │
@@ -119,7 +119,8 @@ You can later switch to any paid provider (OpenAI/Gemini/...) without redesignin
 ## 🧰 Tech Stack
 
 ### **Backend / DevOps**
-- ⚙️ Laravel (AdminLTE UI for now)
+- ⚙️ Laravel REST API
+- ⚛️ React SPA (custom frontend via Vite)
 - 🤖 n8n (workflow automation)
 - 🐍 Python microservices (FastAPI / Flask style)
 - 🐘 PostgreSQL
@@ -148,7 +149,7 @@ LARAVEL-N8N-AUTOMATION/
 ├── .github/                      # CI/CD pipelines
 ├── ai-local/                     # Local AI prompts and control docs
 ├── apps/
-│   └── laravel/                  # Laravel application
+│   └── laravel/                  # Laravel API + React SPA
 ├── docker/                       # Docker-related configs and persistent data
 │   ├── ollama/                   # Ollama model storage (persistent)
 │   └── postgres/
@@ -204,8 +205,7 @@ LARAVEL-N8N-AUTOMATION/
 
 #### 🗄 Database Pipelines
 - n8n + PostgreSQL integration  
-- DataTable-like pipelines  
-- Sync jobs between Laravel ↔ n8n ↔ Python  
+- Sync jobs between Laravel API ↔ React UI ↔ n8n ↔ Python  
 - Real-time job monitoring from UI (planned)
 
 #### 🌍 Translation / NLP Workflows
@@ -265,7 +265,6 @@ LARAVEL-N8N-AUTOMATION/
 - Affiliate automation (Alifate, others)
 
 ### 🌐 Long-Term
-- Replace AdminLTE → Modern UI (Tailwind / Vue / React)
 - Multi-tenant automation workspace
 - Public API for workflow orchestration
 - Analytics dashboards that explain “why the system did what it did”
@@ -339,6 +338,30 @@ For day-to-day use, it behaves closer to `docker compose up -d` than `docker com
 docker compose logs -f
 docker compose restart
 docker compose down
+```
+
+### 6. Run the OPAS app locally without Docker
+
+The Laravel app now runs as a `Laravel REST API + React SPA` project inside `apps/laravel`.
+
+macOS / Linux:
+```bash
+chmod +x scripts/start-local.sh
+scripts/start-local.sh
+```
+
+Windows:
+```bat
+scripts\start-local.bat
+```
+
+After booting, use these quality gates inside `apps/laravel`:
+
+```bash
+composer check   # php artisan test + pint --test + phpstan
+npm run check    # eslint + prettier check
+npm run ci       # frontend checks + vite production build
+composer ci      # full backend + frontend CI gate
 ```
 
 ---

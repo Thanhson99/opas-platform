@@ -2,6 +2,7 @@
 
 namespace App\Services\Python;
 
+use App\Support\AllowedHostUrlGuard;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -14,15 +15,23 @@ class PythonService
     protected string $baseUrl;
 
     /**
+     * @var array<int, string>
+     */
+    protected array $allowedHosts;
+
+    /**
      * Create a new Python service client instance.
      *
      * @return void
      */
     public function __construct()
     {
-        // Ensure base URL is always a string
         $base = config('services.python.base_url');
         $this->baseUrl = is_string($base) ? $base : '';
+        $hosts = config('services.python.allowed_hosts', []);
+        $this->allowedHosts = is_array($hosts)
+            ? array_values(array_filter($hosts, 'is_string'))
+            : [];
     }
 
     /**
@@ -72,8 +81,13 @@ class PythonService
      */
     protected function call(string $url): array
     {
+        AllowedHostUrlGuard::assert($url, $this->allowedHosts);
+
         /** @var Response $response */
-        $response = Http::get($url);
+        $response = Http::acceptJson()
+            ->timeout(10)
+            ->retry(2, 200)
+            ->get($url);
 
         if ($response->failed()) {
             // Some failures may return HTML/text; avoid assuming JSON.

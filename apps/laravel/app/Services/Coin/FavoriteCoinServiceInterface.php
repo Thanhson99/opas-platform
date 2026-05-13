@@ -19,6 +19,22 @@ interface FavoriteCoinServiceInterface
     public function getSymbols(): array;
 
     /**
+     * Add a coin to favorites.
+     *
+     * @param  string  $symbol  Coin symbol to add.
+     * @return array{message: string, status: string}
+     */
+    public function addSymbol(string $symbol): array;
+
+    /**
+     * Remove a coin from favorites.
+     *
+     * @param  string  $symbol  Coin symbol to remove.
+     * @return array{message: string, status: string}
+     */
+    public function removeSymbol(string $symbol): array;
+
+    /**
      * Toggle the favorite status of a coin.
      *
      * @param  string  $symbol  Coin symbol to toggle.

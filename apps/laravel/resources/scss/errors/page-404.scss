@@ -1,7 +1,5 @@
 @use '../modules/variables' as *; // Import SCSS variables
 
-@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@800&family=Roboto:wght@100;300&display=swap'); // Import Google Fonts
-
 // ==============================
 // Global Reset & 3D Settings
 // ==============================
@@ -34,7 +32,7 @@ body#error-404 {
 	background: $bg; // Background color from variables
 	color: $color-text; // Default text color
 	perspective: 1200px; // Perspective for 3D effect
-	font-family: 'Roboto', sans-serif; // Default font
+	font-family: "Segoe UI Variable", "SF Pro Display", "Inter", "Segoe UI", sans-serif; // Default font
 
 
 	// ==============================
@@ -55,7 +53,7 @@ body#error-404 {
 			z-index: 30; // Ensure above other elements
 			animation: swing $speed infinite alternate ease-in-out; // Swing animation
 			font-size: clamp(5rem, 40vmin, 20rem); // Responsive font size
-			font-family: 'Open Sans', sans-serif;
+			font-family: "Segoe UI Variable", "SF Pro Display", "Inter", "Segoe UI", sans-serif;
 			margin: 0 0 1rem 0;
 			letter-spacing: 1rem; // Space between characters
 			transform: translate3d(0, 0, 0vmin);
