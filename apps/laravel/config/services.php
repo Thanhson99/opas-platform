@@ -82,6 +82,10 @@ return [
     */
     'binance' => [
         'base_url' => env('BINANCE_BASE_URL', 'https://api.binance.com'),
+        'allowed_hosts' => array_values(array_filter(array_map(
+            'trim',
+            explode(',', (string) env('BINANCE_ALLOWED_HOSTS', 'api.binance.com'))
+        ))),
     ],
 
     /*
@@ -97,6 +101,10 @@ return [
     */
     'python' => [
         'base_url' => env('PYTHON_BASE_URL', 'https://python-services.sonvi.vn'),
+        'allowed_hosts' => array_values(array_filter(array_map(
+            'trim',
+            explode(',', (string) env('PYTHON_ALLOWED_HOSTS', 'python-services.sonvi.vn'))
+        ))),
         'douyin_path' => env('PYTHON_DOUYIN_PATH', '/douyin'),
         'caption_path' => env('PYTHON_CAPTION_PATH', '/caption'),
         'trending_path' => env('PYTHON_TRENDING_PATH', '/trending'),

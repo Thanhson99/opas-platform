@@ -150,7 +150,7 @@ else
 fi
 
 if [[ $FORCE_REBUILD -eq 1 || ! -f "$ROOT_DIR/apps/laravel/public/build/manifest.json" ]]; then
-  run_step "Build Laravel frontend assets" docker run --rm -v "$ROOT_DIR/apps/laravel:/app" -w /app node:20-alpine sh -lc "npm ci --silent && npm run build -- --logLevel error"
+  run_step "Build Laravel React frontend assets" docker run --rm -v "$ROOT_DIR/apps/laravel:/app" -w /app node:20-alpine sh -lc "npm ci --silent && npm run build -- --logLevel error"
 else
   step_index=$((step_index + 1))
   printf '[%d/%d] Laravel frontend assets already built, skipping\n' "$step_index" "$step_total"

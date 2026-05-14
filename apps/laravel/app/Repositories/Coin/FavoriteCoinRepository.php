@@ -44,6 +44,60 @@ class FavoriteCoinRepository extends BaseRepository implements FavoriteCoinRepos
     }
 
     /**
+     * Add a symbol to favorites.
+     *
+     * @param  string  $symbol  The coin symbol to add.
+     * @return array<string, string> Result message and status.
+     */
+    public function addSymbol(string $symbol): array
+    {
+        $symbol = strtoupper($symbol);
+
+        $existing = $this->model->newQuery()->where('symbol', $symbol)->first();
+
+        if ($existing) {
+            return [
+                'message' => 'Already in favorites',
+                'status' => 'exists',
+            ];
+        }
+
+        $this->model->newQuery()->create(['symbol' => $symbol]);
+
+        return [
+            'message' => 'Added to favorites',
+            'status' => 'added',
+        ];
+    }
+
+    /**
+     * Remove a symbol from favorites.
+     *
+     * @param  string  $symbol  The coin symbol to remove.
+     * @return array<string, string> Result message and status.
+     */
+    public function removeSymbol(string $symbol): array
+    {
+        $symbol = strtoupper($symbol);
+
+        $existing = $this->model->newQuery()->where('symbol', $symbol)->first();
+
+        if (! $existing) {
+            return [
+                'message' => 'Not in favorites',
+                'status' => 'missing',
+            ];
+        }
+
+        $existing->delete();
+
+        return [
+            'message' => 'Removed from favorites',
+            'status' => 'removed',
+        ];
+    }
+
+    /**
      * Toggle favorite status for a given symbol.
      *
      * If the symbol exists, it will be removed.

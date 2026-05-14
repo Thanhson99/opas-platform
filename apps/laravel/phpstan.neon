@@ -26,6 +26,8 @@ parameters:
     inferPrivatePropertyTypeFromConstructor: true
     treatPhpDocTypesAsCertain: true
     reportUnmatchedIgnoredErrors: false
+    parallel:
+        maximumNumberOfProcesses: 1
 
     # Ignore known Eloquent-related issues
     ignoreErrors:

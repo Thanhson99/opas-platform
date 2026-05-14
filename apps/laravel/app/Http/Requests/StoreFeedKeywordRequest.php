@@ -16,6 +16,22 @@ class StoreFeedKeywordRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation(): void
+    {
+        $keyword = $this->input('keyword');
+        $tags = $this->input('tags', []);
+
+        $this->merge([
+            'keyword' => is_string($keyword) ? trim($keyword) : $keyword,
+            'tags' => is_array($tags)
+                ? array_values(array_unique(array_filter(array_map(
+                    static fn (mixed $tag): string => is_string($tag) ? trim($tag) : '',
+                    $tags
+                ))))
+                : $tags,
+        ]);
+    }
+
     /**
      * Get the validation rules that apply to the request.
      *
@@ -24,9 +40,9 @@ class StoreFeedKeywordRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'keyword' => 'required|string|max:255',
+            'keyword' => 'bail|required|string|max:255',
             'tags' => 'nullable|array',
-            'tags.*' => 'string|max:100',
+            'tags.*' => 'string|max:100|distinct',
         ];
     }
 }

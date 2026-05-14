@@ -1,31 +1,30 @@
 # Utility Scripts
 
 This folder contains reusable helper scripts for:
-- One-command local startup
+- one-command local startup
 - Git branch cleanup
-- Puppeteer / Browser automation (Chromium, Chrome, Edge, Brave)
-- Docker image update & container restart (n8n, Ollama, etc.)
+- Puppeteer / browser automation (Chromium, Chrome, Edge, Brave)
+- Docker image update & container restart
 
 Scripts are separated by platform:
 
-- **macOS / Linux** → `.sh` (Bash)
-- **Windows** → `.ps1` (PowerShell) or `.bat` (CMD)
-
-All scripts belong inside the `scripts/` folder and can be reused across machines and projects.
+- **macOS / Linux** -> `.sh` (Bash)
+- **Windows** -> `.ps1` (PowerShell) or `.bat` (CMD)
 
 ---
 
-## 📂 Folder Structure (example)
+## Folder Structure
 
 ```text
 scripts/
-├── start-local.sh                # macOS/Linux: bootstrap and open local web
-├── start-local.ps1               # Windows PowerShell: bootstrap and open local web
+├── start-local.sh                # macOS/Linux: bootstrap full Docker stack
+├── start-local-lite.sh           # macOS/Linux: run only Laravel + Vite locally
+├── start-local.ps1               # Windows PowerShell: bootstrap full Docker stack
 ├── start-local.bat               # Windows CMD wrapper for start-local.ps1
-├── git-clean-branches.sh          # macOS/Linux: clean Git branches
-├── git-clean-branches.ps1         # Windows: clean Git branches
-├── launch-browser-connector.sh    # macOS: Chromium + Puppeteer launcher
-├── launch-browser-connector.bat   # Windows: Chrome/Edge/Brave launcher
+├── git-clean-branches.sh
+├── git-clean-branches.ps1
+├── launch-browser-connector.sh
+├── launch-browser-connector.bat
 ├── update-images-and-restart.sh
 ├── update-images-and-restart.ps1
 └── README.md
@@ -33,177 +32,128 @@ scripts/
 
 ---
 
-# 1. Local Startup Scripts
+# 0. Local App Start Scripts
 
-These scripts are the recommended way to run the project after cloning.
+These are the recommended ways to boot OPAS locally after cloning.
 
-What they do:
-- create missing `.env` files from `.env.example`
-- create the shared Docker network if needed
-- start Docker services with cache-friendly defaults
-- install Laravel Composer dependencies only when missing
-- build Laravel frontend assets only when missing
-- generate the Laravel app key only when missing
-- run Laravel migrations
-- wait for the app to respond, then open the browser automatically
+What they cover:
+- full Docker stack startup
+- lightweight Laravel + React startup
+- environment bootstrap from `.env.example`
+- Laravel key generation and dependency install when required
+- frontend asset build when required
+- migrations and readiness checks
+- clear follow-up verification commands for PHP and React
 
-The terminal output stays minimal and progress-oriented. Commands do not print secret values.
-Use `--fresh` if you explicitly want to rebuild containers and rerun the heavier bootstrap steps.
+## 0.1 macOS / Linux - `start-local.sh`
 
----
-
-## 1.1 macOS / Linux — `start-local.sh`
-
-**Type:** Bash  
-**Location:** `scripts/start-local.sh`
-
-### Usage
+Docker-oriented startup for the full local stack. This is the main script if your `.env` uses
+container hosts like `postgres`.
 
 ```bash
 chmod +x scripts/start-local.sh
-./scripts/start-local.sh
-./scripts/start-local.sh --fresh
+scripts/start-local.sh
+scripts/start-local.sh --fresh
 ```
 
----
+## 0.2 macOS / Linux - `start-local-lite.sh`
 
-## 1.2 Windows PowerShell — `start-local.ps1`
+Lightweight startup for running only Laravel + Vite outside Docker.
 
-**Type:** PowerShell  
-**Location:** `scripts/start-local.ps1`
+Use this only when you do not want to boot the full Docker stack.
+Typical use cases:
+- frontend/layout work with React SPA
+- quick API debugging on local PHP/Node
+- machines where you only want `apps/laravel` to run
 
-### Usage
+```bash
+chmod +x scripts/start-local-lite.sh
+scripts/start-local-lite.sh
+```
+
+## 0.3 Windows PowerShell - `start-local.ps1`
+
+Windows PowerShell version of the full Docker stack startup.
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\scripts\start-local.ps1
 powershell -ExecutionPolicy Bypass -File .\scripts\start-local.ps1 --fresh
 ```
 
----
+## 0.4 Windows CMD - `start-local.bat`
 
-## 1.3 Windows CMD — `start-local.bat`
-
-**Type:** CMD wrapper  
-**Location:** `scripts/start-local.bat`
-
-### Usage
+CMD wrapper that forwards to `start-local.ps1`.
 
 ```bat
 scripts\start-local.bat
 scripts\start-local.bat --fresh
 ```
 
+## 0.5 Quality / CI commands after local boot
+
+Run these inside `apps/laravel`:
+
+```bash
+composer check   # php artisan test + pint --test + phpstan
+npm run check    # eslint + prettier check
+npm run ci       # frontend check + production build
+composer ci      # backend checks + frontend checks + production build
+```
+
 ---
 
-# 2. Git Branch Cleanup Scripts
+# 1. Git Branch Cleanup Scripts
 
 These scripts help maintain a clean Git workspace by:
+- detecting the default branch (`main`, `master`, or remote HEAD)
+- running `git fetch --prune`
+- removing local branches already merged into the default branch
+- removing local branches whose remote no longer exists
+- never deleting the default branch itself
 
-- Detecting the default branch (`main`, `master`, or remote HEAD)
-- Running `git fetch --prune` to clean stale remote-tracking branches
-- Removing local branches already merged into the default branch
-- Removing local branches whose remote no longer exists
-- Never deleting the default branch itself
+> Run these scripts inside a Git repository.
 
-> Run these scripts **inside a Git repository**.
-
----
-
-## 2.1 macOS / Linux — `git-clean-branches.sh`
-
-**Type:** Bash  
-**Location:** `scripts/git-clean-branches.sh`
-
-### Requirements
-
-- Git  
-- Bash shell
-
-### Make executable (first time)
+## 1.1 macOS / Linux - `git-clean-branches.sh`
 
 ```bash
 chmod +x scripts/git-clean-branches.sh
-```
-
-### Usage
-
-```bash
 scripts/git-clean-branches.sh
 scripts/git-clean-branches.sh upstream
 ```
 
-### Optional: Add to PATH
-
-```bash
-export PATH="$HOME/scripts:$PATH"
-source ~/.zshrc
-```
-
----
-
-## 2.2 Windows — `git-clean-branches.ps1`
-
-**Type:** PowerShell  
-**Location:** `scripts/git-clean-branches.ps1`
-
-### First-time setup
+## 1.2 Windows - `git-clean-branches.ps1`
 
 ```powershell
 Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
-```
-
-### Usage
-
-```powershell
 pwsh .\scripts\git-clean-branches.ps1
 pwsh .\scripts\git-clean-branches.ps1 upstream
 ```
 
 ---
 
-# 3. Puppeteer / Browser Connector Scripts
+# 2. Puppeteer / Browser Connector Scripts
 
 Scripts for launching Chromium/Chrome/Edge/Brave with remote debugging enabled.
 
----
+## 2.1 macOS - `launch-browser-connector.sh`
 
-## 3.1 macOS — `launch-browser-connector.sh`
-
-**Type:** Bash  
-**Location:** `scripts/launch-browser-connector.sh`
-
-### Features
-
-- Installs Chromium (Homebrew)
-- Picks free port
-- Creates automation profile
-- Enables DevTools remote debugging
-- Auto-installs `puppeteer-core`
-- Runs a Node.js Puppeteer test
-
-### Usage
+Features:
+- installs Chromium via Homebrew
+- picks a free port
+- creates an automation profile
+- enables DevTools remote debugging
+- auto-installs `puppeteer-core`
+- runs a Node.js Puppeteer test
 
 ```bash
 chmod +x scripts/launch-browser-connector.sh
 scripts/launch-browser-connector.sh
 ```
 
----
-
-## 3.2 Windows — `launch-browser-connector.bat`
-
-**Type:** Batch  
-**Location:** `scripts/launch-browser-connector.bat`
-
-### Usage
+## 2.2 Windows - `launch-browser-connector.bat`
 
 ```bat
 launch-browser-connector.bat
-```
-
-### Examples
-
-```bat
 launch-browser-connector.bat --browser edge --port 9333
 launch-browser-connector.bat --use-system-profile
 launch-browser-connector.bat --browser brave --headless
@@ -211,70 +161,29 @@ launch-browser-connector.bat --browser brave --headless
 
 ---
 
-# 4. Docker Image Update & Restart Scripts
+# 3. Docker Image Update & Restart Scripts
 
-Scripts for pulling the latest Docker images and restarting containers,
-working whether containers are running or stopped.
+Scripts for pulling the latest Docker images and restarting containers safely.
 
----
+## 3.1 macOS / Linux - `update-images-and-restart.sh`
 
-## 4.1 macOS / Linux — `update-images-and-restart.sh`
-
-**Type:** Bash  
-**Location:** `scripts/update-images-and-restart.sh`
-
-### Features
-
-- Pulls latest images from registry
-- Recreates containers to apply updates
-- Safe to run multiple times
-- Keeps volumes and persistent data intact
-
-### Usage
-
-```bat
+```bash
 chmod +x scripts/update-images-and-restart.sh
 scripts/update-images-and-restart.sh
 ```
 
----
-
-## 4.2 Windows — `update-images-and-restart.ps1`
-
-**Type:** PowerShell  
-**Location:** `scripts/update-images-and-restart.ps1`
-
-### First-time setup
+## 3.2 Windows - `update-images-and-restart.ps1`
 
 ```powershell
 Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
-```
-
-### Usage
-
-```powershell
 .\scripts\update-images-and-restart.ps1
 ```
 
 ---
-# 5. Best Practices
 
-- Use consistent naming (`xxx.sh`, `xxx.ps1`, `xxx.bat`)
-- One responsibility per script
-- Avoid hard-coding environment-specific paths
-- Add usage instructions at top of each script
-- Keep this README updated when adding new utilities
+# 4. Best Practices
 
----
-
-# 6. Platform Summary
-
-| Platform      | Script Type     | Extensions |
-|---------------|-----------------|------------|
-| macOS/Linux   | Bash            | `.sh`      |
-| Windows       | PowerShell      | `.ps1`     |
-| Windows       | CMD Batch       | `.bat`     |
-
----
-
-# End of README
+- use consistent naming (`xxx.sh`, `xxx.ps1`, `xxx.bat`)
+- keep one responsibility per script
+- avoid hard-coding environment-specific paths
+- keep this README updated when adding new utilities

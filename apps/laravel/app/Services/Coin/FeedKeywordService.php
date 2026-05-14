@@ -8,6 +8,7 @@ use App\Models\FeedKeyword;
 use App\Repositories\Coin\FeedKeywordRepository;
 use App\Repositories\Coin\TagRepository;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Class FeedKeywordService
@@ -32,27 +33,19 @@ class FeedKeywordService
      */
     public function create(array $data): int
     {
-        /** @var FeedKeyword $keyword */
-        $keyword = $this->keywordRepo->create($data);
+        return DB::transaction(function () use ($data): int {
+            /** @var FeedKeyword $keyword */
+            $keyword = $this->keywordRepo->create($data);
 
-        if (! empty($data['tags']) && is_array($data['tags'])) {
-            /** @var array<int, string> $tagNames */
-            $tagNames = array_map(
-                static function (mixed $tag): string {
-                    if (is_scalar($tag) || $tag === null) {
-                        return (string) $tag;
-                    }
+            if (! empty($data['tags']) && is_array($data['tags'])) {
+                /** @var array<int, mixed> $tags */
+                $tags = array_values($data['tags']);
+                $tagIds = $this->tagRepo->getOrCreateTags($this->normalizeTagNames($tags));
+                $this->keywordRepo->syncTags($keyword->id, $tagIds);
+            }
 
-                    throw new \InvalidArgumentException('Tag must be scalar or null.');
-                },
-                $data['tags']
-            );
-
-            $tagIds = $this->tagRepo->getOrCreateTags($tagNames);
-            $this->keywordRepo->syncTags($keyword->id, $tagIds);
-        }
-
-        return $keyword->id;
+            return $keyword->id;
+        });
     }
 
     /**
@@ -63,24 +56,16 @@ class FeedKeywordService
      */
     public function update(int $id, array $data): void
     {
-        $this->keywordRepo->update($id, $data);
+        DB::transaction(function () use ($id, $data): void {
+            $this->keywordRepo->update($id, $data);
 
-        if (! empty($data['tags']) && is_array($data['tags'])) {
-            /** @var array<int, string> $tagNames */
-            $tagNames = array_map(
-                static function (mixed $tag): string {
-                    if (is_scalar($tag) || $tag === null) {
-                        return (string) $tag;
-                    }
-
-                    throw new \InvalidArgumentException('Tag must be scalar or null.');
-                },
-                $data['tags']
-            );
-
-            $tagIds = $this->tagRepo->getOrCreateTags($tagNames);
-            $this->keywordRepo->syncTags($id, $tagIds);
-        }
+            if (! empty($data['tags']) && is_array($data['tags'])) {
+                /** @var array<int, mixed> $tags */
+                $tags = array_values($data['tags']);
+                $tagIds = $this->tagRepo->getOrCreateTags($this->normalizeTagNames($tags));
+                $this->keywordRepo->syncTags($id, $tagIds);
+            }
+        });
     }
 
     /**
@@ -100,6 +85,26 @@ class FeedKeywordService
      */
     public function delete(int $id): void
     {
-        $this->keywordRepo->deleteWithTags($id);
+        DB::transaction(function () use ($id): void {
+            $this->keywordRepo->deleteWithTags($id);
+        });
+    }
+
+    /**
+     * @param  array<int, mixed>  $tags
+     * @return array<int, string>
+     */
+    private function normalizeTagNames(array $tags): array
+    {
+        return array_values(array_unique(array_filter(array_map(
+            static function (mixed $tag): string {
+                if (is_scalar($tag) || $tag === null) {
+                    return trim((string) $tag);
+                }
+
+                throw new \InvalidArgumentException('Tag must be scalar or null.');
+            },
+            $tags
+        ))));
     }
 }

@@ -3,11 +3,11 @@ name: CI - N8N Workflows
 on:
   push:
     paths:
-      - 'n8n/**'
+      - 'services/n8n/**'
       - 'docker-compose.yml'
   pull_request:
     paths:
-      - 'n8n/**'
+      - 'services/n8n/**'
       - 'docker-compose.yml'
 
 jobs:
@@ -20,8 +20,8 @@ jobs:
       - name: Validate N8N workflow JSON
         run: |
           echo "✅ Validating N8N workflow files..."
-          if [ -d "n8n/workflows" ] && ls n8n/workflows/*.json 1> /dev/null 2>&1; then
-            for file in n8n/workflows/*.json; do
+          if [ -d "services/n8n/workflows" ] && find services/n8n/workflows -maxdepth 1 -name '*.json' | grep -q .; then
+            for file in services/n8n/workflows/*.json; do
               jq empty "$file" || { echo "❌ Invalid JSON: $file"; exit 1; }
             done
             echo "🎉 All workflows are valid!"

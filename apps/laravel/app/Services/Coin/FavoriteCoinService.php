@@ -31,6 +31,28 @@ class FavoriteCoinService implements FavoriteCoinServiceInterface
     }
 
     /**
+     * Add a coin to favorites.
+     *
+     * @param  string  $symbol  The coin symbol to add.
+     * @return array<string, string> Contains message and status.
+     */
+    public function addSymbol(string $symbol): array
+    {
+        return $this->repository->addSymbol($symbol);
+    }
+
+    /**
+     * Remove a coin from favorites.
+     *
+     * @param  string  $symbol  The coin symbol to remove.
+     * @return array<string, string> Contains message and status.
+     */
+    public function removeSymbol(string $symbol): array
+    {
+        return $this->repository->removeSymbol($symbol);
+    }
+
+    /**
      * Toggle the favorite status of a coin.
      *
      * @param  string  $symbol  The coin symbol to toggle.
