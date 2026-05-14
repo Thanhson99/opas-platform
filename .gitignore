@@ -12,6 +12,8 @@ apps/laravel/.vscode/
 # Composer / NPM
 composer.lock
 package-lock.json
+!apps/laravel/package-lock.json
+!services/n8n/nodes/package-lock.json
 npm-debug.log
 
 # Laravel test coverage

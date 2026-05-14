@@ -29,10 +29,14 @@ class CoinApiController extends Controller
         $favoriteLookup = array_fill_keys($favorites, true);
 
         $coins = array_map(
-            fn (array $coin): array => [
-                ...$coin,
-                'is_favorite' => isset($favoriteLookup[$coin['symbol'] ?? '']),
-            ],
+            function (array $coin) use ($favoriteLookup): array {
+                $symbol = is_string($coin['symbol'] ?? null) ? $coin['symbol'] : '';
+
+                return [
+                    ...$coin,
+                    'is_favorite' => isset($favoriteLookup[$symbol]),
+                ];
+            },
             $this->coinService->getTopCoins(),
         );
 
