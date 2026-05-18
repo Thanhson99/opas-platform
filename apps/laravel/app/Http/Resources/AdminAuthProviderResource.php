@@ -47,7 +47,9 @@ class AdminAuthProviderResource extends JsonResource
             'secret_status' => $secretStatus,
             'required_secret_keys' => $driver->requiredSecretConfigKeys(),
             'required_public_keys' => $driver->requiredPublicConfigKeys(),
-            'email_verification_mode' => $provider->email_verification_mode,
+            'email_verification_mode' => $provider->key === 'email'
+                ? 'required'
+                : $provider->email_verification_mode,
             'metadata' => $driver->publicMetadata($provider),
         ];
     }

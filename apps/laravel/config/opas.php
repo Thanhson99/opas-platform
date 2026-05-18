@@ -12,7 +12,8 @@ return [
         'provider_key_example' => (string) env('AUTH_PROVIDER_KEY_EXAMPLE', 'google'),
         'email_verification' => [
             'default_mode' => (string) env('AUTH_EMAIL_PROVIDER_DEFAULT_VERIFICATION_MODE', 'required'),
-            'expire_minutes' => (int) env('AUTH_EMAIL_VERIFICATION_EXPIRE_MINUTES', 60),
+            'expire_minutes' => (int) env('AUTH_EMAIL_VERIFICATION_EXPIRE_MINUTES', 10),
+            'code_length' => (int) env('AUTH_EMAIL_VERIFICATION_CODE_LENGTH', 6),
         ],
         'oauth' => [
             'http_timeout_seconds' => (int) env('AUTH_OAUTH_HTTP_TIMEOUT_SECONDS', 15),

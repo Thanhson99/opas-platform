@@ -10,6 +10,9 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
+/**
+ * Verify favorite coin endpoints, including verification-gated access rules.
+ */
 class FavoriteCoinControllerTest extends TestCase
 {
     use RefreshDatabase;
@@ -72,10 +75,29 @@ class FavoriteCoinControllerTest extends TestCase
             ->assertJsonValidationErrors(['symbol']);
     }
 
+    /**
+     * Guests must authenticate before they can add favorite coins.
+     */
     public function test_guest_cannot_add_coin_to_favorites(): void
     {
         $response = $this->putJson(route('api.coins.favorites.store', ['symbol' => 'BTCUSDT']));
 
         $response->assertStatus(401);
+    }
+
+    /**
+     * Signed-in users must still verify their email before using protected favorite endpoints.
+     */
+    public function test_unverified_user_cannot_add_coin_to_favorites(): void
+    {
+        $user = User::factory()->unverified()->create(['role' => UserRole::Member]);
+
+        $response = $this
+            ->actingAs($user)
+            ->putJson(route('api.coins.favorites.store', ['symbol' => 'BTCUSDT']));
+
+        $response->assertForbidden()
+            ->assertJsonPath('meta.verification_required', true)
+            ->assertJsonPath('meta.email', $user->email);
     }
 }

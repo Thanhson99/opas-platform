@@ -1,13 +1,8 @@
 <?php
 
-use App\Http\Controllers\Api\AuthApiController;
 use Illuminate\Support\Facades\Route;
 
 Route::view('/', 'spa')->name('dashboard');
-
-Route::get('/email/verify/{id}/{hash}', [AuthApiController::class, 'verifyEmail'])
-    ->middleware(['signed', 'throttle:6,1'])
-    ->name('verification.verify');
 
 Route::view('/reset-password/{token}', 'spa')
     ->where('token', '.*')

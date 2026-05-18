@@ -97,9 +97,9 @@ class AuthProviderServiceTest extends TestCase
     }
 
     /**
-     * Persisted verification policy should be returned directly when the provider defines one.
+     * Email provider verification policy should stay locked to required regardless of stored overrides.
      */
-    public function test_email_verification_mode_returns_provider_specific_value(): void
+    public function test_email_verification_mode_always_returns_required_for_email_provider(): void
     {
         AuthProvider::query()->where('key', 'email')->update([
             'email_verification_mode' => 'optional',
@@ -107,13 +107,13 @@ class AuthProviderServiceTest extends TestCase
 
         $mode = $this->app->make(AuthProviderService::class)->emailVerificationMode('email');
 
-        $this->assertSame('optional', $mode);
+        $this->assertSame('required', $mode);
     }
 
     /**
-     * Email verification should fall back to application config when the provider has no override.
+     * Email provider verification policy should ignore application defaults that weaken the requirement.
      */
-    public function test_email_verification_mode_falls_back_to_config_default(): void
+    public function test_email_verification_mode_ignores_config_override_for_email_provider(): void
     {
         AuthProvider::query()->where('key', 'email')->update([
             'email_verification_mode' => null,
@@ -123,6 +123,20 @@ class AuthProviderServiceTest extends TestCase
 
         $mode = $this->app->make(AuthProviderService::class)->emailVerificationMode('email');
 
-        $this->assertSame('disabled', $mode);
+        $this->assertSame('required', $mode);
+    }
+
+    /**
+     * Non-email providers may still expose their own verification policy values.
+     */
+    public function test_email_verification_mode_keeps_provider_specific_value_for_non_email_providers(): void
+    {
+        AuthProvider::query()->where('key', 'google')->update([
+            'email_verification_mode' => 'optional',
+        ]);
+
+        $mode = $this->app->make(AuthProviderService::class)->emailVerificationMode('google');
+
+        $this->assertSame('optional', $mode);
     }
 }

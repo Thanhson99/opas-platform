@@ -10,7 +10,9 @@ use App\Auth\Drivers\FacebookAuthProviderDriver;
 use App\Auth\Drivers\GithubAuthProviderDriver;
 use App\Auth\Drivers\GoogleAuthProviderDriver;
 use App\Repositories\Auth\AuthProviderRepository;
+use App\Repositories\Auth\EmailVerificationCodeRepository;
 use App\Repositories\Auth\Interfaces\AuthProviderRepositoryInterface;
+use App\Repositories\Auth\Interfaces\EmailVerificationCodeRepositoryInterface;
 use App\Repositories\Coin\FavoriteCoinRepository;
 use App\Repositories\Coin\FeedKeywordRepository;
 use App\Repositories\Coin\Interfaces\FavoriteCoinRepositoryInterface;
@@ -27,6 +29,7 @@ use App\Services\Auth\AuthProviderConfigService;
 use App\Services\Auth\AuthProviderOAuthService;
 use App\Services\Auth\AuthProviderRegistry;
 use App\Services\Auth\AuthProviderService;
+use App\Services\Auth\EmailVerificationService;
 use App\Services\Coin\BinanceCoinApiClient;
 use App\Services\Coin\CoinApiClientInterface;
 use App\Services\Coin\CoinServiceFactory;
@@ -79,9 +82,11 @@ class AppServiceProvider extends ServiceProvider
         });
 
         $this->app->bind(AuthProviderRepositoryInterface::class, AuthProviderRepository::class);
+        $this->app->bind(EmailVerificationCodeRepositoryInterface::class, EmailVerificationCodeRepository::class);
         $this->app->singleton(AuthProviderConfigService::class);
         $this->app->singleton(AuthProviderOAuthService::class);
         $this->app->singleton(AuthProviderService::class);
+        $this->app->singleton(EmailVerificationService::class);
         $this->app->bind(UserRepositoryInterface::class, UserRepository::class);
         $this->app->singleton(AdminUserService::class);
 

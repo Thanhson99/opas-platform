@@ -171,9 +171,9 @@ class AdminAuthProviderApiControllerTest extends TestCase
     }
 
     /**
-     * Email provider policy updates should persist so auth flows can consume them later.
+     * Email provider updates must persist the locked required verification policy.
      */
-    public function test_admin_can_update_email_verification_mode_for_email_provider(): void
+    public function test_admin_email_provider_update_forces_required_email_verification_mode(): void
     {
         $admin = User::factory()->create([
             'role' => UserRole::Admin,
@@ -186,16 +186,16 @@ class AdminAuthProviderApiControllerTest extends TestCase
                 'display_name' => 'Email and Password',
                 'sort_order' => 10,
                 'visibility' => 'public',
-                'email_verification_mode' => 'optional',
+                'email_verification_mode' => 'required',
             ]);
 
         $response->assertOk()
             ->assertJsonPath('data.key', 'email')
-            ->assertJsonPath('data.email_verification_mode', 'optional');
+            ->assertJsonPath('data.email_verification_mode', 'required');
 
         $this->assertDatabaseHas('auth_providers', [
             'key' => 'email',
-            'email_verification_mode' => 'optional',
+            'email_verification_mode' => 'required',
         ]);
     }
 
@@ -245,9 +245,9 @@ class AdminAuthProviderApiControllerTest extends TestCase
     }
 
     /**
-     * Invalid verification policy values must be rejected safely by request validation.
+     * Email provider updates must reject verification policies weaker than required.
      */
-    public function test_admin_update_rejects_invalid_email_verification_mode(): void
+    public function test_admin_update_rejects_non_required_email_verification_mode_for_email_provider(): void
     {
         $admin = User::factory()->create([
             'role' => UserRole::Admin,
@@ -256,7 +256,7 @@ class AdminAuthProviderApiControllerTest extends TestCase
         $response = $this
             ->actingAs($admin)
             ->putJson(route('api.admin.auth.providers.update', ['key' => 'email']), [
-                'email_verification_mode' => 'always',
+                'email_verification_mode' => 'disabled',
             ]);
 
         $response->assertUnprocessable()

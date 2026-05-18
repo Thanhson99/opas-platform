@@ -33,6 +33,10 @@ class AuthProviderConfigService
     {
         $attributes = $validated;
 
+        if ($provider->key === 'email') {
+            $attributes['email_verification_mode'] = 'required';
+        }
+
         if (array_key_exists('public_config', $attributes)) {
             $attributes['public_config'] = $this->normalizeConfigArray($attributes['public_config']);
         }

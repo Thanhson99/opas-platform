@@ -11,12 +11,12 @@ use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterRequest;
 use App\Http\Requests\ResendVerificationEmailRequest;
 use App\Http\Requests\ResetPasswordRequest;
+use App\Http\Requests\VerifyEmailCodeRequest;
 use App\Http\Resources\AuthUserResource;
 use App\Models\User;
 use App\Services\Auth\AuthProviderService;
-use Illuminate\Auth\Events\Verified;
+use App\Services\Auth\EmailVerificationService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -30,6 +30,7 @@ class AuthApiController extends Controller
      */
     public function __construct(
         private readonly AuthProviderService $authProviderService,
+        private readonly EmailVerificationService $emailVerificationService,
     ) {}
 
     /**
@@ -53,7 +54,7 @@ class AuthApiController extends Controller
     }
 
     /**
-     * Create a new email/password account and queue an email verification notification.
+     * Create a new email/password account and queue an email verification code.
      *
      * @param  RegisterRequest  $request
      * @return JsonResponse
@@ -75,35 +76,18 @@ class AuthApiController extends Controller
             'email' => $validated['email'],
             'password' => $validated['password'],
             'role' => UserRole::Member,
-            'email_verified_at' => $verificationMode === 'disabled' ? now() : null,
+            'email_verified_at' => null,
         ]);
 
-        if (in_array($verificationMode, ['required', 'optional'], true)) {
-            $user->sendEmailVerificationNotification();
-        }
-
-        $meta = [];
-        $message = 'Account created successfully.';
-
-        if ($verificationMode === 'required') {
-            $message = 'Account created successfully. Please verify your email address.';
-            $meta['verification_required'] = true;
-        }
-
-        if ($verificationMode === 'optional') {
-            $message = 'Account created successfully. You can verify your email later.';
-            $meta['verification_required'] = false;
-        }
-
-        if ($verificationMode === 'disabled') {
-            $message = 'Account created successfully.';
-            $meta['verification_required'] = false;
-        }
+        $this->emailVerificationService->sendCode($user);
 
         return (new AuthUserResource($user))
             ->additional([
-                'message' => $message,
-                'meta' => $meta,
+                'message' => 'Account created successfully. Please verify your email address.',
+                'meta' => [
+                    'verification_required' => true,
+                    'verification_expires_in_minutes' => $this->emailVerificationService->expireMinutes(),
+                ],
             ])
             ->response()
             ->setStatusCode(201);
@@ -141,7 +125,7 @@ class AuthApiController extends Controller
         $user = $request->user();
         $verificationMode = $this->authProviderService->emailVerificationMode('email');
 
-        if ($verificationMode === 'required' && ! $user->hasVerifiedEmail()) {
+        if (! $user->hasVerifiedEmail()) {
             Auth::guard('web')->logout();
             $request->session()->invalidate();
             $request->session()->regenerateToken();
@@ -181,31 +165,77 @@ class AuthApiController extends Controller
     }
 
     /**
-     * Re-send an email verification notification to an existing unverified account.
+     * Re-send a fresh email verification code to an existing unverified account.
      *
      * @param  ResendVerificationEmailRequest  $request
      * @return JsonResponse
      */
     public function resendVerificationEmail(ResendVerificationEmailRequest $request): JsonResponse
     {
-        if ($this->authProviderService->emailVerificationMode('email') === 'disabled') {
-            return response()->json([
-                'message' => 'If the account exists and still needs verification, a verification email will be sent.',
-            ]);
-        }
-
         /** @var array{email:string} $validated */
         $validated = $request->validated();
-
-        $user = User::query()->where('email', $validated['email'])->first();
-
-        if ($user instanceof User && ! $user->hasVerifiedEmail()) {
-            $user->sendEmailVerificationNotification();
-        }
+        $this->emailVerificationService->resendCode($validated['email']);
 
         return response()->json([
             'message' => 'If the account exists and still needs verification, a verification email will be sent.',
         ]);
+    }
+
+    /**
+     * Confirm an emailed verification code and activate the matching account.
+     *
+     * @param  VerifyEmailCodeRequest  $request
+     * @return JsonResponse
+     */
+    public function verifyEmailCode(VerifyEmailCodeRequest $request): JsonResponse
+    {
+        /** @var array{email:string,code:string} $validated */
+        $validated = $request->validated();
+        $verification = $this->emailVerificationService->verifyCode($validated['email'], $validated['code']);
+
+        if ($verification['status'] === 'verified') {
+            return response()->json([
+                'message' => 'Email verified successfully. You can sign in now.',
+                'meta' => [
+                    'status' => 'verified',
+                    'email' => $validated['email'],
+                ],
+            ]);
+        }
+
+        if ($verification['status'] === 'already-verified') {
+            return response()->json([
+                'message' => 'This email address is already verified. You can sign in now.',
+                'meta' => [
+                    'status' => 'already-verified',
+                    'email' => $validated['email'],
+                ],
+            ]);
+        }
+
+        if ($verification['status'] === 'expired') {
+            return response()->json([
+                'message' => 'This verification code has expired. Request a new code.',
+                'errors' => [
+                    'code' => ['This verification code has expired. Request a new code.'],
+                ],
+                'meta' => [
+                    'status' => 'expired',
+                    'email' => $validated['email'],
+                ],
+            ], 422);
+        }
+
+        return response()->json([
+            'message' => 'This verification code is invalid.',
+            'errors' => [
+                'code' => ['This verification code is invalid.'],
+            ],
+            'meta' => [
+                'status' => 'invalid',
+                'email' => $validated['email'],
+            ],
+        ], 422);
     }
 
     /**
@@ -260,33 +290,5 @@ class AuthApiController extends Controller
         return response()->json([
             'message' => 'Password reset successfully.',
         ]);
-    }
-
-    /**
-     * Consume a signed verification link and redirect the user back to the SPA status screen.
-     *
-     * @param  Request  $request
-     * @param  int  $id
-     * @param  string  $hash
-     * @return RedirectResponse
-     */
-    public function verifyEmail(Request $request, int $id, string $hash): RedirectResponse
-    {
-        /** @var User|null $user */
-        $user = User::query()->find($id);
-
-        if (! $user instanceof User || ! hash_equals((string) $hash, sha1($user->getEmailForVerification()))) {
-            return redirect()->to('/verify-email?status=invalid');
-        }
-
-        if ($user->hasVerifiedEmail()) {
-            return redirect()->to('/verify-email?status=already-verified&email='.urlencode($user->email));
-        }
-
-        if ($user->markEmailAsVerified()) {
-            event(new Verified($user));
-        }
-
-        return redirect()->to('/verify-email?status=verified&email='.urlencode($user->email));
     }
 }

@@ -55,7 +55,14 @@ export default function RegisterPage() {
         setFieldErrors({});
 
         try {
-            await register(form);
+            const response = await register(form);
+            const emailVerified = Boolean(response?.data?.email_verified);
+
+            if (emailVerified) {
+                navigate('/login', { replace: true });
+                return;
+            }
+
             navigate(`/verify-email?email=${encodeURIComponent(form.email)}&status=pending`, {
                 replace: true,
             });

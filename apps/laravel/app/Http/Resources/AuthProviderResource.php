@@ -32,7 +32,9 @@ class AuthProviderResource extends JsonResource
             'visibility' => $provider->visibility,
             'active' => $resource['active'],
             'capabilities' => $provider->capabilities,
-            'email_verification_mode' => $provider->email_verification_mode,
+            'email_verification_mode' => $provider->key === 'email'
+                ? 'required'
+                : $provider->email_verification_mode,
             'metadata' => $driver->publicMetadata($provider),
         ];
     }

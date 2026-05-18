@@ -28,6 +28,14 @@ interface UserRepositoryInterface
     public function findById(int $id): ?User;
 
     /**
+     * Find a single user by email address.
+     *
+     * @param  string  $email
+     * @return User|null
+     */
+    public function findByEmail(string $email): ?User;
+
+    /**
      * Persist account field changes and return a fresh user model.
      *
      * @param  User  $user
@@ -36,6 +44,15 @@ interface UserRepositoryInterface
      * @return User
      */
     public function updateAccount(User $user, string $name, UserRole $role): User;
+
+    /**
+     * Persist the email verified timestamp and return a fresh user model.
+     *
+     * @param  User  $user
+     * @param  \Illuminate\Support\Carbon  $verifiedAt
+     * @return User
+     */
+    public function markEmailVerified(User $user, \Illuminate\Support\Carbon $verifiedAt): User;
 
     /**
      * Count users holding the given role.
