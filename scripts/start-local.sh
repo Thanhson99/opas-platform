@@ -164,6 +164,7 @@ else
 fi
 
 run_step "Run Laravel migrations" docker compose exec -T laravel php artisan migrate --force --graceful --ansi
+run_step "Seed Laravel database" docker compose exec -T laravel php artisan db:seed --force --ansi
 
 run_step "Wait for local web" wait_for_url "http://localhost:8881"
 
