@@ -92,21 +92,21 @@ You can later switch to any paid provider (OpenAI/Gemini/...) without redesignin
              ▼
 ┌──────────────────────────┐
 │        NGINX Proxy       │
-└───────┬────────┬─────────┘
-        │        │
-        │        │
-        ▼        ▼
+└───────┬─────────────────┬┘
+        │                 │
+        │                 │
+        ▼                 ▼
 ┌──────────────┐  ┌──────────────────────┐
-│ services/n8n │  │ services/python      │
-│ Workflows    │  │ Utility APIs         │
+│ services/n8n │  │    services/python   │
+│  Workflows   │  │     Utility APIs     │
 └──────┬───────┘  └──────────┬───────────┘
        │                     │
-       ├──────────────┐      │
-       ▼              ▼      ▼
-┌──────────────┐  ┌───────────────┐
-│ Ollama       │  │ LibreTranslate│
-│ Local LLM    │  │ Translation   │
-└──────────────┘  └───────────────┘
+       ├────────────────┐    │
+       ▼                ▼    ▼
+┌──────────────┐  ┌────────────────┐
+│   Ollama     │  │ LibreTranslate │
+│ Local LLM    │  │  Translation   │
+└──────────────┘  └────────────────┘
 
 ┌──────────────────────────┐
 │       PostgreSQL         │
@@ -176,10 +176,10 @@ LARAVEL-N8N-AUTOMATION/
 
 ### Internal docs
 
-- **Architecture Overview**: `docs/ARCHITECTURE.md`
-- **Folder Organization**: `docs/FOLDER-ORGANIZATION.md`
-- **Integration Flow**: `docs/INTEGRATION-FLOW.md`
-- **Local AI Runbook**: `docs/LOCAL-AI-RUNBOOK.md`
+- **Architecture Overview**: `docs/architecture.md`
+- **Folder Organization**: `docs/folder-organization.md`
+- **Integration Flow**: `docs/integration-flow.md`
+- **Local AI Runbook**: `docs/local-ai-runbook.md`
 - **AI Prompt Pack**: `ai-local/README.md`
 
 ---

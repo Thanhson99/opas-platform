@@ -1,71 +1,71 @@
-# Runbook AI Local
+# Local AI Runbook
 
-## Thanh phan
+## Components
 
 - Ollama container: `ollama`
 - Writer model: `qwen2.5:7b`
 - Reviewer model: `mistral:7b`
 - Translation service: `libretranslate`
 
-## Lenh can nho
+## Commands To Remember
 
-Khoi dong stack:
+Start the stack:
 
 ```bash
 docker compose up -d
 ```
 
-Nap model Ollama:
+Pull Ollama models:
 
 ```bash
 bash scripts/ollama-pull-models.sh
 ```
 
-Kiem tra model:
+Check installed models:
 
 ```bash
 docker exec -it ollama ollama list
 ```
 
-## Quy uoc su dung model
+## Model Usage Conventions
 
 ### `qwen2.5:7b`
 
-Dung cho:
+Use for:
 
-- viet nhap
-- tong hop
-- phac thao cau truc
-- sinh JSON ke hoach
+- drafting
+- synthesis
+- structure planning
+- JSON plan generation
 
 ### `mistral:7b`
 
-Dung cho:
+Use for:
 
 - review
-- phat hien loi logic
-- rut gon
-- chuan hoa output
+- logic issue detection
+- compression
+- output normalization
 
-## Quy uoc prompt
+## Prompt Conventions
 
-- Moi prompt goc dat trong `ai-local/agents/`.
-- Prompt phai ghi ro:
-  - vai tro
+- Store each source prompt in `ai-local/agents/`.
+- Every prompt should clearly define:
+  - role
   - input
-  - rang buoc
-  - dinh dang output
-- Uu tien output JSON khi workflow can xu ly tiep.
+  - constraints
+  - output format
+- Prefer JSON output when the workflow needs downstream processing.
 
-## Cach dung trong n8n
+## How To Use In n8n
 
-1. Tao node HTTP request toi `http://ollama:11434/api/chat`
-2. Chon model theo file prompt
-3. Nap noi dung system/user tu file `.md` trong repo
-4. Bat buoc validate output truoc khi ghi DB hoac publish
+1. Create an HTTP Request node to `http://ollama:11434/api/chat`.
+2. Choose the model based on the prompt file.
+3. Load the system and user content from `.md` files in the repository.
+4. Always validate the output before writing to the database or publishing.
 
-## Cach dung trong Laravel/Python
+## How To Use In Laravel/Python
 
-- Laravel nen goi n8n cho workflow dai.
-- Python service nen goi Ollama khi can validate, retry, chunking.
-- Khong nen de prompt nghiep vu phan tan trong source ma khong co file tai lieu goc.
+- Laravel should call n8n for long-running workflows.
+- Python services should call Ollama when validation, retry logic, or chunking is needed.
+- Do not spread business prompts across source code without a canonical documentation file.

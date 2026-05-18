@@ -43,6 +43,6 @@ Folder `apps/laravel/` trong repo nay dong vai tro:
 
 ## Lien ket tai lieu
 
-- `../docs/ARCHITECTURE.md`
-- `../docs/INTEGRATION-FLOW.md`
+- `../docs/architecture.md`
+- `../docs/integration-flow.md`
 - `../ai-local/README.md`
