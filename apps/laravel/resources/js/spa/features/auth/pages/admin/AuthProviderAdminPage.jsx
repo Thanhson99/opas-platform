@@ -627,7 +627,9 @@ export default function AuthProviderAdminPage() {
                                 {selectedProvider.key === 'email' ? (
                                     <AuthProviderField
                                         label={t('adminAuth.emailVerification.label')}
-                                        description={t('adminAuth.emailVerification.emailLockedHelp')}
+                                        description={t(
+                                            'adminAuth.emailVerification.emailLockedHelp',
+                                        )}
                                         span="full"
                                     >
                                         <input
@@ -651,7 +653,9 @@ export default function AuthProviderAdminPage() {
                                             )}
                                             autoComplete="off"
                                             value={form.email_verification_mode}
-                                            onBlur={() => markFieldTouched('email_verification_mode')}
+                                            onBlur={() =>
+                                                markFieldTouched('email_verification_mode')
+                                            }
                                             onChange={(event) =>
                                                 updateForm(
                                                     'email_verification_mode',

@@ -141,7 +141,9 @@ export default function VerifyEmailPage() {
                             <button
                                 className="app-button app-button--primary"
                                 type="submit"
-                                disabled={verifying || email.trim() === '' || code.trim().length !== 6}
+                                disabled={
+                                    verifying || email.trim() === '' || code.trim().length !== 6
+                                }
                             >
                                 {verifying
                                     ? t('auth.verifyEmailVerifying')

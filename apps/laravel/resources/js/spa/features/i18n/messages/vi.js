@@ -26,8 +26,7 @@ export const viMessages = {
     },
     shell: {
         dashboardTitle: 'OPAS Workspace',
-        dashboardDescription:
-            'Một điểm vào chung cho các module market, content và automation.',
+        dashboardDescription: 'Một điểm vào chung cho các module market, content và automation.',
         coinsTitle: 'Coin Monitor',
         coinsDescription: 'Theo dõi danh sách coin, biến động giá và watchlist ưu tiên.',
         coinDetailTitle: 'Coin Detail',
@@ -57,8 +56,7 @@ export const viMessages = {
         eyebrow: 'Bảng điều khiển quản trị',
         logoutEyebrow: 'Đăng xuất',
         logoutTitle: 'Đăng xuất khỏi khu quản trị?',
-        logoutText:
-            'Phiên làm việc hiện tại sẽ kết thúc và bạn sẽ quay lại màn hình đăng nhập.',
+        logoutText: 'Phiên làm việc hiện tại sẽ kết thúc và bạn sẽ quay lại màn hình đăng nhập.',
     },
     footer: {
         text: 'Không gian React tập trung cho market tracking, workflow nội dung và vận hành nội bộ.',
@@ -186,8 +184,7 @@ export const viMessages = {
         secretMaskedHint:
             'Secret hiện tại vẫn được lưu an toàn ở backend và không thể hiện lại dưới dạng chữ thường. Chỉ nhập giá trị mới khi bạn muốn thay secret.',
         readyToSave: 'Cấu hình hiện tại hợp lệ và có thể lưu.',
-        noChangesToSave:
-            'Chưa có thay đổi nào để lưu. Hãy sửa dữ liệu hoặc đổi trạng thái trước.',
+        noChangesToSave: 'Chưa có thay đổi nào để lưu. Hãy sửa dữ liệu hoặc đổi trạng thái trước.',
         footerValidationHint:
             'Hãy nhập đủ các ô bắt buộc đang được đánh dấu đỏ trước khi lưu cấu hình này.',
         processingSave: 'Đang kiểm tra cấu hình và lưu thay đổi...',
@@ -362,8 +359,7 @@ export const viMessages = {
             },
             facebook: {
                 title: 'Facebook',
-                summary:
-                    'Dùng OAuth của Facebook để người dùng đăng nhập bằng tài khoản Facebook.',
+                summary: 'Dùng OAuth của Facebook để người dùng đăng nhập bằng tài khoản Facebook.',
             },
             default: {
                 summary: 'Provider đăng nhập cấu hình động qua database.',
@@ -395,8 +391,7 @@ export const viMessages = {
         roleLabel: 'Role được gán',
         roleHelp: 'Chọn cấp quyền mà tài khoản này nên có trong OPAS.',
         selfRoleLocked: 'Bạn không thể đổi role của chính tài khoản đang đăng nhập.',
-        emailLockedHint:
-            'Email bị khóa vì tài khoản này đang xác thực và định danh theo email.',
+        emailLockedHint: 'Email bị khóa vì tài khoản này đang xác thực và định danh theo email.',
         searchPlaceholder: 'Tìm theo tên, email hoặc role...',
         searchButton: 'Tìm kiếm',
         clearSearch: 'Xóa lọc',

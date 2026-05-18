@@ -26,8 +26,7 @@ export const enMessages = {
     },
     shell: {
         dashboardTitle: 'OPAS Workspace',
-        dashboardDescription:
-            'One shared entry point for market, content, and automation modules.',
+        dashboardDescription: 'One shared entry point for market, content, and automation modules.',
         coinsTitle: 'Coin Monitor',
         coinsDescription: 'Track coins, price moves, and priority watchlists.',
         coinDetailTitle: 'Coin Detail',
@@ -81,8 +80,7 @@ export const enMessages = {
         loginError: 'Unable to sign in with this account.',
         forgotPasswordLink: 'Forgot password?',
         forgotPasswordTitle: 'Forgot your password?',
-        forgotPasswordText:
-            'Enter your email address and we will send you a password reset link.',
+        forgotPasswordText: 'Enter your email address and we will send you a password reset link.',
         forgotPasswordSubmit: 'Send reset link',
         forgotPasswordSending: 'Sending...',
         forgotPasswordSent: 'Password reset link sent successfully.',
@@ -132,10 +130,8 @@ export const enMessages = {
         verifyEmailPending:
             'We sent a verification code to your email address. Enter the code below before signing in.',
         verifyEmailVerified: 'Your email address has been verified. You can sign in now.',
-        verifyEmailAlreadyVerified:
-            'This email address was already verified. You can sign in now.',
-        verifyEmailExpired:
-            'This verification code has expired. Request a new code and try again.',
+        verifyEmailAlreadyVerified: 'This email address was already verified. You can sign in now.',
+        verifyEmailExpired: 'This verification code has expired. Request a new code and try again.',
         verifyEmailInvalid:
             'This verification code is invalid. Check the latest code from your email and try again.',
         verifyEmailCode: 'Verification code',
@@ -314,8 +310,7 @@ export const enMessages = {
             },
             client_secret: {
                 label: 'Client Secret',
-                description:
-                    'Secret key issued by the platform. It is stored only on the backend.',
+                description: 'Secret key issued by the platform. It is stored only on the backend.',
                 placeholder: 'Paste a new secret here when you need to rotate it',
             },
             button_text: {
