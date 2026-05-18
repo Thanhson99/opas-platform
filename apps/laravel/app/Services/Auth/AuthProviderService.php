@@ -123,6 +123,10 @@ class AuthProviderService
      */
     public function emailVerificationMode(string $key = 'email'): string
     {
+        if ($key === 'email') {
+            return 'required';
+        }
+
         $resolved = $this->resolve($key);
         $mode = $resolved['provider']->email_verification_mode ?? null;
 

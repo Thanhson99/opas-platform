@@ -62,7 +62,7 @@ export function AuthProvider({ children }) {
 
     const register = useCallback(async (payload) => {
         const response = await api.post('/auth/register', payload);
-        setUser(response.data.data ?? null);
+        setUser(null);
         return response.data;
     }, []);
 

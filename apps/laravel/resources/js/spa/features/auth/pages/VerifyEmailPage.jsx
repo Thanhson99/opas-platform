@@ -11,10 +11,12 @@ export default function VerifyEmailPage() {
     const { t } = useLanguage();
     const params = useMemo(() => new URLSearchParams(location.search), [location.search]);
     const [email, setEmail] = useState(params.get('email') ?? '');
-    const [submitting, setSubmitting] = useState(false);
+    const [code, setCode] = useState('');
+    const [verifying, setVerifying] = useState(false);
+    const [resending, setResending] = useState(false);
     const [flash, setFlash] = useState('');
     const [error, setError] = useState('');
-    const status = params.get('status') ?? 'pending';
+    const [status, setStatus] = useState(params.get('status') ?? 'pending');
 
     const statusMessage = (() => {
         if (status === 'verified') {
@@ -23,6 +25,10 @@ export default function VerifyEmailPage() {
 
         if (status === 'already-verified') {
             return t('auth.verifyEmailAlreadyVerified');
+        }
+
+        if (status === 'expired') {
+            return t('auth.verifyEmailExpired');
         }
 
         if (status === 'invalid') {
@@ -34,12 +40,34 @@ export default function VerifyEmailPage() {
 
     const submit = async (event) => {
         event.preventDefault();
-        setSubmitting(true);
+        setVerifying(true);
+        setFlash('');
+        setError('');
+
+        try {
+            const response = await api.post('/auth/email/verify', { email, code });
+            setStatus(response?.data?.meta?.status ?? 'verified');
+            setFlash(response.data.message ?? t('auth.verifyEmailVerified'));
+        } catch (requestError) {
+            setStatus(requestError?.response?.data?.meta?.status ?? 'invalid');
+            setError(
+                requestError?.response?.data?.errors?.code?.[0] ||
+                    requestError?.response?.data?.message ||
+                    t('auth.verifyEmailError'),
+            );
+        } finally {
+            setVerifying(false);
+        }
+    };
+
+    const resendCode = async () => {
+        setResending(true);
         setFlash('');
         setError('');
 
         try {
             const response = await api.post('/auth/email/verification-notification', { email });
+            setStatus('pending');
             setFlash(response.data.message ?? t('auth.verifyEmailResent'));
         } catch (requestError) {
             setError(
@@ -48,7 +76,7 @@ export default function VerifyEmailPage() {
                     t('auth.verifyEmailResendError'),
             );
         } finally {
-            setSubmitting(false);
+            setResending(false);
         }
     };
 
@@ -94,12 +122,40 @@ export default function VerifyEmailPage() {
                                     required
                                 />
                             </div>
+                            <div className="app-field">
+                                <label className="app-label">{t('auth.verifyEmailCode')}</label>
+                                <input
+                                    className="app-input"
+                                    type="text"
+                                    inputMode="numeric"
+                                    pattern="[0-9]*"
+                                    maxLength={6}
+                                    value={code}
+                                    onChange={(event) =>
+                                        setCode(event.target.value.replace(/\D/g, '').slice(0, 6))
+                                    }
+                                    required
+                                />
+                                <p className="app-field__hint">{t('auth.verifyEmailCodeHint')}</p>
+                            </div>
                             <button
                                 className="app-button app-button--primary"
                                 type="submit"
-                                disabled={submitting}
+                                disabled={
+                                    verifying || email.trim() === '' || code.trim().length !== 6
+                                }
                             >
-                                {submitting
+                                {verifying
+                                    ? t('auth.verifyEmailVerifying')
+                                    : t('auth.verifyEmailSubmit')}
+                            </button>
+                            <button
+                                className="app-button app-button--secondary"
+                                type="button"
+                                onClick={resendCode}
+                                disabled={resending || email.trim() === ''}
+                            >
+                                {resending
                                     ? t('auth.verifyEmailSending')
                                     : t('auth.verifyEmailSend')}
                             </button>

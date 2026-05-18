@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Http\Middleware\EnsureAdmin;
+use App\Http\Middleware\EnsureVerified;
 use App\Http\Middleware\NoStoreCache;
 use App\Http\Middleware\SecurityHeaders;
 use Illuminate\Foundation\Application;
@@ -21,6 +22,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'admin' => EnsureAdmin::class,
             'no-store' => NoStoreCache::class,
+            'verified-email' => EnsureVerified::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

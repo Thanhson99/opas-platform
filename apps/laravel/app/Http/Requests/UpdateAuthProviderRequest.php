@@ -44,6 +44,10 @@ class UpdateAuthProviderRequest extends FormRequest
      */
     public function rules(): array
     {
+        $emailVerificationModes = $this->route('key') === 'email'
+            ? ['required']
+            : ['required', 'optional', 'disabled'];
+
         return [
             'enabled' => ['sometimes', 'boolean'],
             'display_name' => ['sometimes', 'string', 'max:255'],
@@ -57,7 +61,7 @@ class UpdateAuthProviderRequest extends FormRequest
                 'sometimes',
                 'nullable',
                 'string',
-                Rule::in(['required', 'optional', 'disabled']),
+                Rule::in($emailVerificationModes),
             ],
         ];
     }

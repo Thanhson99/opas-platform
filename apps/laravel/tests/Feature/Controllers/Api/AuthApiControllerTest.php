@@ -6,6 +6,7 @@ namespace Tests\Feature\Controllers\Api;
 
 use App\Enums\UserRole;
 use App\Models\AuthProvider;
+use App\Models\EmailVerificationCode;
 use App\Models\User;
 use App\Notifications\QueuedVerifyEmailNotification;
 use Illuminate\Auth\Notifications\ResetPassword;
@@ -23,7 +24,7 @@ class AuthApiControllerTest extends TestCase
     use RefreshDatabase;
 
     /**
-     * Registration should create the account and queue an email verification message.
+     * Registration should create the account and queue an email verification code.
      */
     public function test_it_can_register_a_member_account(): void
     {
@@ -40,7 +41,11 @@ class AuthApiControllerTest extends TestCase
             ->assertJsonPath('data.email', 'member@gmail.com')
             ->assertJsonPath('data.role', UserRole::Member->value)
             ->assertJsonPath('data.email_verified', false)
-            ->assertJsonPath('meta.verification_required', true);
+            ->assertJsonPath('meta.verification_required', true)
+            ->assertJsonPath(
+                'meta.verification_expires_in_minutes',
+                max(5, min((int) config('opas.auth.email_verification.expire_minutes', 10), 15)),
+            );
 
         $this->assertGuest();
         $this->assertDatabaseHas('users', [
@@ -49,13 +54,17 @@ class AuthApiControllerTest extends TestCase
         ]);
 
         $user = User::query()->where('email', 'member@gmail.com')->firstOrFail();
+        $this->assertDatabaseHas('email_verification_codes', [
+            'user_id' => $user->id,
+            'verified_at' => null,
+        ]);
         Notification::assertSentTo($user, QueuedVerifyEmailNotification::class);
     }
 
     /**
-     * Registration should mark the account verified immediately when the email provider disables verification.
+     * Email registration must stay verification-gated even when legacy provider rows still carry disabled mode.
      */
-    public function test_it_registers_a_verified_account_when_email_verification_is_disabled(): void
+    public function test_email_registration_still_requires_verification_when_provider_row_is_set_to_disabled(): void
     {
         Notification::fake();
 
@@ -65,20 +74,20 @@ class AuthApiControllerTest extends TestCase
 
         $response = $this->postJson(route('api.auth.register'), [
             'name' => 'OPAS User',
-            'email' => 'disabled-mode@gmail.com',
+            'email' => 'forced-required@gmail.com',
             'password' => 'Password123!',
             'password_confirmation' => 'Password123!',
         ]);
 
         $response->assertCreated()
-            ->assertJsonPath('data.email', 'disabled-mode@gmail.com')
-            ->assertJsonPath('data.email_verified', true)
-            ->assertJsonPath('meta.verification_required', false);
+            ->assertJsonPath('data.email', 'forced-required@gmail.com')
+            ->assertJsonPath('data.email_verified', false)
+            ->assertJsonPath('meta.verification_required', true);
 
-        $user = User::query()->where('email', 'disabled-mode@gmail.com')->firstOrFail();
+        $user = User::query()->where('email', 'forced-required@gmail.com')->firstOrFail();
 
-        $this->assertNotNull($user->email_verified_at);
-        Notification::assertNothingSent();
+        $this->assertNull($user->email_verified_at);
+        Notification::assertSentTo($user, QueuedVerifyEmailNotification::class);
     }
 
     /**
@@ -128,6 +137,9 @@ class AuthApiControllerTest extends TestCase
         $this->assertGuest();
     }
 
+    /**
+     * Unverified accounts must not establish a session through the email login endpoint.
+     */
     public function test_it_blocks_login_when_email_is_not_verified(): void
     {
         $user = User::factory()->create([
@@ -149,9 +161,9 @@ class AuthApiControllerTest extends TestCase
     }
 
     /**
-     * Optional verification mode should allow unverified users to sign in while still supporting verification mail.
+     * Login must still deny unverified accounts even when legacy provider rows still carry optional mode.
      */
-    public function test_it_allows_login_when_email_verification_is_optional(): void
+    public function test_login_still_blocks_unverified_users_when_provider_row_is_set_to_optional(): void
     {
         AuthProvider::query()->where('key', 'email')->update([
             'email_verification_mode' => 'optional',
@@ -168,8 +180,9 @@ class AuthApiControllerTest extends TestCase
             'password' => 'Password123!',
         ]);
 
-        $response->assertOk()
-            ->assertJsonPath('data.email', $user->email);
+        $response->assertForbidden()
+            ->assertJsonPath('meta.verification_required', true)
+            ->assertJsonPath('meta.email', $user->email);
     }
 
     /**
@@ -218,6 +231,9 @@ class AuthApiControllerTest extends TestCase
             ]);
     }
 
+    /**
+     * Unverified accounts should be able to request a fresh verification code.
+     */
     public function test_it_can_resend_verification_email_for_unverified_account(): void
     {
         Notification::fake();
@@ -237,6 +253,96 @@ class AuthApiControllerTest extends TestCase
             ]);
 
         Notification::assertSentTo($user, QueuedVerifyEmailNotification::class);
+    }
+
+    /**
+     * A matching unexpired verification code should activate the user account.
+     */
+    public function test_it_marks_email_as_verified_from_a_valid_code(): void
+    {
+        $user = User::factory()->unverified()->create([
+            'email' => 'member@gmail.com',
+        ]);
+
+        EmailVerificationCode::query()->create([
+            'user_id' => $user->id,
+            'code_hash' => Hash::make('123456'),
+            'expires_at' => now()->addMinutes(10),
+            'last_sent_at' => now(),
+            'verified_at' => null,
+        ]);
+
+        $response = $this->postJson(route('api.auth.verification.confirm'), [
+            'email' => $user->email,
+            'code' => '123456',
+        ]);
+
+        $response->assertOk()
+            ->assertJsonPath('meta.status', 'verified')
+            ->assertJsonPath('meta.email', $user->email);
+
+        $this->assertNotNull($user->fresh()?->email_verified_at);
+        $this->assertNotNull(
+            EmailVerificationCode::query()->where('user_id', $user->id)->firstOrFail()->verified_at,
+        );
+    }
+
+    /**
+     * A mismatched verification code must return an invalid-code response without activating the account.
+     */
+    public function test_it_rejects_an_invalid_email_verification_code(): void
+    {
+        $user = User::factory()->unverified()->create([
+            'email' => 'member@gmail.com',
+        ]);
+
+        EmailVerificationCode::query()->create([
+            'user_id' => $user->id,
+            'code_hash' => Hash::make('123456'),
+            'expires_at' => now()->addMinutes(10),
+            'last_sent_at' => now(),
+            'verified_at' => null,
+        ]);
+
+        $response = $this->postJson(route('api.auth.verification.confirm'), [
+            'email' => $user->email,
+            'code' => '654321',
+        ]);
+
+        $response->assertStatus(422)
+            ->assertJsonPath('meta.status', 'invalid')
+            ->assertJsonValidationErrors(['code']);
+
+        $this->assertNull($user->fresh()?->email_verified_at);
+    }
+
+    /**
+     * Expired verification codes must be rejected without activating the account.
+     */
+    public function test_it_rejects_an_expired_email_verification_code(): void
+    {
+        $user = User::factory()->unverified()->create([
+            'email' => 'member@gmail.com',
+        ]);
+
+        EmailVerificationCode::query()->create([
+            'user_id' => $user->id,
+            'code_hash' => Hash::make('123456'),
+            'expires_at' => now()->subMinute(),
+            'last_sent_at' => now()->subMinutes(11),
+            'verified_at' => null,
+        ]);
+
+        $response = $this->postJson(route('api.auth.verification.confirm'), [
+            'email' => $user->email,
+            'code' => '123456',
+        ]);
+
+        $response->assertStatus(422)
+            ->assertJsonPath('meta.status', 'expired')
+            ->assertJsonValidationErrors(['code']);
+
+        $this->assertNull($user->fresh()?->email_verified_at);
     }
 
     /**
@@ -273,9 +379,9 @@ class AuthApiControllerTest extends TestCase
     }
 
     /**
-     * Resend verification should remain generic and avoid sending mail when verification is disabled.
+     * Resend should still issue a code even when legacy provider rows still carry disabled mode.
      */
-    public function test_resend_verification_email_stays_generic_when_verification_is_disabled(): void
+    public function test_resend_verification_email_still_sends_when_provider_row_is_set_to_disabled(): void
     {
         Notification::fake();
 
@@ -297,31 +403,12 @@ class AuthApiControllerTest extends TestCase
                 'message' => 'If the account exists and still needs verification, a verification email will be sent.',
             ]);
 
-        Notification::assertNothingSent();
+        Notification::assertSentTo($user, QueuedVerifyEmailNotification::class);
     }
 
-    public function test_it_marks_email_as_verified_from_signed_link(): void
-    {
-        $user = User::factory()->create([
-            'email' => 'member@gmail.com',
-            'email_verified_at' => null,
-        ]);
-
-        $url = \Illuminate\Support\Facades\URL::temporarySignedRoute(
-            'verification.verify',
-            now()->addMinutes(60),
-            [
-                'id' => $user->id,
-                'hash' => sha1($user->email),
-            ],
-        );
-
-        $response = $this->get($url);
-
-        $response->assertRedirect('/verify-email?status=verified&email=member%40gmail.com');
-        $this->assertNotNull($user->fresh()?->email_verified_at);
-    }
-
+    /**
+     * Existing accounts should receive a password reset notification when requested.
+     */
     public function test_it_can_send_a_password_reset_link(): void
     {
         Notification::fake();
@@ -378,6 +465,9 @@ class AuthApiControllerTest extends TestCase
         $this->assertStringContainsString('must-revalidate', $cacheControl);
     }
 
+    /**
+     * Valid reset tokens should update the stored password hash.
+     */
     public function test_it_can_reset_the_password_with_a_valid_token(): void
     {
         $user = User::factory()->create([

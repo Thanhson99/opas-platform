@@ -25,6 +25,7 @@ Route::middleware('throttle:api')->group(function (): void {
         Route::post('/login', [AuthApiController::class, 'login'])->name('login');
         Route::post('/forgot-password', [AuthApiController::class, 'forgotPassword'])->name('password.email');
         Route::post('/reset-password', [AuthApiController::class, 'resetPassword'])->name('password.update');
+        Route::post('/email/verify', [AuthApiController::class, 'verifyEmailCode'])->name('verification.confirm');
         Route::post('/email/verification-notification', [AuthApiController::class, 'resendVerificationEmail'])
             ->middleware('throttle:6,1')
             ->name('verification.send');
@@ -34,12 +35,12 @@ Route::middleware('throttle:api')->group(function (): void {
         });
     });
 
-    Route::prefix('admin/auth')->middleware(['web', 'auth', 'admin', 'no-store'])->name('api.admin.auth.')->group(function (): void {
+    Route::prefix('admin/auth')->middleware(['web', 'auth', 'verified-email', 'admin', 'no-store'])->name('api.admin.auth.')->group(function (): void {
         Route::get('/providers', [AdminAuthProviderApiController::class, 'index'])->name('providers.index');
         Route::put('/providers/{key}', [AdminAuthProviderApiController::class, 'update'])->name('providers.update');
     });
 
-    Route::prefix('admin/users')->middleware(['web', 'auth', 'admin', 'no-store'])->name('api.admin.users.')->group(function (): void {
+    Route::prefix('admin/users')->middleware(['web', 'auth', 'verified-email', 'admin', 'no-store'])->name('api.admin.users.')->group(function (): void {
         Route::get('/', [AdminUserApiController::class, 'index'])->name('index');
         Route::put('/{id}', [AdminUserApiController::class, 'update'])->whereNumber('id')->name('update');
         Route::post('/{id}/reset-password', [AdminUserApiController::class, 'resetPassword'])->whereNumber('id')->name('reset-password');
@@ -50,7 +51,7 @@ Route::middleware('throttle:api')->group(function (): void {
         Route::get('/', [CoinApiController::class, 'index'])->name('index');
         Route::get('/{symbol}', [CoinApiController::class, 'show'])->name('show');
         Route::prefix('favorites')->name('favorites.')->group(function (): void {
-            Route::middleware(['web', 'auth'])->group(function (): void {
+            Route::middleware(['web', 'auth', 'verified-email'])->group(function (): void {
                 Route::put('/{symbol}', [FavoriteCoinApiController::class, 'store'])->name('store');
                 Route::delete('/{symbol}', [FavoriteCoinApiController::class, 'destroy'])->name('destroy');
             });
@@ -58,7 +59,7 @@ Route::middleware('throttle:api')->group(function (): void {
 
         Route::prefix('keywords')->name('keywords.')->group(function (): void {
             Route::get('/', [FeedKeywordApiController::class, 'index'])->name('index');
-            Route::middleware(['web', 'auth'])->group(function (): void {
+            Route::middleware(['web', 'auth', 'verified-email'])->group(function (): void {
                 Route::post('/', [FeedKeywordApiController::class, 'store'])->name('store');
                 Route::delete('/{id}', [FeedKeywordApiController::class, 'destroy'])
                     ->whereNumber('id')
@@ -69,7 +70,7 @@ Route::middleware('throttle:api')->group(function (): void {
         Route::prefix('alerts')->name('alerts.')->group(function (): void {
             Route::get('/', [CoinAlertSettingApiController::class, 'index'])->name('index');
             Route::get('/{id}', [CoinAlertSettingApiController::class, 'show'])->whereNumber('id')->name('show');
-            Route::middleware(['web', 'auth'])->group(function (): void {
+            Route::middleware(['web', 'auth', 'verified-email'])->group(function (): void {
                 Route::put('/{id}', [CoinAlertSettingApiController::class, 'update'])->whereNumber('id')->name('update');
                 Route::patch('/{id}/toggle', [CoinAlertSettingApiController::class, 'toggle'])->whereNumber('id')->name('toggle');
             });
@@ -78,7 +79,7 @@ Route::middleware('throttle:api')->group(function (): void {
     Route::prefix('stocks')->name('api.stocks.')->group(function (): void {
         Route::get('/', [StockApiController::class, 'index'])->name('index');
         Route::prefix('favorites')->name('favorites.')->group(function (): void {
-            Route::middleware(['web', 'auth'])->group(function (): void {
+            Route::middleware(['web', 'auth', 'verified-email'])->group(function (): void {
                 Route::put('/{symbol}', [FavoriteStockApiController::class, 'store'])->name('store');
                 Route::delete('/{symbol}', [FavoriteStockApiController::class, 'destroy'])->name('destroy');
             });

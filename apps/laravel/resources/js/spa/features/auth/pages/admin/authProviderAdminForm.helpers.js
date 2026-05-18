@@ -70,7 +70,8 @@ export function buildInitialForm(provider) {
         icon: provider.icon ?? '',
         sort_order: String(provider.sort_order ?? 0),
         visibility: provider.visibility ?? 'public',
-        email_verification_mode: provider.email_verification_mode ?? '',
+        email_verification_mode:
+            provider.key === 'email' ? 'required' : (provider.email_verification_mode ?? ''),
         public_config: publicConfigFields,
         secret_config: Object.fromEntries(requiredSecretKeys.map((key) => [key, ''])),
     };

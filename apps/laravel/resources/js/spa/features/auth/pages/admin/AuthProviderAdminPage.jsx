@@ -624,41 +624,60 @@ export default function AuthProviderAdminPage() {
                                     </select>
                                 </AuthProviderField>
 
-                                <AuthProviderField
-                                    label={t('adminAuth.emailVerification.label')}
-                                    description={t('adminAuth.emailVerification.help')}
-                                    span="full"
-                                >
-                                    <select
-                                        className="app-input"
-                                        name={buildProviderInputName(
-                                            selectedProvider.key,
-                                            'email_verification_mode',
+                                {selectedProvider.key === 'email' ? (
+                                    <AuthProviderField
+                                        label={t('adminAuth.emailVerification.label')}
+                                        description={t(
+                                            'adminAuth.emailVerification.emailLockedHelp',
                                         )}
-                                        autoComplete="off"
-                                        value={form.email_verification_mode}
-                                        onBlur={() => markFieldTouched('email_verification_mode')}
-                                        onChange={(event) =>
-                                            updateForm(
-                                                'email_verification_mode',
-                                                event.target.value,
-                                            )
-                                        }
+                                        span="full"
                                     >
-                                        <option value="">
-                                            {t('adminAuth.emailVerification.inherit')}
-                                        </option>
-                                        <option value="required">
-                                            {t('adminAuth.emailVerification.required')}
-                                        </option>
-                                        <option value="optional">
-                                            {t('adminAuth.emailVerification.optional')}
-                                        </option>
-                                        <option value="disabled">
-                                            {t('adminAuth.emailVerification.disabled')}
-                                        </option>
-                                    </select>
-                                </AuthProviderField>
+                                        <input
+                                            className="app-input"
+                                            value={t('adminAuth.emailVerification.required')}
+                                            disabled
+                                            readOnly
+                                        />
+                                    </AuthProviderField>
+                                ) : (
+                                    <AuthProviderField
+                                        label={t('adminAuth.emailVerification.label')}
+                                        description={t('adminAuth.emailVerification.help')}
+                                        span="full"
+                                    >
+                                        <select
+                                            className="app-input"
+                                            name={buildProviderInputName(
+                                                selectedProvider.key,
+                                                'email_verification_mode',
+                                            )}
+                                            autoComplete="off"
+                                            value={form.email_verification_mode}
+                                            onBlur={() =>
+                                                markFieldTouched('email_verification_mode')
+                                            }
+                                            onChange={(event) =>
+                                                updateForm(
+                                                    'email_verification_mode',
+                                                    event.target.value,
+                                                )
+                                            }
+                                        >
+                                            <option value="">
+                                                {t('adminAuth.emailVerification.inherit')}
+                                            </option>
+                                            <option value="required">
+                                                {t('adminAuth.emailVerification.required')}
+                                            </option>
+                                            <option value="optional">
+                                                {t('adminAuth.emailVerification.optional')}
+                                            </option>
+                                            <option value="disabled">
+                                                {t('adminAuth.emailVerification.disabled')}
+                                            </option>
+                                        </select>
+                                    </AuthProviderField>
+                                )}
                             </div>
                         </section>
 

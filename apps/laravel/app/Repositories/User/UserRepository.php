@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Repositories\BaseRepository;
 use App\Repositories\User\Interfaces\UserRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Carbon;
 
 /**
  * @extends BaseRepository<User>
@@ -76,6 +77,22 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
     }
 
     /**
+     * Find a single user by email address.
+     *
+     * @param  string  $email
+     * @return User|null
+     */
+    public function findByEmail(string $email): ?User
+    {
+        $user = $this->model
+            ->newQuery()
+            ->where('email', $email)
+            ->first();
+
+        return $user instanceof User ? $user : null;
+    }
+
+    /**
      * Persist account field changes and return a fresh user model.
      *
      * @param  User  $user
@@ -88,6 +105,22 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
         $user->forceFill([
             'name' => $name,
             'role' => $role,
+        ])->save();
+
+        return $user->refresh();
+    }
+
+    /**
+     * Persist the email verified timestamp and return a fresh user model.
+     *
+     * @param  User  $user
+     * @param  Carbon  $verifiedAt
+     * @return User
+     */
+    public function markEmailVerified(User $user, Carbon $verifiedAt): User
+    {
+        $user->forceFill([
+            'email_verified_at' => $verifiedAt,
         ])->save();
 
         return $user->refresh();
