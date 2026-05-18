@@ -63,4 +63,66 @@ class AuthProviderServiceTest extends TestCase
 
         $this->assertFalse($this->app->make(AuthProviderService::class)->canUse('google'));
     }
+
+    /**
+     * Ready and enabled providers should resolve as usable for the requested capability.
+     */
+    public function test_can_use_returns_true_for_ready_enabled_provider(): void
+    {
+        $provider = AuthProvider::query()->where('key', 'google')->firstOrFail();
+
+        $provider->update([
+            'enabled' => true,
+            'visibility' => 'public',
+            'public_config' => [
+                'client_id' => 'google-client-id',
+                'redirect_uri' => 'https://example.com/auth/google/callback',
+            ],
+            'secret_config' => [
+                'client_secret' => 'test-secret',
+            ],
+        ]);
+
+        $this->assertTrue($this->app->make(AuthProviderService::class)->canUse('google', 'login'));
+    }
+
+    /**
+     * Unknown provider keys should not resolve into a runtime contract.
+     */
+    public function test_resolve_returns_null_for_unknown_provider(): void
+    {
+        $resolved = $this->app->make(AuthProviderService::class)->resolve('unknown-provider');
+
+        $this->assertNull($resolved);
+    }
+
+    /**
+     * Persisted verification policy should be returned directly when the provider defines one.
+     */
+    public function test_email_verification_mode_returns_provider_specific_value(): void
+    {
+        AuthProvider::query()->where('key', 'email')->update([
+            'email_verification_mode' => 'optional',
+        ]);
+
+        $mode = $this->app->make(AuthProviderService::class)->emailVerificationMode('email');
+
+        $this->assertSame('optional', $mode);
+    }
+
+    /**
+     * Email verification should fall back to application config when the provider has no override.
+     */
+    public function test_email_verification_mode_falls_back_to_config_default(): void
+    {
+        AuthProvider::query()->where('key', 'email')->update([
+            'email_verification_mode' => null,
+        ]);
+
+        config()->set('opas.auth.email_verification.default_mode', 'disabled');
+
+        $mode = $this->app->make(AuthProviderService::class)->emailVerificationMode('email');
+
+        $this->assertSame('disabled', $mode);
+    }
 }

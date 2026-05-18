@@ -1,55 +1,55 @@
-# To Chuc Folder
+# Folder Organization
 
-## Nguyen tac
+## Principles
 
-- Khong doi vi tri folder runtime dang duoc `docker-compose.yml` mount.
-- Them folder tai lieu va prompt de quan ly luong van hanh ro rang.
-- Moi service tu quan ly code cua no; tai lieu chung dat o root.
+- Do not move runtime folders that are already mounted by `docker-compose.yml`.
+- Add documentation and prompt folders so operational flows stay explicit and maintainable.
+- Each service should own its own runtime code, while shared documentation stays at the repository root.
 
-## Cau truc nen giu
+## Recommended Structure
 
 ```text
-apps/laravel/        Web app va API gateway
+apps/laravel/        Web app and API gateway
 services/python/     FastAPI services
-services/n8n/        Workflow, node, credential data
+services/n8n/        Workflow, node, and credential data
 services/libretranslate/
-  Dockerfile + models ArgosTranslate
+  Dockerfile + ArgosTranslate models
 docker/              Persistent runtime data
 nginx/               Reverse proxy
 scripts/             Utility scripts
-docs/                Kien truc, runbook, tich hop
-ai-local/            Prompt va quy uoc dieu khien LLM local
+docs/                Architecture, runbooks, and integration guides
+ai-local/            Prompts and local LLM control conventions
 ```
 
-## Y nghia folder moi
+## Meaning Of The Added Folders
 
 ### `docs/`
 
-Tai lieu cho nguoi van hanh va nguoi phat trien:
+Documentation for operators and developers:
 
-- kien truc
-- luong tich hop
-- quy uoc folder
-- runbook AI local
+- architecture
+- integration flow
+- folder conventions
+- local AI runbook
 
 ### `ai-local/`
 
-Bo prompt va quy tac de goi AI local nhat quan:
+Prompt pack and control rules for consistent local AI usage:
 
-- prompt cho model viet nhap
-- prompt cho model review
-- prompt cho orchestration
-- prompt cho post-edit translation
+- drafting prompts
+- review prompts
+- orchestration prompts
+- translation post-edit prompts
 
-## Thu tu uu tien khi them file moi
+## Priority Order When Adding New Files
 
-1. File chay runtime dat trong service tuong ung.
-2. File prompt hoac instruction dat trong `ai-local/`.
-3. File mo ta luong hoac quy uoc dat trong `docs/`.
-4. Script phu tro dat trong `scripts/`.
+1. Runtime files should live inside the relevant service.
+2. Prompt or instruction files should live in `ai-local/`.
+3. Flow descriptions or conventions should live in `docs/`.
+4. Support scripts should live in `scripts/`.
 
-## Khong nen lam
+## What To Avoid
 
-- Khong dat prompt AI lung tung trong `n8n/workflows/` hoac `laravel/resources/`.
-- Khong dat tai lieu van hanh trong README cua tung framework mac dinh.
-- Khong doi them folder runtime nua neu chua sua toan bo volume mount va script lien quan.
+- Do not scatter AI prompts across `n8n/workflows/` or `laravel/resources/`.
+- Do not put operational documentation only inside framework-specific default READMEs.
+- Do not add more runtime folders unless all related volume mounts and scripts are updated together.

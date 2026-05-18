@@ -1,11 +1,11 @@
 # Agent Rules
 
-Read [docs/CODEGEN-RULES.md](docs/CODEGEN-RULES.md) before making application code changes.
+Read [docs/codegen-rules.md](docs/codegen-rules.md) before making application code changes.
 
-When working on `apps/laravel`, follow that document for:
-- config and secret placement
-- controller / service / repository boundaries
-- database change patterns
-- function structure and docblock requirements
-- auth and provider implementation rules
-- required `pint` and `phpstan` verification before closing a task
+When working on `apps/laravel`, use that index and read only the relevant rule files for the task:
+- coding rules
+- docblock rules
+- comment rules
+- testing rules
+- auth provider rules when auth is affected
+- verification rules before closing the task

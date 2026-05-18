@@ -1,17 +1,17 @@
-# Kien Truc Tong The
+# System Architecture
 
-## Muc tieu
+## Goal
 
-Repo nay duoc to chuc theo mo hinh:
+This repository is organized around the following model:
 
-- Laravel = giao dien va diem vao nguoi dung
+- Laravel = user-facing interface and entry point
 - n8n = workflow engine
-- Python services = utility layer va data processing
+- Python services = utility layer and data processing
 - Ollama = local LLM runtime
 - LibreTranslate = local translation layer
-- PostgreSQL = du lieu dung chung
+- PostgreSQL = shared data store
 
-## So do logic
+## Logical Diagram
 
 ```text
 User
@@ -28,36 +28,36 @@ Laravel UI/API
              \----> Ollama
 ```
 
-## Nguyen tac ket noi
+## Integration Principles
 
-- Laravel khong nen goi truc tiep qua nhieu node AI.
-- n8n nen giu vai tro orchestration cho cac pipeline dai.
-- Python services nen giu cac tac vu:
+- Laravel should not call too many AI nodes directly.
+- n8n should keep the orchestration role for long pipelines.
+- Python services should own tasks such as:
   - parsing
   - scraping
   - preprocessing
   - validation
-  - adapter cho external APIs
-- Ollama nen duoc goi qua prompt co cau truc va output JSON khi co the.
-- LibreTranslate nen dung cho translation layer, khong gan logic nghiep vu vao service nay.
+  - external API adapter logic
+- Ollama should be called through structured prompts and JSON output whenever possible.
+- LibreTranslate should stay in the translation layer and should not absorb business logic.
 
-## Trang thai source hien tai
+## Current Source Status
 
-- Laravel da co mot service client cho Python: `App\Services\Python\PythonService`
-- Route Laravel hien chu yeu phuc vu:
+- Laravel already has a Python client service: `App\Services\Python\PythonService`
+- Laravel routes currently focus mainly on:
   - coin
   - stock
   - video automation
-- Python service hien dang expose rat it route tong hop; can bo sung them route nghiep vu neu muon Laravel goi on dinh.
-- n8n da co nhieu workflow JSON nhung chua co tai lieu mapping use-case ro rang.
+- The Python service currently exposes only a small set of aggregate routes; more business-oriented routes should be added if Laravel is expected to depend on it more heavily.
+- n8n already contains multiple workflow JSON files, but the use-case mapping is not yet documented clearly.
 
-## Dinh huong tiep theo
+## Recommended Next Direction
 
-Nen chia use-case thanh 3 lop:
+Use cases should be split into three layers:
 
 1. `interactive`
-   Laravel goi truc tiep Python service hoac n8n webhook va cho ket qua ngay.
+   Laravel calls a Python service or n8n webhook directly and waits for an immediate response.
 2. `workflow`
-   n8n xu ly pipeline dai, co trang thai job.
+   n8n handles long-running pipelines and job state.
 3. `ai-assisted`
-   n8n/Python goi Ollama va LibreTranslate, tra ve ket qua da chuan hoa.
+   n8n or Python calls Ollama and LibreTranslate, then returns normalized output.

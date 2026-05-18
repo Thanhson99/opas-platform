@@ -1,84 +1,84 @@
-# Luong Tich Hop
+# Integration Flow
 
 ## 1. Laravel -> n8n
 
-Dung khi:
+Use this when:
 
-- can trigger workflow dai
-- can retry
-- can log tung buoc
-- can ket hop AI, translation, upload, scheduling
+- you need to trigger long-running workflows
+- you need retries
+- you need step-by-step logging
+- you need to combine AI, translation, uploads, or scheduling
 
-De nghi:
+Recommended approach:
 
-- Laravel goi vao webhook cua n8n
-- Laravel luu `job_id`, `workflow_name`, `payload_hash`, `status`
-- n8n tra ve ket qua ngan hoac callback lai Laravel
+- Laravel calls an n8n webhook
+- Laravel stores `job_id`, `workflow_name`, `payload_hash`, and `status`
+- n8n returns a short result immediately or calls Laravel back later
 
 ## 2. Laravel -> Python Services
 
-Dung khi:
+Use this when:
 
-- can response nhanh
-- can mot utility service don le
-- can parsing/scraping/preprocess
+- you need a fast response
+- you need a focused utility service
+- you need parsing, scraping, or preprocessing
 
-Hien tai:
+Current status:
 
-- `apps/laravel/app/Services/Python/PythonService.php` dang la client co ban
-- nen mo rong thanh service theo tung domain thay vi mot class chung cho moi use-case
+- `apps/laravel/app/Services/Python/PythonService.php` is currently a basic client
+- it should evolve into domain-specific services instead of one generic class for every use case
 
 ## 3. n8n -> Ollama
 
-Dung khi:
+Use this when:
 
-- viet nhap bai
-- rewrite
-- review output
-- generate structured JSON
+- drafting content
+- rewriting
+- reviewing output
+- generating structured JSON
 
-Quy uoc de nghi:
+Recommended conventions:
 
 - `qwen2.5:7b`: writer / planner
 - `mistral:7b`: critic / reviewer
-- moi workflow luu prompt goc trong `ai-local/agents/*.md`
-- n8n chi tham chieu prompt, khong nen viet prompt dai truc tiep trong node neu co the tranh
+- each workflow should store its source prompt in `ai-local/agents/*.md`
+- n8n should reference prompts instead of embedding long prompts directly in nodes whenever possible
 
 ## 4. n8n -> LibreTranslate
 
-Dung khi:
+Use this when:
 
-- dich nhap
-- tao phien ban ngon ngu thu hai
-- tien xu ly hoac hau xu ly noi dung AI
+- translating drafts
+- generating a second language version
+- preprocessing or postprocessing AI content
 
-De nghi:
+Recommended approach:
 
-- Dich thuan bang LibreTranslate
-- Neu can do truot, chay them mot buoc AI post-edit bang Ollama
+- perform direct translation with LibreTranslate
+- if quality slips, add one AI post-edit step with Ollama
 
 ## 5. Python Services -> Ollama
 
-Dung khi:
+Use this when:
 
-- can xu ly AI co logic lap trinh phuc tap
-- can validate output JSON
-- can chunking, retry, fallback
+- AI processing needs more programming control
+- JSON output must be validated
+- you need chunking, retries, or fallback logic
 
-Neu lam theo huong nay, Python service nen dong vai tro adapter:
+In that case, the Python service should act as an adapter:
 
-- nhan payload tu Laravel hoac n8n
-- goi Ollama
-- validate schema
-- tra ket qua sach
+- receive payloads from Laravel or n8n
+- call Ollama
+- validate the schema
+- return normalized output
 
-## Luong goi y cho bai toan cua ban
+## Suggested Flow For This Stack
 
-1. User nhap yeu cau tai Laravel
-2. Laravel trigger n8n workflow
-3. n8n goi Python service de lay/lam sach du lieu
-4. n8n goi Qwen de tao draft
-5. n8n goi LibreTranslate neu can da ngon ngu
-6. n8n goi Mistral de review hoac post-edit
-7. n8n tra ket qua ve Laravel
-8. Laravel hien thi, luu log va lich su
+1. The user submits a request in Laravel.
+2. Laravel triggers an n8n workflow.
+3. n8n calls a Python service to fetch or clean data.
+4. n8n calls Qwen to generate a draft.
+5. n8n calls LibreTranslate if another language version is needed.
+6. n8n calls Mistral to review or post-edit the result.
+7. n8n returns the result to Laravel.
+8. Laravel displays the result and stores logs and history.

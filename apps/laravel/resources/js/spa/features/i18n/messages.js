@@ -502,7 +502,7 @@ export const messages = {
             logoutEyebrow: 'Đăng xuất',
             logoutTitle: 'Đăng xuất khỏi khu quản trị?',
             logoutText:
-                'Phiên làm việc hiện tại sẽ kết thúc và anh sẽ quay lại màn hình đăng nhập.',
+                'Phiên làm việc hiện tại sẽ kết thúc và bạn sẽ quay lại màn hình đăng nhập.',
         },
         footer: {
             text: 'Không gian React tập trung cho market tracking, workflow nội dung và vận hành nội bộ.',
@@ -526,7 +526,7 @@ export const messages = {
             loginError: 'Không đăng nhập được với tài khoản này.',
             forgotPasswordLink: 'Quên mật khẩu?',
             forgotPasswordTitle: 'Quên mật khẩu?',
-            forgotPasswordText: 'Nhập email của anh và hệ thống sẽ gửi liên kết đặt lại mật khẩu.',
+            forgotPasswordText: 'Nhập email và hệ thống sẽ gửi liên kết đặt lại mật khẩu.',
             forgotPasswordSubmit: 'Gửi liên kết đặt lại',
             forgotPasswordSending: 'Đang gửi...',
             forgotPasswordSent: 'Đã gửi liên kết đặt lại mật khẩu.',
@@ -536,15 +536,15 @@ export const messages = {
             forgotPasswordShowcaseText:
                 'Dùng luồng đặt lại qua email để xác minh chủ tài khoản và đặt mật khẩu mới an toàn.',
             resetPasswordTitle: 'Đặt lại mật khẩu',
-            resetPasswordText: 'Thiết lập mật khẩu mới cho tài khoản của anh.',
+            resetPasswordText: 'Thiết lập mật khẩu mới cho tài khoản của bạn.',
             resetPasswordSubmit: 'Cập nhật mật khẩu',
             resetPasswordSubmitting: 'Đang cập nhật...',
             resetPasswordError: 'Không thể đặt lại mật khẩu với liên kết này.',
-            resetPasswordSuccess: 'Đã cập nhật mật khẩu thành công. Bây giờ anh có thể đăng nhập.',
+            resetPasswordSuccess: 'Đã cập nhật mật khẩu thành công. Bây giờ bạn có thể đăng nhập.',
             resetPasswordEyebrow: 'Mật khẩu mới',
             resetPasswordShowcaseTitle: 'Đặt mật khẩu mới và quay lại OPAS.',
             resetPasswordShowcaseText:
-                'Hãy chọn một mật khẩu mạnh, dễ nhớ với anh và dùng nó cho những lần đăng nhập sau.',
+                'Hãy chọn một mật khẩu mạnh, dễ nhớ và dùng nó cho những lần đăng nhập sau.',
             providersLoading: 'Đang tải phương thức đăng nhập...',
             noProvidersAvailable: 'Hiện chưa có phương thức đăng nhập nào khả dụng.',
             registrationUnavailable: 'Hiện chưa thể đăng ký tài khoản mới.',
@@ -566,7 +566,7 @@ export const messages = {
             loginShowcaseTitle:
                 'Đăng nhập để quay lại không gian OPAS và tiếp tục các luồng theo dõi, nội dung, và automation đang vận hành.',
             loginShowcaseText:
-                'Đây là lối vào dành cho những phần việc cần tài khoản trong OPAS. Khi đăng nhập xong, anh có thể tiếp tục theo dõi dữ liệu, quản lý đầu vào nội dung và mở các khu automation trong cùng một không gian làm việc.',
+                'Đây là lối vào dành cho những phần việc cần tài khoản trong OPAS. Khi đăng nhập xong, bạn có thể tiếp tục theo dõi dữ liệu, quản lý đầu vào nội dung và mở các khu automation trong cùng một không gian làm việc.',
             registerTitle: 'Đăng ký',
             registerText: 'Tạo tài khoản mới để bắt đầu dùng OPAS theo vai trò thành viên.',
             registerSubmit: 'Tạo tài khoản',
@@ -594,7 +594,7 @@ export const messages = {
             registerShowcaseTitle:
                 'Tạo tài khoản để bắt đầu dùng OPAS theo đúng luồng vận hành của hệ thống, từ theo dõi dữ liệu đến quản lý đầu vào và mở các khu automation.',
             registerShowcaseText:
-                'Tài khoản mới giúp anh đi vào phần thao tác cá nhân của hệ thống một cách gọn gàng hơn. Khi cần thêm quyền hoặc thêm khả năng sử dụng, vai trò có thể được mở rộng tiếp theo đúng cách vận hành thực tế.',
+                'Tài khoản mới giúp bạn đi vào phần thao tác cá nhân của hệ thống một cách gọn gàng hơn. Khi cần thêm quyền hoặc thêm khả năng sử dụng, vai trò có thể được mở rộng tiếp theo đúng cách vận hành thực tế.',
             email: 'Email',
             password: 'Mật khẩu',
             confirmPassword: 'Xác nhận mật khẩu',
@@ -622,7 +622,7 @@ export const messages = {
             editSecret: 'Thay secret mới',
             cancelSecretEdit: 'Giữ secret hiện tại',
             secretMaskedHint:
-                'Secret hiện tại vẫn được lưu an toàn ở backend và không thể hiện lại dưới dạng chữ thường. Chỉ nhập giá trị mới khi anh muốn thay secret.',
+                'Secret hiện tại vẫn được lưu an toàn ở backend và không thể hiện lại dưới dạng chữ thường. Chỉ nhập giá trị mới khi bạn muốn thay secret.',
             readyToSave: 'Cấu hình hiện tại hợp lệ và có thể lưu.',
             noChangesToSave:
                 'Chưa có thay đổi nào để lưu. Hãy sửa dữ liệu hoặc đổi trạng thái trước.',

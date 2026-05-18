@@ -61,4 +61,54 @@ class AuthProviderConfigServiceTest extends TestCase
             ],
         ]);
     }
+
+    /**
+     * Enabled OAuth providers must require the full minimum config set before activation.
+     */
+    public function test_update_rejects_missing_required_config_when_provider_is_enabled(): void
+    {
+        $provider = AuthProvider::query()->where('key', 'google')->firstOrFail();
+
+        try {
+            $this->app->make(AuthProviderConfigService::class)->update($provider, [
+                'enabled' => true,
+                'visibility' => 'public',
+                'public_config' => [
+                    'client_id' => 'google-client-id',
+                ],
+                'secret_config' => [],
+            ]);
+
+            $this->fail('Expected validation exception was not thrown.');
+        } catch (ValidationException $exception) {
+            $errors = $exception->errors();
+
+            $this->assertArrayHasKey('public_config.redirect_uri', $errors);
+            $this->assertArrayHasKey('secret_config.client_secret', $errors);
+        }
+    }
+
+    /**
+     * Removing the last active login provider must be rejected to protect sign-in access.
+     */
+    public function test_update_rejects_disabling_last_active_login_provider(): void
+    {
+        $provider = AuthProvider::query()->where('key', 'email')->firstOrFail();
+
+        AuthProvider::query()->whereIn('key', ['google', 'facebook', 'github'])->update([
+            'enabled' => false,
+        ]);
+
+        try {
+            $this->app->make(AuthProviderConfigService::class)->update($provider, [
+                'enabled' => false,
+            ]);
+
+            $this->fail('Expected validation exception was not thrown.');
+        } catch (ValidationException $exception) {
+            $errors = $exception->errors();
+
+            $this->assertArrayHasKey('enabled', $errors);
+        }
+    }
 }

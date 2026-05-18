@@ -72,6 +72,46 @@ class AdminAuthProviderApiControllerTest extends TestCase
     }
 
     /**
+     * Non-admin users must not update provider settings from the admin endpoint.
+     */
+    public function test_non_admin_cannot_update_auth_provider(): void
+    {
+        $member = User::factory()->create([
+            'role' => UserRole::Member,
+        ]);
+
+        $response = $this
+            ->actingAs($member)
+            ->putJson(route('api.admin.auth.providers.update', ['key' => 'google']), [
+                'enabled' => true,
+            ]);
+
+        $response->assertForbidden();
+    }
+
+    /**
+     * Guests must authenticate before accessing admin provider settings.
+     */
+    public function test_guest_cannot_list_auth_providers(): void
+    {
+        $response = $this->getJson(route('api.admin.auth.providers.index'));
+
+        $response->assertUnauthorized();
+    }
+
+    /**
+     * Guests must authenticate before updating admin provider settings.
+     */
+    public function test_guest_cannot_update_auth_provider(): void
+    {
+        $response = $this->putJson(route('api.admin.auth.providers.update', ['key' => 'google']), [
+            'enabled' => true,
+        ]);
+
+        $response->assertUnauthorized();
+    }
+
+    /**
      * Admin-only provider endpoints should also send no-store headers because they expose sensitive config metadata.
      */
     public function test_admin_provider_listing_is_not_cacheable(): void
@@ -128,6 +168,99 @@ class AdminAuthProviderApiControllerTest extends TestCase
         $provider = AuthProvider::query()->where('key', 'google')->firstOrFail();
 
         $this->assertSame('google-secret', $provider->secret_config['client_secret']);
+    }
+
+    /**
+     * Email provider policy updates should persist so auth flows can consume them later.
+     */
+    public function test_admin_can_update_email_verification_mode_for_email_provider(): void
+    {
+        $admin = User::factory()->create([
+            'role' => UserRole::Admin,
+        ]);
+
+        $response = $this
+            ->actingAs($admin)
+            ->putJson(route('api.admin.auth.providers.update', ['key' => 'email']), [
+                'enabled' => true,
+                'display_name' => 'Email and Password',
+                'sort_order' => 10,
+                'visibility' => 'public',
+                'email_verification_mode' => 'optional',
+            ]);
+
+        $response->assertOk()
+            ->assertJsonPath('data.key', 'email')
+            ->assertJsonPath('data.email_verification_mode', 'optional');
+
+        $this->assertDatabaseHas('auth_providers', [
+            'key' => 'email',
+            'email_verification_mode' => 'optional',
+        ]);
+    }
+
+    /**
+     * Unknown provider keys must return a not found response instead of mutating unrelated state.
+     */
+    public function test_admin_update_returns_not_found_for_unknown_provider(): void
+    {
+        $admin = User::factory()->create([
+            'role' => UserRole::Admin,
+        ]);
+
+        $response = $this
+            ->actingAs($admin)
+            ->putJson(route('api.admin.auth.providers.update', ['key' => 'unknown-provider']), [
+                'enabled' => true,
+            ]);
+
+        $response->assertNotFound();
+    }
+
+    /**
+     * Enabling an OAuth provider without its required configuration must be rejected.
+     */
+    public function test_admin_update_rejects_enabling_provider_without_required_config(): void
+    {
+        $admin = User::factory()->create([
+            'role' => UserRole::Admin,
+        ]);
+
+        $response = $this
+            ->actingAs($admin)
+            ->putJson(route('api.admin.auth.providers.update', ['key' => 'google']), [
+                'enabled' => true,
+                'visibility' => 'public',
+                'public_config' => [
+                    'client_id' => 'google-client-id',
+                ],
+                'secret_config' => [],
+            ]);
+
+        $response->assertUnprocessable()
+            ->assertJsonValidationErrors([
+                'public_config.redirect_uri',
+                'secret_config.client_secret',
+            ]);
+    }
+
+    /**
+     * Invalid verification policy values must be rejected safely by request validation.
+     */
+    public function test_admin_update_rejects_invalid_email_verification_mode(): void
+    {
+        $admin = User::factory()->create([
+            'role' => UserRole::Admin,
+        ]);
+
+        $response = $this
+            ->actingAs($admin)
+            ->putJson(route('api.admin.auth.providers.update', ['key' => 'email']), [
+                'email_verification_mode' => 'always',
+            ]);
+
+        $response->assertUnprocessable()
+            ->assertJsonValidationErrors(['email_verification_mode']);
     }
 
     /**
