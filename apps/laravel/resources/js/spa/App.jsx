@@ -1,8 +1,12 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import AdminShell from './components/layout/AdminShell';
 import AppShell from './components/layout/AppShell';
 import { AuthProvider } from './features/auth/context/AuthContext';
 import LoginPage from './features/auth/pages/LoginPage';
+import ForgotPasswordPage from './features/auth/pages/ForgotPasswordPage';
 import RegisterPage from './features/auth/pages/RegisterPage';
+import ResetPasswordPage from './features/auth/pages/ResetPasswordPage';
+import VerifyEmailPage from './features/auth/pages/VerifyEmailPage';
 import DashboardPage from './features/dashboard/pages/DashboardPage';
 import AlertEditPage from './features/coins/pages/AlertEditPage';
 import AlertsPage from './features/coins/pages/AlertsPage';
@@ -26,7 +30,11 @@ export default function App() {
                 <AuthProvider>
                     <Routes>
                         <Route path="/login" element={<LoginPage />} />
+                        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
                         <Route path="/register" element={<RegisterPage />} />
+                        <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
+                        <Route path="/verify-email" element={<VerifyEmailPage />} />
+                        <Route path="/admin/*" element={<AdminShell />} />
                         <Route
                             path="*"
                             element={

@@ -1,15 +1,37 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import AppIcon, { hasAppIcon } from '../../../components/icons/AppIcon';
 import ErrorState from '../../../components/ui/ErrorState';
 import AuthShowcase from '../components/AuthShowcase';
+import SensitiveInput from '../components/SensitiveInput';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../../i18n/context/LanguageContext';
 import LanguageSelect from '../../../components/layout/LanguageSelect';
 
+function buildOauthButtonClass(key) {
+    return `app-button app-social-button app-social-button--${key}`;
+}
+
+function oauthButtonText(provider, t) {
+    switch (provider.key) {
+        case 'google':
+            return 'Continue with Google';
+        case 'github':
+            return 'Continue with GitHub';
+        case 'facebook':
+            return 'Continue with Facebook';
+        default:
+            return (
+                provider.metadata?.button_text ||
+                `${t('auth.continueWithProvider')} ${provider.display_name}`
+            );
+    }
+}
+
 export default function LoginPage() {
     const navigate = useNavigate();
     const location = useLocation();
-    const { login } = useAuth();
+    const { login, authProviders, providersLoading, refreshAuthProviders } = useAuth();
     const { t } = useLanguage();
     const [form, setForm] = useState({
         email: '',
@@ -17,18 +39,63 @@ export default function LoginPage() {
     });
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState('');
+    const [flash, setFlash] = useState('');
+    const [fieldErrors, setFieldErrors] = useState({});
 
     const from = location.state?.from?.pathname || '/';
+    const emailProvider = authProviders.find((provider) => provider.key === 'email') ?? null;
+    const oauthProviders = authProviders.filter((provider) => provider.key !== 'email');
+
+    useEffect(() => {
+        void refreshAuthProviders();
+    }, [refreshAuthProviders]);
+
+    useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        const authError = params.get('auth_error');
+        const reset = params.get('reset');
+
+        setFlash('');
+
+        if (authError) {
+            setError(authError);
+        }
+
+        if (reset === 'success') {
+            setError('');
+            setFlash(t('auth.resetPasswordSuccess'));
+        }
+    }, [location.search, t]);
+
+    const invalidEmail =
+        form.email.trim() !== '' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim());
+    const canSubmit =
+        form.email.trim() !== '' && !invalidEmail && form.password.trim() !== '' && !submitting;
 
     const submit = async (event) => {
         event.preventDefault();
+
+        if (!canSubmit) {
+            return;
+        }
+
         setSubmitting(true);
         setError('');
+        setFieldErrors({});
 
         try {
             await login(form);
             navigate(from, { replace: true });
         } catch (requestError) {
+            if (requestError?.response?.data?.meta?.verification_required) {
+                const email = requestError.response.data.meta.email ?? form.email;
+                navigate(`/verify-email?email=${encodeURIComponent(email)}&status=pending`, {
+                    replace: true,
+                });
+                return;
+            }
+
+            setFieldErrors(requestError?.response?.data?.errors ?? {});
             setError(requestError?.response?.data?.message || t('auth.loginError'));
         } finally {
             setSubmitting(false);
@@ -60,51 +127,108 @@ export default function LoginPage() {
                         </div>
                         <h2 className="app-form-card__title">{t('auth.loginTitle')}</h2>
                         <p className="app-form-card__text">{t('auth.loginText')}</p>
-                        <form className="app-form" onSubmit={submit}>
-                            <div className="app-field">
-                                <label className="app-label">{t('auth.email')}</label>
-                                <input
-                                    className="app-input"
-                                    type="email"
-                                    value={form.email}
-                                    onChange={(event) =>
-                                        setForm((value) => ({
-                                            ...value,
-                                            email: event.target.value,
-                                        }))
-                                    }
-                                    required
-                                />
+                        {providersLoading ? <p>{t('auth.providersLoading')}</p> : null}
+                        {emailProvider ? (
+                            <form className="app-form" onSubmit={submit}>
+                                <div className="app-field">
+                                    <label className="app-label">{t('auth.email')}</label>
+                                    <input
+                                        className={`app-input ${
+                                            invalidEmail || fieldErrors.email?.[0]
+                                                ? 'app-input--invalid'
+                                                : ''
+                                        }`}
+                                        type="email"
+                                        value={form.email}
+                                        onChange={(event) =>
+                                            setForm((value) => ({
+                                                ...value,
+                                                email: event.target.value,
+                                            }))
+                                        }
+                                        required
+                                    />
+                                    {invalidEmail ? (
+                                        <p className="app-field__error">{t('auth.invalidEmail')}</p>
+                                    ) : null}
+                                    {fieldErrors.email?.[0] ? (
+                                        <p className="app-field__error">{fieldErrors.email[0]}</p>
+                                    ) : null}
+                                </div>
+                                <div className="app-field">
+                                    <label className="app-label">{t('auth.password')}</label>
+                                    <SensitiveInput
+                                        value={form.password}
+                                        invalid={Boolean(fieldErrors.password?.[0] || error)}
+                                        required
+                                        autoComplete="current-password"
+                                        revealLabel={t('auth.showValue')}
+                                        concealLabel={t('auth.hideValue')}
+                                        onChange={(event) =>
+                                            setForm((value) => ({
+                                                ...value,
+                                                password: event.target.value,
+                                            }))
+                                        }
+                                    />
+                                    {fieldErrors.password?.[0] ? (
+                                        <p className="app-field__error">
+                                            {fieldErrors.password[0]}
+                                        </p>
+                                    ) : null}
+                                </div>
+                                {flash ? (
+                                    <div className="app-provider-note app-provider-note--success">
+                                        {flash}
+                                    </div>
+                                ) : null}
+                                {error ? <ErrorState text={error} /> : null}
+                                <button
+                                    className="app-button app-button--primary"
+                                    type="submit"
+                                    disabled={!canSubmit}
+                                >
+                                    {submitting ? t('auth.loginSubmitting') : t('auth.loginSubmit')}
+                                </button>
+                                <Link to="/forgot-password" className="app-inline-link">
+                                    {t('auth.forgotPasswordLink')}
+                                </Link>
+                            </form>
+                        ) : null}
+                        {oauthProviders.length > 0 ? (
+                            <div className="app-form">
+                                {oauthProviders.map((provider) => (
+                                    <a
+                                        key={provider.key}
+                                        className={buildOauthButtonClass(provider.key)}
+                                        href={`/api/auth/providers/${provider.key}/redirect`}
+                                    >
+                                        {hasAppIcon(provider.icon) ? (
+                                            <span
+                                                className={`app-social-button__icon app-social-button__icon--${provider.key}`}
+                                            >
+                                                <AppIcon name={provider.icon} />
+                                            </span>
+                                        ) : null}
+                                        <span className="app-social-button__label">
+                                            {oauthButtonText(provider, t)}
+                                        </span>
+                                    </a>
+                                ))}
                             </div>
-                            <div className="app-field">
-                                <label className="app-label">{t('auth.password')}</label>
-                                <input
-                                    className="app-input"
-                                    type="password"
-                                    value={form.password}
-                                    onChange={(event) =>
-                                        setForm((value) => ({
-                                            ...value,
-                                            password: event.target.value,
-                                        }))
-                                    }
-                                    required
-                                />
-                            </div>
-                            {error ? <ErrorState text={error} /> : null}
-                            <button
-                                className="app-button app-button--primary"
-                                type="submit"
-                                disabled={submitting}
-                            >
-                                {submitting ? t('auth.loginSubmitting') : t('auth.loginSubmit')}
-                            </button>
-                        </form>
+                        ) : null}
+                        {!providersLoading && authProviders.length === 0 ? (
+                            <ErrorState text={t('auth.noProvidersAvailable')} />
+                        ) : null}
                         <div className="app-auth-panel__footer">
                             <span>{t('auth.noAccount')}</span>
-                            <Link to="/register" className="app-inline-link">
-                                {t('auth.createAccount')}
-                            </Link>
+                            {emailProvider?.capabilities?.register ? (
+                                <Link to="/register" className="app-inline-link">
+                                    {t('auth.createAccount')}
+                                </Link>
+                            ) : (
+                                <span>{t('auth.registrationUnavailable')}</span>
+                            )}
                         </div>
                     </article>
 

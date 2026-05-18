@@ -1,0 +1,264 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Services\Auth;
+
+use App\Auth\Contracts\AuthProviderDriverInterface;
+use App\Models\AuthProvider;
+use App\Repositories\Auth\Interfaces\AuthProviderRepositoryInterface;
+use Illuminate\Validation\ValidationException;
+
+class AuthProviderConfigService
+{
+    /**
+     * Inject repository and registry dependencies used to validate and persist provider settings.
+     *
+     * @return void
+     */
+    public function __construct(
+        private readonly AuthProviderRepositoryInterface $authProviderRepository,
+        private readonly AuthProviderRegistry $authProviderRegistry,
+    ) {}
+
+    /**
+     * Persist provider settings while preserving existing encrypted secrets
+     * unless the admin explicitly rotates them.
+     *
+     * @param  AuthProvider  $provider
+     * @param  array<string, mixed>  $validated
+     * @return AuthProvider
+     */
+    public function update(AuthProvider $provider, array $validated): AuthProvider
+    {
+        $attributes = $validated;
+
+        if (array_key_exists('public_config', $attributes)) {
+            $attributes['public_config'] = $this->normalizeConfigArray($attributes['public_config']);
+        }
+
+        if (array_key_exists('capabilities', $attributes)) {
+            $attributes['capabilities'] = $this->normalizeConfigArray($attributes['capabilities']);
+        }
+
+        if (array_key_exists('secret_config', $attributes)) {
+            $attributes['secret_config'] = $this->mergeSecretConfig(
+                $this->normalizeConfigArray($provider->secret_config),
+                $attributes['secret_config'],
+            );
+        }
+
+        $this->validateUpdate($provider, $attributes);
+
+        return $this->authProviderRepository->update($provider, $attributes);
+    }
+
+    /**
+     * Validate the provider payload before it is stored.
+     *
+     * @param  AuthProvider  $provider
+     * @param  array<string, mixed>  $attributes
+     * @return void
+     */
+    private function validateUpdate(AuthProvider $provider, array $attributes): void
+    {
+        $driver = $this->authProviderRegistry->get($provider->key);
+
+        if (! $driver instanceof AuthProviderDriverInterface) {
+            return;
+        }
+
+        $errors = [];
+        $enabled = (bool) ($attributes['enabled'] ?? $provider->enabled);
+        $publicConfig = $this->normalizeConfigArray($attributes['public_config'] ?? $provider->public_config);
+        $secretConfig = $this->normalizeConfigArray($attributes['secret_config'] ?? $provider->secret_config);
+
+        if ($enabled) {
+            $errors = array_merge(
+                $errors,
+                $this->validateRequiredConfig($driver, $publicConfig, $secretConfig),
+                $this->validateRedirectUri($publicConfig),
+            );
+        }
+
+        // Never allow admins to remove the final working sign-in method.
+        if ($provider->enabled && ! $enabled && ! $this->hasAnotherActiveLoginProvider($provider)) {
+            $errors['enabled'] = ['At least one active login provider must remain enabled.'];
+        }
+
+        if ($errors !== []) {
+            throw ValidationException::withMessages($errors);
+        }
+    }
+
+    /**
+     * Normalize mixed payload input into a string-keyed array.
+     *
+     * @param  mixed  $value
+     * @return array<string, mixed>
+     */
+    private function normalizeConfigArray(mixed $value): array
+    {
+        if (! is_array($value)) {
+            return [];
+        }
+
+        $normalized = [];
+
+        foreach ($value as $key => $item) {
+            if (! is_string($key)) {
+                continue;
+            }
+
+            $normalized[$key] = $item;
+        }
+
+        return $normalized;
+    }
+
+    /**
+     * Merge incoming secret values into the encrypted config payload.
+     *
+     * @param  array<string, mixed>  $current
+     * @param  mixed  $incoming
+     * @return array<string, mixed>
+     */
+    private function mergeSecretConfig(array $current, mixed $incoming): array
+    {
+        if (! is_array($incoming)) {
+            return $current;
+        }
+
+        $next = $current;
+
+        foreach ($incoming as $key => $value) {
+            if (! is_string($key)) {
+                continue;
+            }
+
+            if ($value === null || (is_string($value) && trim($value) === '')) {
+                unset($next[$key]);
+
+                continue;
+            }
+
+            $next[$key] = $value;
+        }
+
+        return $next;
+    }
+
+    /**
+     * Validate required provider config keys before enabling a provider.
+     *
+     * @param  AuthProviderDriverInterface  $driver
+     * @param  array<string, mixed>  $publicConfig
+     * @param  array<string, mixed>  $secretConfig
+     * @return array<string, list<string>>
+     */
+    private function validateRequiredConfig(
+        AuthProviderDriverInterface $driver,
+        array $publicConfig,
+        array $secretConfig,
+    ): array {
+        $errors = [];
+
+        foreach ($driver->requiredPublicConfigKeys() as $key) {
+            if (! $this->hasConfiguredValue($publicConfig, $key)) {
+                $errors["public_config.$key"] = ["The {$key} field is required."];
+            }
+        }
+
+        foreach ($driver->requiredSecretConfigKeys() as $key) {
+            if (! $this->hasConfiguredValue($secretConfig, $key)) {
+                $errors["secret_config.$key"] = ["The {$key} field is required."];
+            }
+        }
+
+        return $errors;
+    }
+
+    /**
+     * Validate the configured redirect URI when the provider exposes one.
+     *
+     * @param  array<string, mixed>  $publicConfig
+     * @return array<string, list<string>>
+     */
+    private function validateRedirectUri(array $publicConfig): array
+    {
+        if (! $this->hasConfiguredValue($publicConfig, 'redirect_uri')) {
+            return [];
+        }
+
+        $redirectUri = $publicConfig['redirect_uri'];
+
+        if (! is_string($redirectUri)) {
+            return [
+                'public_config.redirect_uri' => ['The redirect URI must be a valid URL.'],
+            ];
+        }
+
+        if (filter_var($redirectUri, FILTER_VALIDATE_URL) !== false) {
+            return [];
+        }
+
+        return [
+            'public_config.redirect_uri' => ['The redirect URI must be a valid URL.'],
+        ];
+    }
+
+    /**
+     * Check whether a config value should be treated as present.
+     *
+     * @param  array<string, mixed>  $config
+     * @param  string  $key
+     * @return bool
+     */
+    private function hasConfiguredValue(array $config, string $key): bool
+    {
+        if (! array_key_exists($key, $config)) {
+            return false;
+        }
+
+        $value = $config[$key];
+
+        if (is_string($value)) {
+            return trim($value) !== '';
+        }
+
+        if (is_array($value)) {
+            return $value !== [];
+        }
+
+        return $value !== null;
+    }
+
+    /**
+     * Determine whether another working login provider remains enabled before disabling one.
+     *
+     * @param  AuthProvider  $provider
+     * @return bool
+     */
+    private function hasAnotherActiveLoginProvider(AuthProvider $provider): bool
+    {
+        foreach ($this->authProviderRepository->getOrdered() as $candidate) {
+            if ($candidate->key === $provider->key) {
+                continue;
+            }
+
+            $driver = $this->authProviderRegistry->get($candidate->key);
+
+            if (! $driver instanceof AuthProviderDriverInterface) {
+                continue;
+            }
+
+            $supportsLogin = (bool) ($candidate->capabilities['login'] ?? false);
+
+            if ($supportsLogin && $candidate->enabled && $driver->isReady($candidate)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+}

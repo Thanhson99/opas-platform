@@ -25,6 +25,7 @@ scripts/
 ├── git-clean-branches.ps1
 ├── launch-browser-connector.sh
 ├── launch-browser-connector.bat
+├── run-laravel-queue.sh
 ├── update-images-and-restart.sh
 ├── update-images-and-restart.ps1
 └── README.md
@@ -99,6 +100,22 @@ npm run check    # eslint + prettier check
 npm run ci       # frontend check + production build
 composer ci      # backend checks + frontend checks + production build
 ```
+
+## 0.6 macOS / Linux - `run-laravel-queue.sh`
+
+Run the Laravel queue worker when queued emails such as verify-email or reset-password messages need to be processed locally.
+
+```bash
+chmod +x scripts/run-laravel-queue.sh
+scripts/run-laravel-queue.sh
+scripts/run-laravel-queue.sh --docker
+scripts/run-laravel-queue.sh --local
+```
+
+Behavior:
+- `auto`: default, detects whether Laravel is configured for Docker-style hosts such as `postgres`
+- `--docker`: always runs `php artisan queue:work` inside the `laravel` container
+- `--local`: always runs `php artisan queue:work` on the local machine
 
 ---
 

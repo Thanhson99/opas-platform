@@ -55,4 +55,23 @@ export const navigation = [
             },
         ],
     },
+    {
+        labelKey: 'nav.admin',
+        items: [
+            {
+                labelKey: 'adminUsers.menuLabel',
+                href: '/admin/users',
+                icon: 'users',
+                activePrefixes: ['/admin/users'],
+                adminOnly: true,
+            },
+            {
+                labelKey: 'nav.authProviders',
+                href: '/admin/auth/providers',
+                icon: 'shield',
+                activePrefixes: ['/admin/auth/providers'],
+                adminOnly: true,
+            },
+        ],
+    },
 ];

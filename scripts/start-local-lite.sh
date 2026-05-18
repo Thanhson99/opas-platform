@@ -112,6 +112,8 @@ prepare_local_runtime_env() {
 
     echo "[OPAS] Running local migrations for sqlite fallback ..."
     env "${LOCAL_ENV_ARGS[@]}" php artisan migrate --graceful --ansi >/dev/null 2>&1 || true
+    echo "[OPAS] Seeding local sqlite fallback ..."
+    env "${LOCAL_ENV_ARGS[@]}" php artisan db:seed --ansi >/dev/null 2>&1 || true
   fi
 }
 

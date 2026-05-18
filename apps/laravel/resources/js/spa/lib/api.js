@@ -9,16 +9,12 @@ import axios from 'axios';
 const api = axios.create({
     baseURL: '/api',
     withCredentials: true,
+    xsrfCookieName: 'XSRF-TOKEN',
+    xsrfHeaderName: 'X-XSRF-TOKEN',
     headers: {
         'X-Requested-With': 'XMLHttpRequest',
         Accept: 'application/json',
     },
 });
-
-const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-
-if (csrf) {
-    api.defaults.headers.common['X-CSRF-TOKEN'] = csrf;
-}
 
 export default api;

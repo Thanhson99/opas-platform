@@ -1,9 +1,10 @@
 import { useMemo, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Header from './Header';
 import Footer from './Footer';
 import { useLanguage } from '../../features/i18n/context/LanguageContext';
+import { useAuth } from '../../features/auth/context/AuthContext';
 
 /**
  * Main application shell for the React SPA.
@@ -15,6 +16,8 @@ export default function AppShell({ children }) {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const location = useLocation();
     const { t } = useLanguage();
+    const { user, loading } = useAuth();
+    const isAdmin = user?.role === 'admin';
 
     const title = useMemo(() => {
         if (location.pathname === '/') {
@@ -66,11 +69,29 @@ export default function AppShell({ children }) {
             };
         }
 
+        if (location.pathname.startsWith('/admin/auth/providers')) {
+            return {
+                title: t('shell.authProvidersTitle'),
+                description: t('shell.authProvidersDescription'),
+            };
+        }
+
+        if (location.pathname.startsWith('/admin/users')) {
+            return {
+                title: t('adminUsers.menuLabel'),
+                description: t('adminUsers.hero.text'),
+            };
+        }
+
         return {
             title: t('shell.fallbackTitle'),
             description: t('shell.fallbackDescription'),
         };
     }, [location.pathname, t]);
+
+    if (!loading && isAdmin && !location.pathname.startsWith('/admin/')) {
+        return <Navigate to="/admin/users" replace />;
+    }
 
     return (
         <div className={`opas-app ${sidebarOpen ? 'is-sidebar-open' : ''}`} id="app-shell">

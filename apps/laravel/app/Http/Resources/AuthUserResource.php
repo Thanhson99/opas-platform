@@ -11,6 +11,9 @@ use Illuminate\Http\Resources\Json\JsonResource;
 class AuthUserResource extends JsonResource
 {
     /**
+     * Transform the authenticated user into the SPA auth session payload.
+     *
+     * @param  Request  $request
      * @return array<string, mixed>
      */
     public function toArray(Request $request): array
@@ -23,6 +26,8 @@ class AuthUserResource extends JsonResource
             'id' => $resource->id,
             'name' => $resource->name,
             'email' => $resource->email,
+            'email_verified' => $resource->hasVerifiedEmail(),
+            'email_verified_at' => $resource->email_verified_at?->toIso8601String(),
             'role' => $role->value,
             'role_label' => $role->label(),
         ];

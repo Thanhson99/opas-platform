@@ -1,6 +1,10 @@
 <?php
 
+use App\Http\Controllers\Api\AdminAuthProviderApiController;
+use App\Http\Controllers\Api\AdminUserApiController;
 use App\Http\Controllers\Api\AuthApiController;
+use App\Http\Controllers\Api\AuthProviderApiController;
+use App\Http\Controllers\Api\AuthProviderOAuthApiController;
 use App\Http\Controllers\Api\CoinAlertSettingApiController;
 use App\Http\Controllers\Api\CoinApiController;
 use App\Http\Controllers\Api\FavoriteCoinApiController;
@@ -11,13 +15,35 @@ use App\Http\Controllers\Api\TrendingVideoApiController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('throttle:api')->group(function (): void {
-    Route::prefix('auth')->middleware('web')->name('api.auth.')->group(function (): void {
+    Route::prefix('auth')->middleware(['web', 'no-store'])->name('api.auth.')->group(function (): void {
+        Route::get('/providers', [AuthProviderApiController::class, 'index'])->name('providers.index');
+        Route::get('/providers/{key}/redirect', [AuthProviderOAuthApiController::class, 'redirect'])
+            ->name('providers.redirect');
+        Route::get('/providers/{key}/callback', [AuthProviderOAuthApiController::class, 'callback'])
+            ->name('providers.callback');
         Route::post('/register', [AuthApiController::class, 'register'])->name('register');
         Route::post('/login', [AuthApiController::class, 'login'])->name('login');
+        Route::post('/forgot-password', [AuthApiController::class, 'forgotPassword'])->name('password.email');
+        Route::post('/reset-password', [AuthApiController::class, 'resetPassword'])->name('password.update');
+        Route::post('/email/verification-notification', [AuthApiController::class, 'resendVerificationEmail'])
+            ->middleware('throttle:6,1')
+            ->name('verification.send');
         Route::middleware('auth')->group(function (): void {
             Route::get('/me', [AuthApiController::class, 'me'])->name('me');
             Route::post('/logout', [AuthApiController::class, 'logout'])->name('logout');
         });
+    });
+
+    Route::prefix('admin/auth')->middleware(['web', 'auth', 'admin', 'no-store'])->name('api.admin.auth.')->group(function (): void {
+        Route::get('/providers', [AdminAuthProviderApiController::class, 'index'])->name('providers.index');
+        Route::put('/providers/{key}', [AdminAuthProviderApiController::class, 'update'])->name('providers.update');
+    });
+
+    Route::prefix('admin/users')->middleware(['web', 'auth', 'admin', 'no-store'])->name('api.admin.users.')->group(function (): void {
+        Route::get('/', [AdminUserApiController::class, 'index'])->name('index');
+        Route::put('/{id}', [AdminUserApiController::class, 'update'])->whereNumber('id')->name('update');
+        Route::post('/{id}/reset-password', [AdminUserApiController::class, 'resetPassword'])->whereNumber('id')->name('reset-password');
+        Route::delete('/{id}', [AdminUserApiController::class, 'destroy'])->whereNumber('id')->name('destroy');
     });
 
     Route::prefix('coins')->name('api.coins.')->group(function (): void {
