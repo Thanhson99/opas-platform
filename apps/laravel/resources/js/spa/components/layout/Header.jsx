@@ -6,9 +6,8 @@ import LanguageSelect from './LanguageSelect';
 
 export default function Header({ title, description, onToggleSidebar }) {
     const navigate = useNavigate();
-    const { user, loading, logout, authProviders } = useAuth();
+    const { user, loading, logout, registerProviders } = useAuth();
     const { t } = useLanguage();
-    const emailProvider = authProviders.find((provider) => provider.key === 'email') ?? null;
 
     const handleLogout = async () => {
         await logout();
@@ -63,7 +62,7 @@ export default function Header({ title, description, onToggleSidebar }) {
                         <Link to="/login" className="app-button app-button--ghost">
                             {t('common.login')}
                         </Link>
-                        {emailProvider?.capabilities?.register ? (
+                        {registerProviders.length > 0 ? (
                             <Link to="/register" className="app-button app-button--primary">
                                 {t('common.register')}
                             </Link>

@@ -5,6 +5,7 @@ import AppIcon from '../../../components/icons/AppIcon';
  * Render a sensitive text input with a show/hide toggle.
  *
  * @param {{
+ *   id?: string,
  *   value: string,
  *   onChange?: ((event: import('react').ChangeEvent<HTMLInputElement>) => void) | undefined,
  *   placeholder?: string,
@@ -22,6 +23,7 @@ import AppIcon from '../../../components/icons/AppIcon';
  * @returns {import('react').JSX.Element}
  */
 export default function SensitiveInput({
+    id,
     value,
     onChange,
     placeholder = '',
@@ -41,6 +43,7 @@ export default function SensitiveInput({
     return (
         <div className={`app-sensitive-input ${className}`.trim()}>
             <input
+                id={id}
                 className={`app-input app-sensitive-input__control ${
                     invalid ? 'app-input--invalid' : ''
                 }`}

@@ -1,30 +1,15 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import api from '../../../lib/api';
+import { getProvidersForCapability } from '../lib/publicAuthProviders';
 
 const AuthContext = createContext(null);
-const fallbackEmailProvider = {
-    key: 'email',
-    display_name: 'Email and Password',
-    type: 'password',
-    icon: 'mail',
-    visibility: 'public',
-    active: true,
-    capabilities: {
-        login: true,
-        register: true,
-        requires_redirect: false,
-        supports_password: true,
-    },
-    metadata: {
-        button_text: 'Continue with email',
-    },
-};
 
 export function AuthProvider({ children }) {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
     const [authProviders, setAuthProviders] = useState([]);
     const [providersLoading, setProvidersLoading] = useState(true);
+    const [providersError, setProvidersError] = useState(null);
 
     const refreshUser = useCallback(async () => {
         try {
@@ -38,12 +23,16 @@ export function AuthProvider({ children }) {
     }, []);
 
     const refreshAuthProviders = useCallback(async () => {
+        setProvidersLoading(true);
+        setProvidersError(null);
+
         try {
             const response = await api.get('/auth/providers');
-            const providers = response.data.data ?? [];
-            setAuthProviders(providers.length > 0 ? providers : [fallbackEmailProvider]);
+            const providers = Array.isArray(response.data.data) ? response.data.data : [];
+            setAuthProviders(providers);
         } catch {
-            setAuthProviders([fallbackEmailProvider]);
+            setAuthProviders([]);
+            setProvidersError('load_failed');
         } finally {
             setProvidersLoading(false);
         }
@@ -81,8 +70,11 @@ export function AuthProvider({ children }) {
             loading,
             authProviders,
             providersLoading,
+            providersError,
             isAuthenticated: Boolean(user),
             hasEmailLogin: authProviders.some((provider) => provider.key === 'email'),
+            loginProviders: getProvidersForCapability(authProviders, 'login'),
+            registerProviders: getProvidersForCapability(authProviders, 'register'),
             login,
             register,
             logout,
@@ -93,6 +85,7 @@ export function AuthProvider({ children }) {
             authProviders,
             loading,
             providersLoading,
+            providersError,
             user,
             login,
             register,

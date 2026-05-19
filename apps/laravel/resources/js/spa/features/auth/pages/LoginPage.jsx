@@ -1,37 +1,19 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import AppIcon, { hasAppIcon } from '../../../components/icons/AppIcon';
 import ErrorState from '../../../components/ui/ErrorState';
 import AuthShowcase from '../components/AuthShowcase';
+import AuthProviderOptions from '../components/AuthProviderOptions';
 import SensitiveInput from '../components/SensitiveInput';
 import { useAuth } from '../context/AuthContext';
+import { getNonFormProviders, getPasswordFormProvider } from '../lib/publicAuthProviders';
 import { useLanguage } from '../../i18n/context/LanguageContext';
 import LanguageSelect from '../../../components/layout/LanguageSelect';
-
-function buildOauthButtonClass(key) {
-    return `app-button app-social-button app-social-button--${key}`;
-}
-
-function oauthButtonText(provider, t) {
-    switch (provider.key) {
-        case 'google':
-            return 'Continue with Google';
-        case 'github':
-            return 'Continue with GitHub';
-        case 'facebook':
-            return 'Continue with Facebook';
-        default:
-            return (
-                provider.metadata?.button_text ||
-                `${t('auth.continueWithProvider')} ${provider.display_name}`
-            );
-    }
-}
 
 export default function LoginPage() {
     const navigate = useNavigate();
     const location = useLocation();
-    const { login, authProviders, providersLoading, refreshAuthProviders } = useAuth();
+    const { login, loginProviders, registerProviders, providersLoading, providersError } =
+        useAuth();
     const { t } = useLanguage();
     const [form, setForm] = useState({
         email: '',
@@ -43,12 +25,8 @@ export default function LoginPage() {
     const [fieldErrors, setFieldErrors] = useState({});
 
     const from = location.state?.from?.pathname || '/';
-    const emailProvider = authProviders.find((provider) => provider.key === 'email') ?? null;
-    const oauthProviders = authProviders.filter((provider) => provider.key !== 'email');
-
-    useEffect(() => {
-        void refreshAuthProviders();
-    }, [refreshAuthProviders]);
+    const emailProvider = getPasswordFormProvider(loginProviders);
+    const secondaryProviders = getNonFormProviders(loginProviders, emailProvider);
 
     useEffect(() => {
         const params = new URLSearchParams(location.search);
@@ -128,11 +106,17 @@ export default function LoginPage() {
                         <h2 className="app-form-card__title">{t('auth.loginTitle')}</h2>
                         <p className="app-form-card__text">{t('auth.loginText')}</p>
                         {providersLoading ? <p>{t('auth.providersLoading')}</p> : null}
+                        {!providersLoading && providersError ? (
+                            <ErrorState text={t('auth.providersLoadError')} />
+                        ) : null}
                         {emailProvider ? (
                             <form className="app-form" onSubmit={submit}>
                                 <div className="app-field">
-                                    <label className="app-label">{t('auth.email')}</label>
+                                    <label className="app-label" htmlFor="login-email">
+                                        {t('auth.email')}
+                                    </label>
                                     <input
+                                        id="login-email"
                                         className={`app-input ${
                                             invalidEmail || fieldErrors.email?.[0]
                                                 ? 'app-input--invalid'
@@ -156,8 +140,11 @@ export default function LoginPage() {
                                     ) : null}
                                 </div>
                                 <div className="app-field">
-                                    <label className="app-label">{t('auth.password')}</label>
+                                    <label className="app-label" htmlFor="login-password">
+                                        {t('auth.password')}
+                                    </label>
                                     <SensitiveInput
+                                        id="login-password"
                                         value={form.password}
                                         invalid={Boolean(fieldErrors.password?.[0] || error)}
                                         required
@@ -178,7 +165,10 @@ export default function LoginPage() {
                                     ) : null}
                                 </div>
                                 {flash ? (
-                                    <div className="app-provider-note app-provider-note--success">
+                                    <div
+                                        className="app-provider-note app-provider-note--success"
+                                        aria-live="polite"
+                                    >
                                         {flash}
                                     </div>
                                 ) : null}
@@ -195,39 +185,18 @@ export default function LoginPage() {
                                 </Link>
                             </form>
                         ) : null}
-                        {oauthProviders.length > 0 ? (
-                            <div className="app-form">
-                                {oauthProviders.map((provider) => (
-                                    <a
-                                        key={provider.key}
-                                        className={buildOauthButtonClass(provider.key)}
-                                        href={`/api/auth/providers/${provider.key}/redirect`}
-                                    >
-                                        {hasAppIcon(provider.icon) ? (
-                                            <span
-                                                className={`app-social-button__icon app-social-button__icon--${provider.key}`}
-                                            >
-                                                <AppIcon name={provider.icon} />
-                                            </span>
-                                        ) : null}
-                                        <span className="app-social-button__label">
-                                            {oauthButtonText(provider, t)}
-                                        </span>
-                                    </a>
-                                ))}
-                            </div>
-                        ) : null}
-                        {!providersLoading && authProviders.length === 0 ? (
+                        <AuthProviderOptions providers={secondaryProviders} action="login" t={t} />
+                        {!providersLoading && !providersError && loginProviders.length === 0 ? (
                             <ErrorState text={t('auth.noProvidersAvailable')} />
                         ) : null}
                         <div className="app-auth-panel__footer">
                             <span>{t('auth.noAccount')}</span>
-                            {emailProvider?.capabilities?.register ? (
+                            {registerProviders.length > 0 ? (
                                 <Link to="/register" className="app-inline-link">
                                     {t('auth.createAccount')}
                                 </Link>
                             ) : (
-                                <span>{t('auth.registrationUnavailable')}</span>
+                                <span aria-live="polite">{t('auth.registrationUnavailable')}</span>
                             )}
                         </div>
                     </article>

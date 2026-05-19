@@ -79,6 +79,7 @@ abstract class AbstractOAuthAuthProviderDriver extends AbstractAuthProviderDrive
             'button_text' => $config['button_text'] ?? sprintf('Continue with %s', $provider->display_name),
             'scopes' => $config['scopes'] ?? [],
             'pkce' => (bool) ($config['pkce'] ?? false),
+            'redirect_url' => route('api.auth.providers.redirect', ['key' => $provider->key]),
             'callback_url' => route('api.auth.providers.callback', ['key' => $provider->key]),
         ];
     }

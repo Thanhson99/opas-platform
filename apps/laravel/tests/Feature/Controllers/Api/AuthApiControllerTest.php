@@ -232,6 +232,66 @@ class AuthApiControllerTest extends TestCase
     }
 
     /**
+     * Login must also be blocked when the email provider no longer exposes the login capability.
+     */
+    public function test_it_blocks_email_login_when_login_capability_is_disabled(): void
+    {
+        AuthProvider::query()->where('key', 'email')->update([
+            'capabilities' => [
+                'login' => false,
+                'register' => true,
+                'link_account' => false,
+                'requires_redirect' => false,
+                'supports_email_verification' => true,
+                'supports_password' => true,
+            ],
+        ]);
+
+        $user = User::factory()->create([
+            'password' => 'Password123!',
+        ]);
+
+        $response = $this->postJson(route('api.auth.login'), [
+            'email' => $user->email,
+            'password' => 'Password123!',
+        ]);
+
+        $response->assertForbidden()
+            ->assertJson([
+                'message' => 'Email login is not available.',
+            ]);
+    }
+
+    /**
+     * Registration must be blocked when the email provider keeps login enabled but disables register.
+     */
+    public function test_it_blocks_email_registration_when_register_capability_is_disabled(): void
+    {
+        AuthProvider::query()->where('key', 'email')->update([
+            'capabilities' => [
+                'login' => true,
+                'register' => false,
+                'link_account' => false,
+                'requires_redirect' => false,
+                'supports_email_verification' => true,
+                'supports_password' => true,
+            ],
+        ]);
+
+        $response = $this->postJson(route('api.auth.register'), [
+            'name' => 'OPAS User',
+            'email' => 'capability-disabled@gmail.com',
+            'password' => 'Password123!',
+            'password_confirmation' => 'Password123!',
+        ]);
+
+        $response->assertForbidden()
+            ->assertJson([
+                'message' => 'Email registration is not available.',
+            ]);
+    }
+
+    /**
      * Unverified accounts should be able to request a fresh verification code.
      */
     public function test_it_can_resend_verification_email_for_unverified_account(): void

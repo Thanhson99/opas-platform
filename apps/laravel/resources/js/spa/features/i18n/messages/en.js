@@ -100,6 +100,7 @@ export const enMessages = {
         resetPasswordShowcaseText:
             'Choose a strong password you can remember and use it for future sign-in.',
         providersLoading: 'Loading sign-in methods...',
+        providersLoadError: 'Unable to load authentication methods right now.',
         noProvidersAvailable: 'No authentication providers are currently available.',
         registrationUnavailable: 'Account registration is currently unavailable.',
         invalidEmail: 'Enter a valid email address.',
@@ -114,6 +115,8 @@ export const enMessages = {
         passwordRuleNumber: 'at least one number',
         passwordRuleSymbol: 'at least one special character',
         continueWithProvider: 'Continue with',
+        registerWithProvider: 'Register with',
+        providerUiUnavailableSuffix: 'is available but this screen does not support it yet.',
         noAccount: "Don't have an account?",
         createAccount: 'Create a new account',
         loginEyebrow: 'Welcome Back',

@@ -1,16 +1,18 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import ErrorState from '../../../components/ui/ErrorState';
 import AuthShowcase from '../components/AuthShowcase';
+import AuthProviderOptions from '../components/AuthProviderOptions';
 import SensitiveInput from '../components/SensitiveInput';
 import { useAuth } from '../context/AuthContext';
 import { getMissingPasswordRuleKeys, isStrongPassword } from '../lib/passwordValidation';
+import { getNonFormProviders, getPasswordFormProvider } from '../lib/publicAuthProviders';
 import { useLanguage } from '../../i18n/context/LanguageContext';
 import LanguageSelect from '../../../components/layout/LanguageSelect';
 
 export default function RegisterPage() {
     const navigate = useNavigate();
-    const { register, authProviders, providersLoading, refreshAuthProviders } = useAuth();
+    const { register, registerProviders, providersLoading, providersError } = useAuth();
     const { t } = useLanguage();
     const [form, setForm] = useState({
         name: '',
@@ -21,11 +23,8 @@ export default function RegisterPage() {
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState('');
     const [fieldErrors, setFieldErrors] = useState({});
-    const emailProvider = authProviders.find((provider) => provider.key === 'email') ?? null;
-
-    useEffect(() => {
-        void refreshAuthProviders();
-    }, [refreshAuthProviders]);
+    const emailProvider = getPasswordFormProvider(registerProviders);
+    const secondaryProviders = getNonFormProviders(registerProviders, emailProvider);
 
     const weakPassword = form.password.trim() !== '' && !isStrongPassword(form.password);
     const missingPasswordRuleKeys = getMissingPasswordRuleKeys(form.password);
@@ -100,11 +99,17 @@ export default function RegisterPage() {
                         <h2 className="app-form-card__title">{t('auth.registerTitle')}</h2>
                         <p className="app-form-card__text">{t('auth.registerText')}</p>
                         {providersLoading ? <p>{t('auth.providersLoading')}</p> : null}
+                        {!providersLoading && providersError ? (
+                            <ErrorState text={t('auth.providersLoadError')} />
+                        ) : null}
                         {emailProvider?.capabilities?.register ? (
                             <form className="app-form" onSubmit={submit}>
                                 <div className="app-field">
-                                    <label className="app-label">{t('auth.name')}</label>
+                                    <label className="app-label" htmlFor="register-name">
+                                        {t('auth.name')}
+                                    </label>
                                     <input
+                                        id="register-name"
                                         className={`app-input ${fieldErrors.name?.[0] ? 'app-input--invalid' : ''}`}
                                         value={form.name}
                                         onChange={(event) =>
@@ -120,8 +125,11 @@ export default function RegisterPage() {
                                     ) : null}
                                 </div>
                                 <div className="app-field">
-                                    <label className="app-label">{t('auth.email')}</label>
+                                    <label className="app-label" htmlFor="register-email">
+                                        {t('auth.email')}
+                                    </label>
                                     <input
+                                        id="register-email"
                                         className={`app-input ${
                                             invalidEmail || fieldErrors.email?.[0]
                                                 ? 'app-input--invalid'
@@ -152,8 +160,11 @@ export default function RegisterPage() {
                                     ) : null}
                                 </div>
                                 <div className="app-field">
-                                    <label className="app-label">{t('auth.password')}</label>
+                                    <label className="app-label" htmlFor="register-password">
+                                        {t('auth.password')}
+                                    </label>
                                     <SensitiveInput
+                                        id="register-password"
                                         value={form.password}
                                         invalid={Boolean(weakPassword || fieldErrors.password?.[0])}
                                         required
@@ -187,8 +198,14 @@ export default function RegisterPage() {
                                     ) : null}
                                 </div>
                                 <div className="app-field">
-                                    <label className="app-label">{t('auth.confirmPassword')}</label>
+                                    <label
+                                        className="app-label"
+                                        htmlFor="register-password-confirmation"
+                                    >
+                                        {t('auth.confirmPassword')}
+                                    </label>
                                     <SensitiveInput
+                                        id="register-password-confirmation"
                                         value={form.password_confirmation}
                                         invalid={Boolean(
                                             passwordMismatch ||
@@ -227,7 +244,13 @@ export default function RegisterPage() {
                                         : t('auth.registerSubmit')}
                                 </button>
                             </form>
-                        ) : !providersLoading ? (
+                        ) : null}
+                        <AuthProviderOptions
+                            providers={secondaryProviders}
+                            action="register"
+                            t={t}
+                        />
+                        {!providersLoading && !providersError && registerProviders.length === 0 ? (
                             <ErrorState text={t('auth.registrationUnavailable')} />
                         ) : null}
                         <div className="app-auth-panel__footer">

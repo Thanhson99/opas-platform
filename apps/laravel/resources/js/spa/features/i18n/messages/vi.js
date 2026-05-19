@@ -100,6 +100,7 @@ export const viMessages = {
         resetPasswordShowcaseText:
             'Hãy chọn một mật khẩu mạnh, dễ nhớ và dùng nó cho những lần đăng nhập sau.',
         providersLoading: 'Đang tải phương thức đăng nhập...',
+        providersLoadError: 'Hiện không thể tải danh sách phương thức đăng nhập.',
         noProvidersAvailable: 'Hiện chưa có phương thức đăng nhập nào khả dụng.',
         registrationUnavailable: 'Hiện chưa thể đăng ký tài khoản mới.',
         invalidEmail: 'Hãy nhập đúng định dạng email.',
@@ -114,6 +115,9 @@ export const viMessages = {
         passwordRuleNumber: 'ít nhất 1 chữ số',
         passwordRuleSymbol: 'ít nhất 1 ký tự đặc biệt',
         continueWithProvider: 'Tiếp tục với',
+        registerWithProvider: 'Đăng ký với',
+        providerUiUnavailableSuffix:
+            'đang khả dụng nhưng màn hình này chưa hỗ trợ hiển thị trực tiếp.',
         noAccount: 'Chưa có tài khoản?',
         createAccount: 'Tạo tài khoản mới',
         loginEyebrow: 'Welcome Back',
