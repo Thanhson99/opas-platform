@@ -10,12 +10,17 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
+/**
+ * Verify favorite stock endpoints and their access guards.
+ */
 class FavoriteStockControllerTest extends TestCase
 {
     use RefreshDatabase;
 
     /**
-     * Test that a valid symbol is added to favorites.
+     * Members should be able to add a valid stock symbol to favorites.
+     *
+     * @return void
      */
     public function test_it_can_add_stock_to_favorites(): void
     {
@@ -36,7 +41,9 @@ class FavoriteStockControllerTest extends TestCase
     }
 
     /**
-     * Test that an existing symbol is removed from favorites.
+     * Members should be able to remove an existing stock symbol from favorites.
+     *
+     * @return void
      */
     public function test_it_can_remove_stock_from_favorites(): void
     {
@@ -58,7 +65,9 @@ class FavoriteStockControllerTest extends TestCase
     }
 
     /**
-     * Test that an invalid symbol is rejected.
+     * Invalid stock symbols should be rejected by request validation.
+     *
+     * @return void
      */
     public function test_it_returns_error_for_invalid_symbol(): void
     {
@@ -72,6 +81,11 @@ class FavoriteStockControllerTest extends TestCase
             ->assertJsonValidationErrors(['symbol']);
     }
 
+    /**
+     * Guests must authenticate before they can save favorite stocks.
+     *
+     * @return void
+     */
     public function test_guest_cannot_add_stock_to_favorites(): void
     {
         $response = $this->putJson(route('api.stocks.favorites.store', ['symbol' => 'VNM']));

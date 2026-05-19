@@ -15,6 +15,7 @@ use App\Http\Requests\VerifyEmailCodeRequest;
 use App\Http\Resources\AuthUserResource;
 use App\Models\User;
 use App\Services\Auth\AuthProviderService;
+use App\Services\Auth\AuthSessionService;
 use App\Services\Auth\EmailVerificationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -30,6 +31,7 @@ class AuthApiController extends Controller
      */
     public function __construct(
         private readonly AuthProviderService $authProviderService,
+        private readonly AuthSessionService $authSessionService,
         private readonly EmailVerificationService $emailVerificationService,
     ) {}
 
@@ -50,7 +52,9 @@ class AuthApiController extends Controller
             ], 401);
         }
 
-        return (new AuthUserResource($user))->response();
+        return (new AuthUserResource($user))
+            ->response()
+            ->setStatusCode(200);
     }
 
     /**
@@ -69,7 +73,6 @@ class AuthApiController extends Controller
 
         /** @var array{name:string,email:string,password:string} $validated */
         $validated = $request->validated();
-        $verificationMode = $this->authProviderService->emailVerificationMode('email');
 
         $user = User::create([
             'name' => $validated['name'],
@@ -123,7 +126,6 @@ class AuthApiController extends Controller
 
         /** @var User $user */
         $user = $request->user();
-        $verificationMode = $this->authProviderService->emailVerificationMode('email');
 
         if (! $user->hasVerifiedEmail()) {
             Auth::guard('web')->logout();
@@ -142,6 +144,8 @@ class AuthApiController extends Controller
             ], 403);
         }
 
+        $this->authSessionService->storeLoginProvider($request, 'email');
+
         return (new AuthUserResource($user))
             ->additional(['message' => 'Đăng nhập thành công.'])
             ->response();
@@ -155,6 +159,7 @@ class AuthApiController extends Controller
      */
     public function logout(Request $request): JsonResponse
     {
+        $this->authSessionService->clearLoginProvider($request);
         Auth::guard('web')->logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();

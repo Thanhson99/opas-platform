@@ -14,7 +14,7 @@ interface TagRepositoryInterface
      *
      * @return Collection<int, Tag>
      */
-    public function all();
+    public function all(): Collection;
 
     /**
      * Find a tag by ID.

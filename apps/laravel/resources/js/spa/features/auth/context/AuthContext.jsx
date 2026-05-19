@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import api from '../../../lib/api';
-import { getProvidersForCapability } from '../lib/publicAuthProviders';
+import { getLinkableProviders, getProvidersForCapability } from '../lib/publicAuthProviders';
 
 const AuthContext = createContext(null);
 
@@ -75,6 +75,7 @@ export function AuthProvider({ children }) {
             hasEmailLogin: authProviders.some((provider) => provider.key === 'email'),
             loginProviders: getProvidersForCapability(authProviders, 'login'),
             registerProviders: getProvidersForCapability(authProviders, 'register'),
+            linkableProviders: getLinkableProviders(authProviders, user),
             login,
             register,
             logout,

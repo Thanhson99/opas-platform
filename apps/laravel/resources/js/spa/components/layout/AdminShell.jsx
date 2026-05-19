@@ -101,7 +101,6 @@ export default function AdminShell() {
             <div className="admin-console__body">
                 <aside className="admin-console__sidebar">
                     <div className="admin-console__section">
-                        <p className="admin-console__label">{t('adminConsole.sectionLabel')}</p>
                         <div className="admin-console__nav">
                             <NavLink
                                 to="/admin/users"
@@ -164,16 +163,23 @@ export default function AdminShell() {
                 </aside>
 
                 <main className="admin-console__content">
-                    <Routes>
-                        <Route path="/users" element={<AdminUsersPage />} />
-                        <Route path="/auth/providers" element={<AuthProvidersDashboardPage />} />
-                        <Route path="/auth/providers/:key" element={<AuthProviderAdminPage />} />
-                        <Route path="*" element={<Navigate to="/admin/users" replace />} />
-                    </Routes>
+                    <div className="admin-console__content-main">
+                        <Routes>
+                            <Route path="/users" element={<AdminUsersPage />} />
+                            <Route
+                                path="/auth/providers"
+                                element={<AuthProvidersDashboardPage />}
+                            />
+                            <Route
+                                path="/auth/providers/:key"
+                                element={<AuthProviderAdminPage />}
+                            />
+                            <Route path="*" element={<Navigate to="/admin/users" replace />} />
+                        </Routes>
+                    </div>
+                    <Footer variant="admin" />
                 </main>
             </div>
-
-            <Footer />
 
             <ConfirmModal
                 open={logoutConfirmOpen}

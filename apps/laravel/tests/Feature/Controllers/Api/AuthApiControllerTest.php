@@ -8,6 +8,7 @@ use App\Enums\UserRole;
 use App\Models\AuthProvider;
 use App\Models\EmailVerificationCode;
 use App\Models\User;
+use App\Models\UserAuthIdentity;
 use App\Notifications\QueuedVerifyEmailNotification;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -102,6 +103,17 @@ class AuthApiControllerTest extends TestCase
             'email_verified_at' => now(),
         ]);
 
+        UserAuthIdentity::query()->create([
+            'user_id' => $user->id,
+            'provider_key' => 'google',
+            'provider_user_id' => 'google-user-1',
+            'provider_email' => $user->email,
+            'metadata' => ['sub' => 'google-user-1'],
+            'access_token' => 'token-123',
+            'refresh_token' => 'refresh-123',
+            'token_expires_at' => now()->addHour(),
+        ]);
+
         $loginResponse = $this->postJson(route('api.auth.login'), [
             'email' => $user->email,
             'password' => 'Password123!',
@@ -109,13 +121,20 @@ class AuthApiControllerTest extends TestCase
 
         $loginResponse->assertOk()
             ->assertJsonPath('data.email', $user->email)
-            ->assertJsonPath('data.role', UserRole::Vip->value);
+            ->assertJsonPath('data.role', UserRole::Vip->value)
+            ->assertJsonPath('data.current_sign_in_provider.key', 'email')
+            ->assertJsonPath('data.current_sign_in_provider.display_name', 'Email')
+            ->assertJsonPath('data.current_sign_in_provider.icon', 'email');
 
         $meResponse = $this->getJson(route('api.auth.me'));
 
         $meResponse->assertOk()
             ->assertJsonPath('data.email', $user->email)
-            ->assertJsonPath('data.role_label', UserRole::Vip->label());
+            ->assertJsonPath('data.role_label', UserRole::Vip->label())
+            ->assertJsonPath('data.current_sign_in_provider.key', 'email')
+            ->assertJsonPath('data.linked_providers.0.key', 'google')
+            ->assertJsonPath('data.linked_providers.0.display_name', 'Google')
+            ->assertJsonPath('data.linked_providers.0.icon', 'google');
     }
 
     /**

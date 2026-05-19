@@ -13,6 +13,8 @@
 - Split large scenario tests into smaller tests when they verify different rules.
 - Name tests from the business rule outward.
 - Tests must describe system behavior, not implementation trivia.
+- Every PHPUnit test method should carry a concise docblock summary and `@return void`.
+- Test helper methods must document `@param` and `@return` when they accept input or hide non-trivial setup.
 - Assert observable contract first and internal state second.
 - Keep fixture data minimal and explicit.
 - Avoid hardcoded environment-specific URLs, secrets, and credentials in tests.
@@ -68,3 +70,4 @@
 - Keep test helpers local to the test class unless at least three test classes need the same abstraction.
 - Do not hide important setup in generic helpers when inline setup is clearer for auth or security-sensitive behavior.
 - Before closing a task, verify the narrowest relevant PHPUnit scope locally instead of assuming broader suites will cover the change.
+- When test docblocks drift or become inconsistent, update both the affected tests and the relevant rules file in the same change.

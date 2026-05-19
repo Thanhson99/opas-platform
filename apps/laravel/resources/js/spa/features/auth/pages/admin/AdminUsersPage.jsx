@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import AppIcon from '../../../../components/icons/AppIcon';
 import { useAuth } from '../../context/AuthContext';
 import AdminUserEditModal from './AdminUserEditModal';
 import ConfirmModal from '../../../../components/ui/ConfirmModal';
@@ -427,7 +428,36 @@ export default function AdminUsersPage() {
                                                 </span>
                                             </td>
                                             <td className="app-user-admin-table__count">
-                                                {user.auth_identity_count}
+                                                <div className="app-user-admin-table__providers">
+                                                    {(user.linked_providers ?? []).length > 0 ? (
+                                                        (user.linked_providers ?? []).map(
+                                                            (provider) => (
+                                                                <span
+                                                                    key={provider.key}
+                                                                    className="app-user-admin-table__provider-icon"
+                                                                    title={provider.display_name}
+                                                                    aria-label={
+                                                                        provider.display_name
+                                                                    }
+                                                                >
+                                                                    <AppIcon
+                                                                        name={
+                                                                            provider.icon ??
+                                                                            provider.key
+                                                                        }
+                                                                    />
+                                                                </span>
+                                                            ),
+                                                        )
+                                                    ) : (
+                                                        <span className="app-user-admin-table__provider-empty">
+                                                            <AppIcon name="link" />
+                                                            <span>
+                                                                {t('adminUsers.noLinkedProviders')}
+                                                            </span>
+                                                        </span>
+                                                    )}
+                                                </div>
                                             </td>
                                             <td>
                                                 <div className="app-user-admin-table__actions">

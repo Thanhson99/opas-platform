@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
+import AppIcon from '../../../../components/icons/AppIcon';
 
 export default function AdminUserEditModal({
     open,
@@ -166,9 +167,24 @@ export default function AdminUserEditModal({
                             <span className="app-user-edit-modal__meta-label">
                                 {t('adminUsers.columns.providers')}
                             </span>
-                            <span className="app-user-edit-modal__value">
-                                {user.auth_identity_count}
-                            </span>
+                            <div className="app-user-edit-modal__providers">
+                                {(user.linked_providers ?? []).length > 0 ? (
+                                    (user.linked_providers ?? []).map((provider) => (
+                                        <span
+                                            key={provider.key}
+                                            className="app-user-edit-modal__provider-chip"
+                                        >
+                                            <AppIcon name={provider.icon ?? provider.key} />
+                                            <span>{provider.display_name}</span>
+                                        </span>
+                                    ))
+                                ) : (
+                                    <span className="app-user-edit-modal__provider-empty">
+                                        <AppIcon name="link" />
+                                        <span>{t('adminUsers.noLinkedProviders')}</span>
+                                    </span>
+                                )}
+                            </div>
                         </div>
 
                         <div className="app-user-edit-modal__meta-card">

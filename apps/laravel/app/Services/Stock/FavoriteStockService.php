@@ -7,17 +7,17 @@ namespace App\Services\Stock;
 use App\Repositories\Stock\Interfaces\FavoriteStockRepositoryInterface;
 
 /**
- * Class FavoriteStockService
- *
- * Provides business logic for managing user's favorite stocks.
+ * Coordinate favorite stock mutations through the stock repository contract.
  */
 class FavoriteStockService implements FavoriteStockServiceInterface
 {
     /**
-     * FavoriteStockService constructor.
+     * Inject the repository that persists favorite stock symbols.
+     *
+     * @return void
      */
     public function __construct(
-        protected FavoriteStockRepositoryInterface $repository
+        private readonly FavoriteStockRepositoryInterface $repository,
     ) {}
 
     /**

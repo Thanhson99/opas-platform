@@ -93,6 +93,22 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
     }
 
     /**
+     * Persist a new display name for the current account and return a fresh user model.
+     *
+     * @param  User  $user
+     * @param  string  $name
+     * @return User
+     */
+    public function updateDisplayName(User $user, string $name): User
+    {
+        $user->forceFill([
+            'name' => $name,
+        ])->save();
+
+        return $user->refresh();
+    }
+
+    /**
      * Persist account field changes and return a fresh user model.
      *
      * @param  User  $user

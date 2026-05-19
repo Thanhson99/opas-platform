@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Repositories\Coin\Interfaces;
 
 use App\Models\FeedKeyword;
+use Illuminate\Support\Collection;
 
 interface FeedKeywordRepositoryInterface
 {
@@ -51,4 +52,19 @@ interface FeedKeywordRepositoryInterface
      * @param  array<int>  $tagIds  Tag identifiers to sync.
      */
     public function syncTags(int $keywordId, array $tagIds): void;
+
+    /**
+     * Return all feed keywords with their tags loaded in display order.
+     *
+     * @return Collection<int, FeedKeyword>
+     */
+    public function allWithTags(): Collection;
+
+    /**
+     * Delete a feed keyword after detaching its related tags.
+     *
+     * @param  int  $id  Feed keyword identifier.
+     * @return void
+     */
+    public function deleteWithTags(int $id): void;
 }

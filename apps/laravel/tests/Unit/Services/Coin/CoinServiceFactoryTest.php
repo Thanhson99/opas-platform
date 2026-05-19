@@ -16,7 +16,7 @@ class CoinServiceFactoryTest extends TestCase
      *
      * @return void
      */
-    public function test_make_returns_binance_service()
+    public function test_make_returns_binance_service(): void
     {
         $service = CoinServiceFactory::make('binance');
 
@@ -29,7 +29,7 @@ class CoinServiceFactoryTest extends TestCase
      *
      * @return void
      */
-    public function test_make_throws_exception_for_unsupported_source()
+    public function test_make_throws_exception_for_unsupported_source(): void
     {
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Unsupported source [unknown]');

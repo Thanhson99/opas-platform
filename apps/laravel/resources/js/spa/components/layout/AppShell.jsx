@@ -34,6 +34,13 @@ export default function AppShell({ children }) {
             };
         }
 
+        if (location.pathname.startsWith('/account')) {
+            return {
+                title: t('shell.accountLinksTitle'),
+                description: t('shell.accountLinksDescription'),
+            };
+        }
+
         if (location.pathname.startsWith('/coins/feed-keywords')) {
             return {
                 title: t('shell.keywordsTitle'),
@@ -103,7 +110,7 @@ export default function AppShell({ children }) {
                     onToggleSidebar={() => setSidebarOpen((value) => !value)}
                 />
                 <main className="opas-content">{children}</main>
-                <Footer />
+                <Footer variant="workspace" />
             </div>
         </div>
     );

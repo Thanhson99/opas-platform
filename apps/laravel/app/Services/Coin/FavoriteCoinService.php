@@ -7,17 +7,17 @@ namespace App\Services\Coin;
 use App\Repositories\Coin\Interfaces\FavoriteCoinRepositoryInterface;
 
 /**
- * Class FavoriteCoinService
- *
- * Provides business logic for managing user's favorite coins.
+ * Coordinate favorite coin mutations through the coin repository contract.
  */
 class FavoriteCoinService implements FavoriteCoinServiceInterface
 {
     /**
-     * FavoriteCoinService constructor.
+     * Inject the repository that persists favorite coin symbols.
+     *
+     * @return void
      */
     public function __construct(
-        protected FavoriteCoinRepositoryInterface $repository
+        private readonly FavoriteCoinRepositoryInterface $repository,
     ) {}
 
     /**

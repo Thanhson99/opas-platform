@@ -5,24 +5,24 @@ declare(strict_types=1);
 namespace App\Services\Coin;
 
 use App\Models\FeedKeyword;
-use App\Repositories\Coin\FeedKeywordRepository;
-use App\Repositories\Coin\TagRepository;
+use App\Repositories\Coin\Interfaces\FeedKeywordRepositoryInterface;
+use App\Repositories\Coin\Interfaces\TagRepositoryInterface;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Class FeedKeywordService
- *
- * Service class for managing feed keywords and their associated tags.
+ * Manage feed keywords and their tag relationships as one business workflow.
  */
 class FeedKeywordService
 {
     /**
-     * FeedKeywordService constructor.
+     * Inject repository contracts used by the feed keyword workflow.
+     *
+     * @return void
      */
     public function __construct(
-        protected FeedKeywordRepository $keywordRepo,
-        protected TagRepository $tagRepo
+        private readonly FeedKeywordRepositoryInterface $keywordRepo,
+        private readonly TagRepositoryInterface $tagRepo,
     ) {}
 
     /**
@@ -82,6 +82,7 @@ class FeedKeywordService
      * Delete a feed keyword with its related tags.
      *
      * @param  int  $id  Feed keyword ID.
+     * @return void
      */
     public function delete(int $id): void
     {
@@ -91,6 +92,8 @@ class FeedKeywordService
     }
 
     /**
+     * Normalize mixed tag input into unique non-empty tag names.
+     *
      * @param  array<int, mixed>  $tags
      * @return array<int, string>
      */

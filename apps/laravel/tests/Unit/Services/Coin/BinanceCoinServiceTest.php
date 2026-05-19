@@ -15,7 +15,7 @@ class BinanceCoinServiceTest extends TestCase
      *
      * @return void
      */
-    public function test_get_top_coins_returns_data()
+    public function test_get_top_coins_returns_data(): void
     {
         $mockClient = $this->createMock(CoinApiClientInterface::class);
         $mockClient->method('fetchTopCoins')
@@ -33,7 +33,7 @@ class BinanceCoinServiceTest extends TestCase
      *
      * @return void
      */
-    public function test_get_coin_by_id_returns_correct_coin()
+    public function test_get_coin_by_id_returns_correct_coin(): void
     {
         $mockClient = $this->createMock(CoinApiClientInterface::class);
         $mockClient->method('fetchCoinDetail')

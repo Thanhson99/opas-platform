@@ -10,6 +10,16 @@ export function getProvidersForCapability(providers, capability) {
     return providers.filter((provider) => hasProviderCapability(provider, capability));
 }
 
+export function getLinkedProviderKeys(user) {
+    if (!Array.isArray(user?.linked_providers)) {
+        return [];
+    }
+
+    return user.linked_providers
+        .map((provider) => provider?.key)
+        .filter((key) => typeof key === 'string' && key.trim() !== '');
+}
+
 export function isPasswordProvider(provider) {
     return provider?.type === 'password' || provider?.capabilities?.supports_password === true;
 }
@@ -27,6 +37,14 @@ export function getPasswordFormProvider(providers) {
 
 export function getNonFormProviders(providers, formProvider) {
     return providers.filter((provider) => provider.key !== formProvider?.key);
+}
+
+export function getLinkableProviders(providers, user) {
+    const linkedProviderKeys = new Set(getLinkedProviderKeys(user));
+
+    return getProvidersForCapability(providers, 'link_account').filter(
+        (provider) => isRedirectProvider(provider) && !linkedProviderKeys.has(provider.key),
+    );
 }
 
 export function getRedirectUrl(provider) {

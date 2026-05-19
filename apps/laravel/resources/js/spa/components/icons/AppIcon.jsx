@@ -196,6 +196,16 @@ function UsersIcon() {
     );
 }
 
+function LinkIcon() {
+    return (
+        <svg {...baseProps}>
+            <path d="M10 14 8.2 15.8a3.1 3.1 0 1 1-4.4-4.4L7 8.2" />
+            <path d="M14 10 15.8 8.2a3.1 3.1 0 1 1 4.4 4.4L17 15.8" />
+            <path d="m8.8 15.2 6.4-6.4" />
+        </svg>
+    );
+}
+
 const icons = {
     dashboard: DashboardIcon,
     coins: CoinsIcon,
@@ -214,6 +224,7 @@ const icons = {
     'eye-off': EyeOffIcon,
     heart: HeartIcon,
     users: UsersIcon,
+    link: LinkIcon,
 };
 
 export const availableAppIcons = Object.freeze(Object.keys(icons));
