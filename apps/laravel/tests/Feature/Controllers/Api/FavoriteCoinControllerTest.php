@@ -18,7 +18,9 @@ class FavoriteCoinControllerTest extends TestCase
     use RefreshDatabase;
 
     /**
-     * Test that a valid symbol is added to favorites.
+     * Members should be able to add a valid coin symbol to favorites.
+     *
+     * @return void
      */
     public function test_it_can_add_coin_to_favorites(): void
     {
@@ -39,7 +41,9 @@ class FavoriteCoinControllerTest extends TestCase
     }
 
     /**
-     * Test that an existing symbol is removed from favorites.
+     * Members should be able to remove an existing coin symbol from favorites.
+     *
+     * @return void
      */
     public function test_it_can_remove_coin_from_favorites(): void
     {
@@ -61,7 +65,9 @@ class FavoriteCoinControllerTest extends TestCase
     }
 
     /**
-     * Test that an invalid symbol is rejected.
+     * Invalid coin symbols should be rejected by request validation.
+     *
+     * @return void
      */
     public function test_it_returns_error_for_invalid_symbol(): void
     {
@@ -77,6 +83,8 @@ class FavoriteCoinControllerTest extends TestCase
 
     /**
      * Guests must authenticate before they can add favorite coins.
+     *
+     * @return void
      */
     public function test_guest_cannot_add_coin_to_favorites(): void
     {
@@ -87,6 +95,8 @@ class FavoriteCoinControllerTest extends TestCase
 
     /**
      * Signed-in users must still verify their email before using protected favorite endpoints.
+     *
+     * @return void
      */
     public function test_unverified_user_cannot_add_coin_to_favorites(): void
     {

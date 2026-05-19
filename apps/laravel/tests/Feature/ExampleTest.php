@@ -10,7 +10,9 @@ use Tests\TestCase;
 class ExampleTest extends TestCase
 {
     /**
-     * A basic test example.
+     * Keep the default web entrypoint smoke test passing.
+     *
+     * @return void
      */
     public function test_the_application_returns_a_successful_response(): void
     {

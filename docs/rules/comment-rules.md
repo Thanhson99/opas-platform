@@ -26,6 +26,16 @@ Comments should make code easier to maintain, not compensate for weak naming or 
 - Update or delete comments when the code changes. Stale comments are bugs.
 - Keep comment tone neutral and technical. Avoid conversational or speculative phrasing.
 - If a comment describes a system safety rule, phrase it as a rule, not as a guess.
+- Prefer one strong comment above a block over multiple inline comments that narrate each line.
+- Do not use comments as a substitute for extracting a method with a clear name.
+
+## Preferred Comment Targets
+
+- business-rule exceptions
+- security constraints
+- data-integrity safeguards
+- external API quirks or protocol edge cases
+- query or transaction constraints that are non-obvious from the code alone
 
 ## Preferred Pattern
 

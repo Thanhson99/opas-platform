@@ -4,6 +4,9 @@
 
 Apply these rules to PHP code in `apps/laravel/app/`.
 
+When tests introduce helper methods, data builders, or non-trivial setup logic in `apps/laravel/tests/`,
+apply the same method-level documentation standards there as well.
+
 ## Method Rules
 
 - Every public and protected PHP method in `app/` must have a docblock with a one-line summary.
@@ -11,6 +14,8 @@ Apply these rules to PHP code in `apps/laravel/app/`.
 - Every documented method must include `@return`, even when the native PHP return type is obvious.
 - Every documented method with parameters must include `@param` for each parameter.
 - Array-shaped payloads must declare their array shape in `@param` or `@return` whenever practical.
+- PHPUnit test methods should include a concise summary docblock and `@return void`.
+- Test helper methods with parameters or non-trivial behavior must include `@param` and `@return`.
 
 ## Class-Level Rules
 
@@ -26,6 +31,7 @@ Apply these rules to PHP code in `apps/laravel/app/`.
 - If a method exists mainly to enforce a business rule, the summary should make that rule explicit.
 - Prefer imperative clarity over prose. One strong sentence is better than three weak ones.
 - Keep terminology consistent with the domain and the API contract.
+- In tests, summarize the business rule or scenario being protected instead of restating the test method name.
 
 ## Review Checklist
 

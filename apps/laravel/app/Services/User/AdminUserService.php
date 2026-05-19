@@ -47,32 +47,13 @@ class AdminUserService
      */
     public function updateUser(int $userId, string $name, UserRole $role): User
     {
-        $user = $this->userRepository->findById($userId);
-
-        if (! $user instanceof User) {
-            throw ValidationException::withMessages([
-                'user' => ['The selected user account could not be found.'],
-            ]);
-        }
+        $user = $this->findManagedUserOrFail($userId);
 
         /** @var User|null $actor */
         $actor = Auth::user();
 
-        if ($actor instanceof User && $actor->id === $user->id && $role !== UserRole::Admin) {
-            throw ValidationException::withMessages([
-                'role' => ['You cannot remove admin access from the account you are currently using.'],
-            ]);
-        }
-
-        if ($user->role === UserRole::Admin && $role !== UserRole::Admin) {
-            $adminCount = $this->userRepository->countByRole(UserRole::Admin);
-
-            if ($adminCount <= 1) {
-                throw ValidationException::withMessages([
-                    'role' => ['At least one admin account must remain assigned to the system.'],
-                ]);
-            }
-        }
+        $this->guardCurrentActorAdminDemotion($actor, $user, $role);
+        $this->guardLastAdminDemotion($user, $role);
 
         return $this->userRepository->updateAccount($user, $name, $role);
     }
@@ -85,32 +66,13 @@ class AdminUserService
      */
     public function deleteUser(int $userId): void
     {
-        $user = $this->userRepository->findById($userId);
-
-        if (! $user instanceof User) {
-            throw ValidationException::withMessages([
-                'user' => ['The selected user account could not be found.'],
-            ]);
-        }
+        $user = $this->findManagedUserOrFail($userId);
 
         /** @var User|null $actor */
         $actor = Auth::user();
 
-        if ($actor instanceof User && $actor->id === $user->id) {
-            throw ValidationException::withMessages([
-                'user' => ['You cannot delete the account you are currently using.'],
-            ]);
-        }
-
-        if ($user->role === UserRole::Admin) {
-            $adminCount = $this->userRepository->countByRole(UserRole::Admin);
-
-            if ($adminCount <= 1) {
-                throw ValidationException::withMessages([
-                    'user' => ['At least one admin account must remain assigned to the system.'],
-                ]);
-            }
-        }
+        $this->guardCurrentActorDeletion($actor, $user);
+        $this->guardLastAdminDeletion($user);
 
         $this->userRepository->delete($user);
     }
@@ -123,13 +85,7 @@ class AdminUserService
      */
     public function resetPassword(int $userId): void
     {
-        $user = $this->userRepository->findById($userId);
-
-        if (! $user instanceof User) {
-            throw ValidationException::withMessages([
-                'user' => ['The selected user account could not be found.'],
-            ]);
-        }
+        $user = $this->findManagedUserOrFail($userId);
 
         $temporaryPassword = Str::password(16, true, true, true, false);
 
@@ -138,5 +94,96 @@ class AdminUserService
         ])->save();
 
         $user->notify(new AdminResetPasswordNotification($temporaryPassword));
+    }
+
+    /**
+     * Resolve a managed user account or raise a stable validation error.
+     *
+     * @param  int  $userId
+     * @return User
+     */
+    private function findManagedUserOrFail(int $userId): User
+    {
+        $user = $this->userRepository->findById($userId);
+
+        if ($user instanceof User) {
+            return $user;
+        }
+
+        throw ValidationException::withMessages([
+            'user' => ['The selected user account could not be found.'],
+        ]);
+    }
+
+    /**
+     * Prevent the current actor from removing admin access from the account in use.
+     *
+     * @param  User|null  $actor
+     * @param  User  $user
+     * @param  UserRole  $role
+     * @return void
+     */
+    private function guardCurrentActorAdminDemotion(?User $actor, User $user, UserRole $role): void
+    {
+        if ($actor instanceof User && $actor->id === $user->id && $role !== UserRole::Admin) {
+            throw ValidationException::withMessages([
+                'role' => ['You cannot remove admin access from the account you are currently using.'],
+            ]);
+        }
+    }
+
+    /**
+     * Prevent the final remaining admin account from losing admin role.
+     *
+     * @param  User  $user
+     * @param  UserRole  $role
+     * @return void
+     */
+    private function guardLastAdminDemotion(User $user, UserRole $role): void
+    {
+        if ($user->role !== UserRole::Admin || $role === UserRole::Admin) {
+            return;
+        }
+
+        if ($this->userRepository->countByRole(UserRole::Admin) <= 1) {
+            throw ValidationException::withMessages([
+                'role' => ['At least one admin account must remain assigned to the system.'],
+            ]);
+        }
+    }
+
+    /**
+     * Prevent the current actor from deleting the account in use.
+     *
+     * @param  User|null  $actor
+     * @param  User  $user
+     * @return void
+     */
+    private function guardCurrentActorDeletion(?User $actor, User $user): void
+    {
+        if ($actor instanceof User && $actor->id === $user->id) {
+            throw ValidationException::withMessages([
+                'user' => ['You cannot delete the account you are currently using.'],
+            ]);
+        }
+    }
+
+    /**
+     * Prevent deletion of the final remaining admin account.
+     *
+     * @param  User  $user
+     * @return void
+     */
+    private function guardLastAdminDeletion(User $user): void
+    {
+        if ($user->role !== UserRole::Admin) {
+            return;
+        }
+
+        if ($this->userRepository->countByRole(UserRole::Admin) <= 1) {
+            throw ValidationException::withMessages([
+                'user' => ['At least one admin account must remain assigned to the system.'],
+            ]);
+        }
     }
 }

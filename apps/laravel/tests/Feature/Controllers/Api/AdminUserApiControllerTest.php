@@ -6,12 +6,16 @@ namespace Tests\Feature\Controllers\Api;
 
 use App\Enums\UserRole;
 use App\Models\User;
+use App\Models\UserAuthIdentity;
 use App\Notifications\AdminResetPasswordNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
+/**
+ * Verify the admin user management API and its safety rules.
+ */
 class AdminUserApiControllerTest extends TestCase
 {
     use RefreshDatabase;
@@ -32,6 +36,17 @@ class AdminUserApiControllerTest extends TestCase
             'role' => UserRole::Member,
         ]);
 
+        UserAuthIdentity::query()->create([
+            'user_id' => $member->id,
+            'provider_key' => 'google',
+            'provider_user_id' => 'google-user-1',
+            'provider_email' => $member->email,
+            'metadata' => ['sub' => 'google-user-1'],
+            'access_token' => 'token-123',
+            'refresh_token' => 'refresh-123',
+            'token_expires_at' => now()->addHour(),
+        ]);
+
         $response = $this
             ->actingAs($admin)
             ->getJson(route('api.admin.users.index'));
@@ -45,6 +60,10 @@ class AdminUserApiControllerTest extends TestCase
                 'email' => $member->email,
                 'role' => UserRole::Member->value,
             ])
+            ->assertJsonPath('data.1.auth_identity_count', 1)
+            ->assertJsonPath('data.1.linked_providers.0.key', 'google')
+            ->assertJsonPath('data.1.linked_providers.0.display_name', 'Google')
+            ->assertJsonPath('data.1.linked_providers.0.icon', 'google')
             ->assertJsonPath('meta.per_page', 10)
             ->assertJsonPath('meta.current_page', 1);
     }

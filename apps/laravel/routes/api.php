@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\AccountApiController;
 use App\Http\Controllers\Api\AdminAuthProviderApiController;
 use App\Http\Controllers\Api\AdminUserApiController;
 use App\Http\Controllers\Api\AuthApiController;
@@ -30,6 +31,9 @@ Route::middleware('throttle:api')->group(function (): void {
             ->middleware('throttle:6,1')
             ->name('verification.send');
         Route::middleware('auth')->group(function (): void {
+            Route::put('/account', [AccountApiController::class, 'update'])->name('account.update');
+            Route::delete('/account/providers/{key}', [AccountApiController::class, 'unlinkProvider'])
+                ->name('account.providers.destroy');
             Route::get('/me', [AuthApiController::class, 'me'])->name('me');
             Route::post('/logout', [AuthApiController::class, 'logout'])->name('logout');
         });

@@ -9,6 +9,7 @@ use App\Services\Auth\AuthProviderOAuthService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use RuntimeException;
+use Throwable;
 
 class AuthProviderOAuthApiController extends Controller
 {
@@ -46,7 +47,7 @@ class AuthProviderOAuthApiController extends Controller
     {
         try {
             return $this->authProviderOAuthService->callback($request, $key);
-        } catch (RuntimeException $exception) {
+        } catch (Throwable $exception) {
             return redirect()->to('/login?auth_error='.urlencode($exception->getMessage()));
         }
     }

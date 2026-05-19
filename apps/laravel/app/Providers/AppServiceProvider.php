@@ -13,6 +13,8 @@ use App\Repositories\Auth\AuthProviderRepository;
 use App\Repositories\Auth\EmailVerificationCodeRepository;
 use App\Repositories\Auth\Interfaces\AuthProviderRepositoryInterface;
 use App\Repositories\Auth\Interfaces\EmailVerificationCodeRepositoryInterface;
+use App\Repositories\Auth\Interfaces\UserAuthIdentityRepositoryInterface;
+use App\Repositories\Auth\UserAuthIdentityRepository;
 use App\Repositories\Coin\FavoriteCoinRepository;
 use App\Repositories\Coin\FeedKeywordRepository;
 use App\Repositories\Coin\Interfaces\FavoriteCoinRepositoryInterface;
@@ -29,6 +31,7 @@ use App\Services\Auth\AuthProviderConfigService;
 use App\Services\Auth\AuthProviderOAuthService;
 use App\Services\Auth\AuthProviderRegistry;
 use App\Services\Auth\AuthProviderService;
+use App\Services\Auth\AuthSessionService;
 use App\Services\Auth\EmailVerificationService;
 use App\Services\Coin\BinanceCoinApiClient;
 use App\Services\Coin\CoinApiClientInterface;
@@ -40,6 +43,7 @@ use App\Services\Stock\FavoriteStockService;
 use App\Services\Stock\FavoriteStockServiceInterface;
 use App\Services\Stock\StockService;
 use App\Services\Stock\StockServiceInterface;
+use App\Services\User\AccountSettingsService;
 use App\Services\User\AdminUserService;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Contracts\Foundation\Application;
@@ -50,11 +54,6 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 use Throwable;
 
-/**
- * Class AppServiceProvider
- *
- * Responsible for registering and bootstrapping application services.
- */
 class AppServiceProvider extends ServiceProvider
 {
     /**
@@ -83,11 +82,14 @@ class AppServiceProvider extends ServiceProvider
 
         $this->app->bind(AuthProviderRepositoryInterface::class, AuthProviderRepository::class);
         $this->app->bind(EmailVerificationCodeRepositoryInterface::class, EmailVerificationCodeRepository::class);
+        $this->app->bind(UserAuthIdentityRepositoryInterface::class, UserAuthIdentityRepository::class);
         $this->app->singleton(AuthProviderConfigService::class);
         $this->app->singleton(AuthProviderOAuthService::class);
         $this->app->singleton(AuthProviderService::class);
+        $this->app->singleton(AuthSessionService::class);
         $this->app->singleton(EmailVerificationService::class);
         $this->app->bind(UserRepositoryInterface::class, UserRepository::class);
+        $this->app->singleton(AccountSettingsService::class);
         $this->app->singleton(AdminUserService::class);
 
         // Bind the Coin API client interface to Binance implementation by default

@@ -23,6 +23,7 @@ Use these rules as the default engineering baseline for Laravel application code
 - Eloquent models should stay small and focused on relationships, casts, accessors, and narrowly scoped helpers.
 - If a feature touches multiple aggregates or has branching rules, create or extend a service instead of growing controller logic.
 - If a service starts accumulating raw query details, move those queries into a repository.
+- Follow `architecture-rules.md` for responsibility boundaries before introducing new files or patterns.
 
 ## Naming And Readability Rules
 
@@ -32,6 +33,7 @@ Use these rules as the default engineering baseline for Laravel application code
 - Avoid boolean names that hide meaning. Prefer `isReady`, `hasStoredSecret`, or `requiresVerification` over generic names like `flag` or `status`.
 - Keep nesting shallow. Prefer guard clauses and early returns over deeply nested conditionals.
 - If a method needs comments to explain each branch, the method likely needs to be split.
+- Follow `quality-rules.md` heuristics for method length, parameter count, branch count, and extraction triggers.
 
 ## Validation And Error Handling Rules
 
@@ -48,6 +50,7 @@ Use these rules as the default engineering baseline for Laravel application code
 - A service should expose a small public API aligned to a domain capability.
 - Hide branch-heavy logic in private methods with names that express the rule being applied.
 - Do not let services read directly from superglobals, raw requests, or frontend-specific state.
+- Use transactions explicitly when a service updates multiple records that must stay consistent.
 
 ## Repository Rules
 
@@ -55,6 +58,7 @@ Use these rules as the default engineering baseline for Laravel application code
 - Repositories should not absorb unrelated business branching.
 - If a query is reused across services or controllers, prefer moving it to a repository method with a stable name.
 - If a repository method returns a refreshed model after persistence, make that behavior explicit and consistent.
+- Repositories should centralize eager-loading and deterministic ordering rules when those rules are part of the feature contract.
 
 ## Resource And Response Rules
 
@@ -70,6 +74,7 @@ Use these rules as the default engineering baseline for Laravel application code
 - When a feature adds persistence behavior, decide whether it belongs in an existing repository or needs a new repository.
 - Sensitive tokens, secrets, and long-lived credentials must be encrypted using Laravel casts or equivalent backend protection.
 - Prefer explicit column names and indexes for lookup-heavy auth tables.
+- Declare model casts for JSON, encrypted, enum, and datetime-backed fields when the type matters to the domain.
 
 ## Function And Class Structure
 
@@ -77,6 +82,7 @@ Use these rules as the default engineering baseline for Laravel application code
 - Prefer small methods with descriptive names over a single large method.
 - Services should expose a small public API and hide branching logic in private methods.
 - When a class grows by feature area, split by responsibility rather than adding unrelated helper methods.
+- Prefer cohesive feature-oriented class design over generic utility dumping.
 
 ## Frontend Rules
 
@@ -87,8 +93,11 @@ Use these rules as the default engineering baseline for Laravel application code
 
 ## Delivery Checklist
 
+- Architecture boundaries match the owning layer.
 - Required env keys are present in `apps/laravel/.env.example`.
 - Runtime config reads from `config()`, not direct `env()` calls in app code.
 - Controllers remain thin.
 - Database logic is in repositories or models only where appropriate.
 - Sensitive values are not exposed to frontend or logs.
+- Model casts, relationships, and persistence-sensitive types are explicit.
+- Long methods and oversized parameter lists were reviewed against `quality-rules.md`.
