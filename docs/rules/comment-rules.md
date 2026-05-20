@@ -41,3 +41,12 @@ Comments should make code easier to maintain, not compensate for weak naming or 
 
 - First improve naming and structure.
 - Then add the smallest comment that explains the remaining non-obvious part.
+
+## Frontend Comment Rules
+
+- In `resources/js`, prefer JSDoc for reusable functions, components, contexts, config contracts, and entry modules, and reserve regular comments for non-obvious UI rules, backend-contract constraints, or provider-specific quirks.
+- In `resources/js`, use JSDoc as the primary documentation mechanism for exported functions and components instead of replacing that documentation with ad hoc inline comments.
+- Do not add comments above every React hook or state setter. Comment only the workflow rule that would otherwise be easy to misread.
+- When frontend logic mirrors a backend safety rule, say that explicitly in one short comment instead of narrating the branch line by line.
+- For formatting helpers, fallback label builders, and payload normalizers, add a short comment only if the function name and JSDoc still leave an important constraint implicit.
+- When a frontend contract is reused across helpers or contexts, prefer one local `@typedef` plus focused JSDoc over repeating vague inline comments on every consumer.

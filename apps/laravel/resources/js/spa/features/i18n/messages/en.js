@@ -1,3 +1,6 @@
+/**
+ * Define the English locale catalog for the SPA.
+ */
 export const enMessages = {
     common: {
         home: 'Home',
@@ -288,18 +291,18 @@ export const enMessages = {
         },
         visibility: {
             label: 'Visibility',
-            public: 'public - show on login screen',
-            hidden: 'hidden - hide from login screen',
-            adminOnly: 'admin_only - internal use only',
+            public: 'Public - show on login screen',
+            hidden: 'Hidden - hide from login screen',
+            adminOnly: 'Admin only - internal use only',
             chip: 'visibility:',
             help: 'Only providers with visibility set to public can appear on the public login screen.',
         },
         emailVerification: {
             label: 'Email verification policy',
-            inherit: 'inherit - use system default',
-            required: 'required - must verify',
-            optional: 'optional - allow without force',
-            disabled: 'disabled - turn off verification',
+            inherit: 'Inherit - use system default',
+            required: 'Required - must verify',
+            optional: 'Optional - allow without force',
+            disabled: 'Disabled - turn off verification',
             help: 'Use this to apply a separate email verification rule for this provider.',
             emailLockedHelp:
                 'Email registration always requires verification before the account can be used.',

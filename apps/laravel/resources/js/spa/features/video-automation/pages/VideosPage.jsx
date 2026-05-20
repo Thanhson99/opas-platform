@@ -6,6 +6,9 @@ import MetricCard from '../../../components/ui/MetricCard';
 import PageHero from '../../../components/ui/PageHero';
 import api from '../../../lib/api';
 
+/**
+ * Render grouped trending-video sources for the automation workflow.
+ */
 export default function VideosPage() {
     const [groups, setGroups] = useState([]);
     const [loading, setLoading] = useState(true);

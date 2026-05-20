@@ -1,3 +1,6 @@
+/**
+ * Define the Vietnamese locale catalog for the SPA.
+ */
 export const viMessages = {
     common: {
         home: 'Trang chủ',
@@ -291,18 +294,18 @@ export const viMessages = {
         },
         visibility: {
             label: 'Phạm vi hiển thị',
-            public: 'public - hiện ở trang đăng nhập',
-            hidden: 'hidden - ẩn khỏi trang đăng nhập',
-            adminOnly: 'admin_only - chỉ phục vụ nội bộ',
+            public: 'Public - hiện ở trang đăng nhập',
+            hidden: 'Hidden - ẩn khỏi trang đăng nhập',
+            adminOnly: 'Admin only - chỉ phục vụ nội bộ',
             chip: 'phạm vi:',
             help: 'Chỉ provider có visibility = public mới được phép xuất hiện ngoài màn hình đăng nhập.',
         },
         emailVerification: {
             label: 'Chính sách xác minh email',
-            inherit: 'inherit - dùng mặc định hệ thống',
-            required: 'required - bắt buộc',
-            optional: 'optional - tùy chọn',
-            disabled: 'disabled - tắt',
+            inherit: 'Inherit - dùng mặc định hệ thống',
+            required: 'Required - bắt buộc',
+            optional: 'Optional - tùy chọn',
+            disabled: 'Disabled - tắt',
             help: 'Dùng để áp dụng chính sách xác minh email riêng cho provider này.',
             emailLockedHelp:
                 'Đăng ký bằng email luôn bắt buộc xác minh trước khi tài khoản được sử dụng.',

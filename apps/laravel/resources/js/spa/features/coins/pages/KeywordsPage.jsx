@@ -8,6 +8,9 @@ import PageHero from '../../../components/ui/PageHero';
 import { useAuth } from '../../auth/context/AuthContext';
 import api from '../../../lib/api';
 
+/**
+ * Render keyword and tag management for coin-content automation inputs.
+ */
 export default function KeywordsPage() {
     const navigate = useNavigate();
     const location = useLocation();

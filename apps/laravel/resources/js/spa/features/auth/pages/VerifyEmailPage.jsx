@@ -6,6 +6,9 @@ import ErrorState from '../../../components/ui/ErrorState';
 import AuthShowcase from '../components/AuthShowcase';
 import { useLanguage } from '../../i18n/context/LanguageContext';
 
+/**
+ * Render the email verification screen for code entry and resend actions.
+ */
 export default function VerifyEmailPage() {
     const location = useLocation();
     const { t } = useLanguage();

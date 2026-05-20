@@ -5,6 +5,16 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../../features/i18n/context/LanguageContext';
 import LanguageSelect from './LanguageSelect';
 
+/**
+ * Render the workspace header with account actions and route-specific titles.
+ *
+ * @param {{
+ *   title: string,
+ *   description?: string,
+ *   onToggleSidebar: () => void,
+ * }} props
+ * @returns {import('react').JSX.Element}
+ */
 export default function Header({ title, description, onToggleSidebar }) {
     const navigate = useNavigate();
     const { user, loading, logout, registerProviders } = useAuth();

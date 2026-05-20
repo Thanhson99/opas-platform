@@ -10,6 +10,9 @@ import { getNonFormProviders, getPasswordFormProvider } from '../lib/publicAuthP
 import { useLanguage } from '../../i18n/context/LanguageContext';
 import LanguageSelect from '../../../components/layout/LanguageSelect';
 
+/**
+ * Render the registration screen with password rules and provider-aware fallback actions.
+ */
 export default function RegisterPage() {
     const navigate = useNavigate();
     const { register, registerProviders, providersLoading, providersError } = useAuth();

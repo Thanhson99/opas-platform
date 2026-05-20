@@ -8,6 +8,9 @@ import PageHero from '../../../components/ui/PageHero';
 import { useAuth } from '../../auth/context/AuthContext';
 import api from '../../../lib/api';
 
+/**
+ * Render the stock-monitor workspace with search and favorites.
+ */
 export default function StocksPage() {
     const navigate = useNavigate();
     const location = useLocation();

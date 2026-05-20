@@ -8,6 +8,9 @@ import PageHero from '../../../components/ui/PageHero';
 import { useAuth } from '../../auth/context/AuthContext';
 import api from '../../../lib/api';
 
+/**
+ * Render the price-alert list with quick toggle and edit actions.
+ */
 export default function AlertsPage() {
     const navigate = useNavigate();
     const location = useLocation();

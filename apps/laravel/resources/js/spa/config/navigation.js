@@ -1,3 +1,25 @@
+/**
+ * @typedef {{
+ *   labelKey: string,
+ *   href: string,
+ *   icon: string,
+ *   activePrefixes?: string[],
+ *   adminOnly?: boolean,
+ * }} NavigationItem
+ */
+
+/**
+ * @typedef {{
+ *   labelKey: string,
+ *   items: NavigationItem[],
+ * }} NavigationSection
+ */
+
+/**
+ * Define the sidebar navigation contract for workspace and admin routes.
+ *
+ * @type {NavigationSection[]}
+ */
 export const navigation = [
     {
         labelKey: 'nav.workspace',

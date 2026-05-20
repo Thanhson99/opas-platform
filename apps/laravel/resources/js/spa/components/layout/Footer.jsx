@@ -1,5 +1,11 @@
 import { useLanguage } from '../../features/i18n/context/LanguageContext';
 
+/**
+ * Render the shared footer used by workspace and admin shells.
+ *
+ * @param {{ variant?: 'workspace' | 'admin' }} props
+ * @returns {import('react').JSX.Element}
+ */
 export default function Footer({ variant = 'workspace' }) {
     const { t } = useLanguage();
 

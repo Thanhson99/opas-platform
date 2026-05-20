@@ -1,3 +1,6 @@
+/**
+ * Evaluate the password rules enforced by the auth registration and reset flows.
+ */
 export function getPasswordChecks(password) {
     const value = String(password ?? '');
 
@@ -10,12 +13,18 @@ export function getPasswordChecks(password) {
     };
 }
 
+/**
+ * Check whether a password satisfies every required rule.
+ */
 export function isStrongPassword(password) {
     const checks = getPasswordChecks(password);
 
     return Object.values(checks).every(Boolean);
 }
 
+/**
+ * Return the translation keys for password rules the current value still fails.
+ */
 export function getMissingPasswordRuleKeys(password) {
     const checks = getPasswordChecks(password);
 

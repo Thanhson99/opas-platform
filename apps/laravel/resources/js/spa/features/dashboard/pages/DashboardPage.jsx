@@ -1,6 +1,9 @@
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../../i18n/context/LanguageContext';
 
+/**
+ * Render the workspace landing page with navigation into the main tools.
+ */
 export default function DashboardPage() {
     const { t } = useLanguage();
 

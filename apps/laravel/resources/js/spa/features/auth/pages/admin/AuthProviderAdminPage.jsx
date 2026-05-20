@@ -22,6 +22,9 @@ import {
 } from './authProviderAdminForm.helpers';
 import { getProviderDocs } from './providerDocs';
 
+/**
+ * Prefer server-side validation messages and only reveal client-side issues after touch.
+ */
 function getFieldError(fieldIssues, serverErrors, fieldTouches, key) {
     if (serverErrors[key]?.[0]) {
         return serverErrors[key][0];
@@ -34,10 +37,16 @@ function getFieldError(fieldIssues, serverErrors, fieldTouches, key) {
     return fieldIssues[key] || '';
 }
 
+/**
+ * Build stable input names for provider settings fields and secret inputs.
+ */
 function buildProviderInputName(providerKey, fieldKey, bucket = 'base') {
     return `auth-provider-${providerKey}-${bucket}-${fieldKey}`;
 }
 
+/**
+ * Render the lightweight inline markdown tokens used by provider setup docs.
+ */
 function renderInlineRichText(text) {
     const tokens = String(text)
         .split(/(`[^`]+`|\*\*[^*]+\*\*)/g)
@@ -56,6 +65,9 @@ function renderInlineRichText(text) {
     });
 }
 
+/**
+ * Render the admin provider detail page that manages auth-provider config and readiness.
+ */
 export default function AuthProviderAdminPage() {
     const { key = 'email' } = useParams();
     const { user, loading: authLoading } = useAuth();
@@ -163,10 +175,19 @@ export default function AuthProviderAdminPage() {
         : selectedProvider.ready
           ? 'app-status-pill--muted'
           : 'app-status-pill--warning';
+    const visibilityLabel =
+        form.visibility === 'public'
+            ? t('adminAuth.visibility.public')
+            : form.visibility === 'hidden'
+              ? t('adminAuth.visibility.hidden')
+              : t('adminAuth.visibility.adminOnly');
     const providerDocs = getProviderDocs(selectedProvider.key, language, {
         callbackUrl: selectedProvider.metadata?.callback_url ?? null,
     });
 
+    /**
+     * Clear one backend validation error after the admin edits the related field again.
+     */
     const clearProviderFieldError = (fieldKey) => {
         setServerErrors((current) => {
             const nextProviderErrors = { ...(current[selectedProvider.key] ?? {}) };
@@ -179,6 +200,9 @@ export default function AuthProviderAdminPage() {
         });
     };
 
+    /**
+     * Record user interaction so client-side validation errors appear intentionally.
+     */
     const markFieldTouched = (fieldKey) => {
         setTouchedFields((current) => ({
             ...current,
@@ -189,6 +213,9 @@ export default function AuthProviderAdminPage() {
         }));
     };
 
+    /**
+     * Update one top-level provider field and mark the current provider form dirty.
+     */
     const updateForm = (field, value) => {
         setForms((current) => ({
             ...current,
@@ -205,6 +232,9 @@ export default function AuthProviderAdminPage() {
         setFlash(null);
     };
 
+    /**
+     * Update one nested public or secret config field for the selected provider.
+     */
     const updateConfigField = (bucket, field, value) => {
         setForms((current) => ({
             ...current,
@@ -224,6 +254,9 @@ export default function AuthProviderAdminPage() {
         setFlash(null);
     };
 
+    /**
+     * Track whether one masked secret field is currently in edit mode.
+     */
     const updateSecretEditState = (fieldKey, editing) => {
         setSecretEditState((current) => ({
             ...current,
@@ -231,6 +264,9 @@ export default function AuthProviderAdminPage() {
         }));
     };
 
+    /**
+     * Persist the selected provider and replace local form state with the saved response.
+     */
     const performSaveProvider = async () => {
         setSavingKey(selectedProvider.key);
         setFlash({
@@ -351,7 +387,7 @@ export default function AuthProviderAdminPage() {
                     </span>
                     <span className="app-chip">{selectedProvider.type}</span>
                     <span className="app-chip">
-                        {t('adminAuth.visibility.chip')} {form.visibility}
+                        {t('adminAuth.visibility.chip')} {visibilityLabel}
                     </span>
                 </div>
 
@@ -697,6 +733,7 @@ export default function AuthProviderAdminPage() {
                                         const meta = buildFieldMeta(t, field, {
                                             callbackUrl:
                                                 selectedProvider.metadata?.callback_url ?? null,
+                                            providerDisplayName: selectedProvider.display_name,
                                         });
                                         const errorMessage = getFieldError(
                                             fieldIssues,

@@ -1,3 +1,6 @@
+/**
+ * Render one labeled auth-provider field with shared help and error states.
+ */
 export default function AuthProviderField({
     label,
     required = false,

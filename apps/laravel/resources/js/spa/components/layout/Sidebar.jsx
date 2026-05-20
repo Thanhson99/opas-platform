@@ -4,6 +4,9 @@ import AppIcon from '../icons/AppIcon';
 import { useLanguage } from '../../features/i18n/context/LanguageContext';
 import { useAuth } from '../../features/auth/context/AuthContext';
 
+/**
+ * Render the primary sidebar navigation for workspace and admin entrypoints.
+ */
 export default function Sidebar() {
     const location = useLocation();
     const { t } = useLanguage();

@@ -9,6 +9,9 @@ import { useAuth } from '../context/AuthContext';
 import { getRedirectUrl } from '../lib/publicAuthProviders';
 import { useLanguage } from '../../i18n/context/LanguageContext';
 
+/**
+ * Collapse backend validation payloads into the first useful account-settings message.
+ */
 function firstErrorMessage(requestError, fallbackMessage) {
     const errors = requestError?.response?.data?.errors;
 
@@ -23,6 +26,9 @@ function firstErrorMessage(requestError, fallbackMessage) {
     return requestError?.response?.data?.message || fallbackMessage;
 }
 
+/**
+ * Render profile and linked-provider management for the authenticated account.
+ */
 export default function AccountSettingsPage() {
     const navigate = useNavigate();
     const { t } = useLanguage();

@@ -1,5 +1,8 @@
 import { renderPublicAuthProvider } from '../lib/publicAuthProviderRenderers';
 
+/**
+ * Render the public auth-provider actions available for one page context.
+ */
 export default function AuthProviderOptions({ providers, action, t }) {
     if (providers.length === 0) {
         return null;
