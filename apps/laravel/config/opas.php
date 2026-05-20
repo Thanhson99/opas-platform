@@ -90,4 +90,39 @@ return [
             ],
         ],
     ],
+
+    'auto_coding' => [
+        'default_repository_path' => env('AUTO_CODING_DEFAULT_REPOSITORY_PATH'),
+        'machine_key' => env('AUTO_CODING_MACHINE_KEY'),
+        'machine_stale_seconds' => (int) env('AUTO_CODING_MACHINE_STALE_SECONDS', 300),
+        'provider' => env('AUTO_CODING_PROVIDER', 'null'),
+        'github' => [
+            'base_branch' => env('AUTO_CODING_GITHUB_BASE_BRANCH', 'main'),
+        ],
+        'providers' => [
+            'ollama' => [
+                'base_url' => env('AUTO_CODING_OLLAMA_BASE_URL', 'http://127.0.0.1:11434'),
+                'model' => env('AUTO_CODING_OLLAMA_MODEL', 'qwen2.5:7b'),
+                'timeout_seconds' => (int) env('AUTO_CODING_OLLAMA_TIMEOUT_SECONDS', 30),
+                'prompt_path' => env(
+                    'AUTO_CODING_PROMPT_PATH',
+                    base_path('../../ai-local/agents/laravel-n8n-orchestrator.md')
+                ),
+            ],
+        ],
+        'validation_commands' => [
+            'lint' => array_filter([
+                env('AUTO_CODING_VALIDATE_LINT'),
+            ], static fn (mixed $value): bool => is_string($value) && trim($value) !== ''),
+            'static_analysis' => array_filter([
+                env('AUTO_CODING_VALIDATE_STATIC_ANALYSIS'),
+            ], static fn (mixed $value): bool => is_string($value) && trim($value) !== ''),
+            'tests' => array_filter([
+                env('AUTO_CODING_VALIDATE_TESTS'),
+            ], static fn (mixed $value): bool => is_string($value) && trim($value) !== ''),
+            'frontend' => array_filter([
+                env('AUTO_CODING_VALIDATE_FRONTEND'),
+            ], static fn (mixed $value): bool => is_string($value) && trim($value) !== ''),
+        ],
+    ],
 ];

@@ -7,10 +7,13 @@ Use these rules to keep PHP and Laravel code readable, typed, maintainable, and 
 ## Method Size And Complexity
 
 - Prefer methods that fit on one screen and do one job.
+- A method should usually own one responsibility and at most 2 closely related logical phases.
+- If a method starts reading like `load -> normalize -> call external service -> persist -> report`, split the phases into named private methods or a dedicated collaborator.
 - As a default heuristic:
   - target up to 25 logical lines for simple methods
   - review methods above 40 logical lines for extraction
   - strongly prefer refactoring methods above 60 logical lines unless the structure is unusually linear and clear
+- Public workflow methods may exceed 25 lines only when the method body is mostly orchestration across named helpers and remains easy to scan.
 - If a method has more than 3 decision branches, look for named private method extraction.
 - If a method needs section comments for multiple unrelated phases, split the phases into named methods.
 
@@ -74,6 +77,7 @@ Use these rules to keep PHP and Laravel code readable, typed, maintainable, and 
 - Add docblocks for public/protected methods according to `docblock-rules.md`.
 - Add comments only where the intent or safety rule would otherwise remain non-obvious after cleanup.
 - If a method still needs many comments, it probably needs to be split.
+- If a docblock starts compensating for a long method body, split the method instead of expanding the docblock.
 
 ## Refactor Triggers
 

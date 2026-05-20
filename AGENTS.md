@@ -2,6 +2,11 @@
 
 Read [docs/codegen-rules.md](docs/codegen-rules.md) before making application code changes.
 
+When a task touches the autonomous coding system:
+- Use [docs/GLOBAL-ASSISTANT-CONTINUITY.md](docs/GLOBAL-ASSISTANT-CONTINUITY.md) as the repository-level continuity reference for fresh machines, source inspection, and operator-alignment context
+
+The global continuity file is not mandatory reading for every active session, but it should be checked when continuity, operator style, machine handoff, or “understand this repo like the other machine did” becomes relevant.
+
 When working on `apps/laravel`, use that index and read only the relevant rule files for the task:
 - architecture rules when the task affects controllers, services, repositories, models, jobs, listeners, or module boundaries
 - coding rules

@@ -2,7 +2,11 @@
 
 use App\Http\Controllers\Api\AccountApiController;
 use App\Http\Controllers\Api\AdminAuthProviderApiController;
+use App\Http\Controllers\Api\AdminAutoCodingMachineApiController;
+use App\Http\Controllers\Api\AdminAutoCodingTaskApiController;
+use App\Http\Controllers\Api\AdminAutoCodingTaskRunApiController;
 use App\Http\Controllers\Api\AdminUserApiController;
+use App\Http\Controllers\Api\AgentAutoCodingApiController;
 use App\Http\Controllers\Api\AuthApiController;
 use App\Http\Controllers\Api\AuthProviderApiController;
 use App\Http\Controllers\Api\AuthProviderOAuthApiController;
@@ -49,6 +53,38 @@ Route::middleware('throttle:api')->group(function (): void {
         Route::put('/{id}', [AdminUserApiController::class, 'update'])->whereNumber('id')->name('update');
         Route::post('/{id}/reset-password', [AdminUserApiController::class, 'resetPassword'])->whereNumber('id')->name('reset-password');
         Route::delete('/{id}', [AdminUserApiController::class, 'destroy'])->whereNumber('id')->name('destroy');
+    });
+
+    Route::prefix('admin/auto-coding')->middleware(['web', 'auth', 'verified-email', 'admin', 'no-store'])->name('api.admin.auto-coding.')->group(function (): void {
+        Route::get('/machines', [AdminAutoCodingMachineApiController::class, 'index'])->name('machines.index');
+        Route::post('/machines/heartbeat', [AdminAutoCodingMachineApiController::class, 'heartbeat'])
+            ->name('machines.heartbeat');
+        Route::get('/machines/{id}', [AdminAutoCodingMachineApiController::class, 'show'])
+            ->whereNumber('id')
+            ->name('machines.show');
+        Route::post('/tasks', [AdminAutoCodingTaskApiController::class, 'store'])->name('tasks.store');
+        Route::post('/tasks/claim', [AdminAutoCodingTaskApiController::class, 'claim'])->name('tasks.claim');
+        Route::get('/tasks', [AdminAutoCodingTaskApiController::class, 'index'])->name('tasks.index');
+        Route::get('/tasks/{id}/status', [AdminAutoCodingTaskApiController::class, 'status'])
+            ->whereNumber('id')
+            ->name('tasks.status');
+        Route::get('/tasks/{id}', [AdminAutoCodingTaskApiController::class, 'show'])
+            ->whereNumber('id')
+            ->name('tasks.show');
+        Route::get('/runs/{id}', [AdminAutoCodingTaskRunApiController::class, 'show'])
+            ->whereNumber('id')
+            ->name('runs.show');
+        Route::get('/runs/{id}/artifacts', [AdminAutoCodingTaskRunApiController::class, 'artifacts'])
+            ->whereNumber('id')
+            ->name('runs.artifacts');
+    });
+
+    Route::prefix('agent/auto-coding')->middleware(['throttle:api', 'no-store'])->name('api.agent.auto-coding.')->group(function (): void {
+        Route::post('/heartbeat', [AgentAutoCodingApiController::class, 'heartbeat'])->name('heartbeat');
+        Route::post('/tasks/claim', [AgentAutoCodingApiController::class, 'claim'])->name('tasks.claim');
+        Route::get('/tasks/{id}/status', [AgentAutoCodingApiController::class, 'status'])
+            ->whereNumber('id')
+            ->name('tasks.status');
     });
 
     Route::prefix('coins')->name('api.coins.')->group(function (): void {

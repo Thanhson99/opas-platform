@@ -13,8 +13,10 @@ using concise JSDoc blocks instead of PHP docblocks.
 ## Method Rules
 
 - Every public and protected PHP method in `app/` must have a docblock with a one-line summary.
+- Pure dependency-injection constructors do not need a docblock.
+- Add a constructor docblock only when the constructor enforces a business rule, performs non-obvious setup, or needs generic/static-analysis explanation.
 - Private PHP methods should also have a docblock when they contain branching, data shaping, persistence rules, auth rules, or non-trivial formatting logic.
-- Every documented method must include `@return`, even when the native PHP return type is obvious.
+- Every documented method except `__construct` must include `@return`, even when the native PHP return type is obvious.
 - Every documented method with parameters must include `@param` for each parameter.
 - Array-shaped payloads must declare their array shape in `@param` or `@return` whenever practical.
 - PHPUnit test methods should include a concise summary docblock and `@return void`.
@@ -40,7 +42,9 @@ using concise JSDoc blocks instead of PHP docblocks.
 ## Quality Rules
 
 - Keep docblocks concise and factual.
+- Keep summaries to one short sentence. Prefer roughly 4 to 12 words when practical.
 - Avoid docblocks that restate the function name without adding meaning.
+- Avoid placeholder summaries such as `Inject ...`, `Create one ... service`, or other boilerplate that only narrates DI wiring.
 - Document behavior and contract, not implementation noise.
 - If a method exists mainly to enforce a business rule, the summary should make that rule explicit.
 - Prefer imperative clarity over prose. One strong sentence is better than three weak ones.
@@ -54,6 +58,7 @@ using concise JSDoc blocks instead of PHP docblocks.
 ## Review Checklist
 
 - The summary explains why the method exists.
+- Constructor docblocks exist only when they add contract value.
 - Parameters reflect real runtime expectations.
 - `@return` matches the actual contract.
 - Complex arrays are typed clearly enough for maintenance and static analysis.
