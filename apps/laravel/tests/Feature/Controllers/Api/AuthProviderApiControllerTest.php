@@ -55,6 +55,45 @@ class AuthProviderApiControllerTest extends TestCase
     }
 
     /**
+     * A configured Facebook provider should appear in the public login contract with backend-generated URLs.
+     */
+    public function test_it_returns_configured_facebook_provider_in_public_listing(): void
+    {
+        $provider = AuthProvider::query()->where('key', 'facebook')->firstOrFail();
+
+        $provider->update([
+            'enabled' => true,
+            'public_config' => [
+                'client_id' => 'facebook-client-id',
+                'redirect_uri' => 'https://example.com/auth/facebook/callback',
+                'button_text' => 'Continue with Facebook',
+                'scopes' => ['email', 'public_profile'],
+            ],
+            'secret_config' => [
+                'client_secret' => 'facebook-secret',
+            ],
+        ]);
+
+        $response = $this->getJson(route('api.auth.providers.index'));
+
+        $response->assertOk()
+            ->assertJsonCount(2, 'data')
+            ->assertJsonPath('data.0.key', 'email')
+            ->assertJsonPath('data.1.key', 'facebook')
+            ->assertJsonPath('data.1.display_name', 'Facebook')
+            ->assertJsonPath(
+                'data.1.metadata.redirect_url',
+                route('api.auth.providers.redirect', ['key' => 'facebook']),
+            )
+            ->assertJsonPath(
+                'data.1.metadata.callback_url',
+                route('api.auth.providers.callback', ['key' => 'facebook']),
+            )
+            ->assertJsonMissingPath('data.1.secret_config')
+            ->assertJsonMissingPath('data.1.metadata.client_secret');
+    }
+
+    /**
      * Public provider ordering should follow the configured backend sort order.
      */
     public function test_it_keeps_public_provider_ordering_from_backend_configuration(): void
@@ -105,6 +144,28 @@ class AuthProviderApiControllerTest extends TestCase
             'enabled' => true,
             'public_config' => [
                 'client_id' => 'google-client-id',
+            ],
+            'secret_config' => [],
+        ]);
+
+        $response = $this->getJson(route('api.auth.providers.index'));
+
+        $response->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.key', 'email');
+    }
+
+    /**
+     * Incomplete Facebook providers must stay hidden even when an admin has toggled them on.
+     */
+    public function test_it_hides_enabled_but_incomplete_facebook_provider(): void
+    {
+        $provider = AuthProvider::query()->where('key', 'facebook')->firstOrFail();
+
+        $provider->update([
+            'enabled' => true,
+            'public_config' => [
+                'client_id' => 'facebook-client-id',
             ],
             'secret_config' => [],
         ]);
