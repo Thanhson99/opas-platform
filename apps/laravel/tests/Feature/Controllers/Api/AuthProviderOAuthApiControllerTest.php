@@ -39,6 +39,7 @@ class AuthProviderOAuthApiControllerTest extends TestCase
         $response = $this->get(route('api.auth.providers.redirect', ['key' => 'google']));
 
         $response->assertRedirect();
+        $this->assertIsString(session('auth.oauth_state.google'));
         $this->assertStringStartsWith('https://accounts.google.com/o/oauth2/v2/auth?', $response->headers->get('Location', ''));
     }
 
@@ -152,6 +153,66 @@ class AuthProviderOAuthApiControllerTest extends TestCase
             ->assertJsonPath('data.current_sign_in_provider.key', 'google')
             ->assertJsonPath('data.current_sign_in_provider.display_name', 'Google')
             ->assertJsonPath('data.current_sign_in_provider.icon', 'google');
+    }
+
+    /**
+     * OAuth callbacks must fail safely when the anti-CSRF state was never stored in session.
+     *
+     * @return void
+     */
+    public function test_google_callback_redirects_back_to_login_when_oauth_state_is_missing(): void
+    {
+        $provider = AuthProvider::query()->where('key', 'google')->firstOrFail();
+        $provider->update([
+            'enabled' => true,
+            'public_config' => [
+                'client_id' => 'google-client-id',
+                'redirect_uri' => route('api.auth.providers.callback', ['key' => 'google']),
+            ],
+            'secret_config' => [
+                'client_secret' => 'google-secret',
+            ],
+        ]);
+
+        $response = $this->get(route('api.auth.providers.callback', [
+            'key' => 'google',
+            'state' => 'state-123',
+            'code' => 'oauth-code-123',
+        ]));
+
+        $response->assertRedirectContains('/login?auth_error=');
+        $this->assertGuest();
+    }
+
+    /**
+     * OAuth callbacks must fail safely when the callback state does not match the stored session state.
+     *
+     * @return void
+     */
+    public function test_google_callback_redirects_back_to_login_when_oauth_state_does_not_match(): void
+    {
+        $provider = AuthProvider::query()->where('key', 'google')->firstOrFail();
+        $provider->update([
+            'enabled' => true,
+            'public_config' => [
+                'client_id' => 'google-client-id',
+                'redirect_uri' => route('api.auth.providers.callback', ['key' => 'google']),
+            ],
+            'secret_config' => [
+                'client_secret' => 'google-secret',
+            ],
+        ]);
+
+        $response = $this
+            ->withSession(['auth.oauth_state.google' => 'expected-state'])
+            ->get(route('api.auth.providers.callback', [
+                'key' => 'google',
+                'state' => 'unexpected-state',
+                'code' => 'oauth-code-123',
+            ]));
+
+        $response->assertRedirectContains('/login?auth_error=');
+        $this->assertGuest();
     }
 
     /**
