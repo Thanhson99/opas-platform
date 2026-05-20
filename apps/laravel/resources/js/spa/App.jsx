@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import AdminShell from './components/layout/AdminShell';
 import AppShell from './components/layout/AppShell';
@@ -24,9 +25,23 @@ import { LanguageProvider } from './features/i18n/context/LanguageContext';
  * Web routes in Laravel now point to a single Blade entry,
  * while React Router handles screen-level navigation here.
  */
+function FacebookRedirectHashCleanup() {
+    useEffect(() => {
+        if (window.location.hash !== '#_=_') {
+            return;
+        }
+
+        const cleanUrl = `${window.location.pathname}${window.location.search}`;
+        window.history.replaceState(null, document.title, cleanUrl);
+    }, []);
+
+    return null;
+}
+
 export default function App() {
     return (
         <BrowserRouter>
+            <FacebookRedirectHashCleanup />
             <LanguageProvider>
                 <AuthProvider>
                     <Routes>
