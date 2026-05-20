@@ -13,6 +13,7 @@ use App\Notifications\QueuedVerifyEmailNotification;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Password;
 use Tests\TestCase;
@@ -335,6 +336,39 @@ class AuthApiControllerTest extends TestCase
     }
 
     /**
+     * Resend requests should emit an audit event without leaking the raw email address.
+     */
+    public function test_resend_verification_email_logs_audit_event(): void
+    {
+        Notification::fake();
+        Log::spy();
+
+        $user = User::factory()->create([
+            'email' => 'member@gmail.com',
+            'email_verified_at' => null,
+        ]);
+
+        $response = $this->postJson(route('api.auth.verification.send'), [
+            'email' => $user->email,
+        ]);
+
+        $response->assertOk();
+
+        Log::shouldHaveReceived('info')
+            ->once()
+            ->withArgs(function (string $message, array $context) use ($user): bool {
+                $encodedContext = json_encode($context);
+
+                return $message === 'security.auth_verification_resend_requested'
+                    && $context['target_user_id'] === $user->id
+                    && $context['code_issued'] === true
+                    && is_string($context['email_hash'])
+                    && is_string($encodedContext)
+                    && ! str_contains($encodedContext, $user->email);
+            });
+    }
+
+    /**
      * A matching unexpired verification code should activate the user account.
      */
     public function test_it_marks_email_as_verified_from_a_valid_code(): void
@@ -371,6 +405,8 @@ class AuthApiControllerTest extends TestCase
      */
     public function test_it_rejects_an_invalid_email_verification_code(): void
     {
+        Log::spy();
+
         $user = User::factory()->unverified()->create([
             'email' => 'member@gmail.com',
         ]);
@@ -393,6 +429,19 @@ class AuthApiControllerTest extends TestCase
             ->assertJsonValidationErrors(['code']);
 
         $this->assertNull($user->fresh()?->email_verified_at);
+
+        Log::shouldHaveReceived('info')
+            ->once()
+            ->withArgs(function (string $message, array $context) use ($user): bool {
+                $encodedContext = json_encode($context);
+
+                return $message === 'security.auth_verification_code_checked'
+                    && $context['target_user_id'] === $user->id
+                    && $context['status'] === 'invalid'
+                    && is_string($context['email_hash'])
+                    && is_string($encodedContext)
+                    && ! str_contains($encodedContext, $user->email);
+            });
     }
 
     /**

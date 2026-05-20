@@ -6,6 +6,7 @@ namespace App\Services\Auth;
 
 use App\Auth\Contracts\AuthProviderDriverInterface;
 use App\Models\AuthProvider;
+use App\Models\User;
 use App\Repositories\Auth\Interfaces\AuthProviderRepositoryInterface;
 use Illuminate\Validation\ValidationException;
 
@@ -19,6 +20,7 @@ class AuthProviderConfigService
     public function __construct(
         private readonly AuthProviderRepositoryInterface $authProviderRepository,
         private readonly AuthProviderRegistry $authProviderRegistry,
+        private readonly AuthSecurityAuditService $authSecurityAuditService,
     ) {}
 
     /**
@@ -27,10 +29,12 @@ class AuthProviderConfigService
      *
      * @param  AuthProvider  $provider
      * @param  array<string, mixed>  $validated
+     * @param  User|null  $actor
      * @return AuthProvider
      */
-    public function update(AuthProvider $provider, array $validated): AuthProvider
+    public function update(AuthProvider $provider, array $validated, ?User $actor = null): AuthProvider
     {
+        $before = $actor === null ? null : clone $provider;
         $attributes = $validated;
 
         if ($provider->key === 'email') {
@@ -54,7 +58,19 @@ class AuthProviderConfigService
 
         $this->validateUpdate($provider, $attributes);
 
-        return $this->authProviderRepository->update($provider, $attributes);
+        $updatedProvider = $this->authProviderRepository->update($provider, $attributes);
+
+        if ($actor === null) {
+            return $updatedProvider;
+        }
+
+        if (! $before instanceof AuthProvider) {
+            return $updatedProvider;
+        }
+
+        $this->authSecurityAuditService->logProviderSettingsUpdated($actor, $before, $updatedProvider);
+
+        return $updatedProvider;
     }
 
     /**
@@ -74,6 +90,7 @@ class AuthProviderConfigService
 
         $errors = [];
         $enabled = (bool) ($attributes['enabled'] ?? $provider->enabled);
+        $capabilities = $this->normalizeConfigArray($attributes['capabilities'] ?? $provider->capabilities);
         $publicConfig = $this->normalizeConfigArray($attributes['public_config'] ?? $provider->public_config);
         $secretConfig = $this->normalizeConfigArray($attributes['secret_config'] ?? $provider->secret_config);
 
@@ -90,9 +107,41 @@ class AuthProviderConfigService
             $errors['enabled'] = ['At least one active login provider must remain enabled.'];
         }
 
+        if ($this->disablesLastWorkingLoginCapability($provider, $driver, $enabled, $capabilities)) {
+            $errors['capabilities.login'] = ['At least one active login provider must continue to support login.'];
+        }
+
         if ($errors !== []) {
             throw ValidationException::withMessages($errors);
         }
+    }
+
+    /**
+     * Prevent capability changes from removing the final working login path.
+     *
+     * @param  AuthProvider  $provider
+     * @param  AuthProviderDriverInterface  $driver
+     * @param  bool  $enabled
+     * @param  array<string, mixed>  $capabilities
+     * @return bool
+     */
+    private function disablesLastWorkingLoginCapability(
+        AuthProvider $provider,
+        AuthProviderDriverInterface $driver,
+        bool $enabled,
+        array $capabilities,
+    ): bool {
+        if (! $provider->enabled || ! $driver->isReady($provider)) {
+            return false;
+        }
+
+        $currentSupportsLogin = (bool) ($provider->capabilities['login'] ?? false);
+        $nextSupportsLogin = (bool) ($capabilities['login'] ?? false);
+
+        return $enabled
+            && $currentSupportsLogin
+            && ! $nextSupportsLogin
+            && ! $this->hasAnotherActiveLoginProvider($provider);
     }
 
     /**

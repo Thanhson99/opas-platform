@@ -18,6 +18,7 @@ class EmailVerificationService
     public function __construct(
         private readonly EmailVerificationCodeRepositoryInterface $emailVerificationCodeRepository,
         private readonly UserRepositoryInterface $userRepository,
+        private readonly AuthSecurityAuditService $authSecurityAuditService,
     ) {}
 
     /**
@@ -45,17 +46,23 @@ class EmailVerificationService
      * Re-issue a verification code for the matching unverified account.
      *
      * @param  string  $email
-     * @return void
+     * @return string
      */
-    public function resendCode(string $email): void
+    public function resendCode(string $email): string
     {
         $user = $this->userRepository->findByEmail($email);
 
         if (! $user instanceof User || $user->hasVerifiedEmail()) {
-            return;
+            $this->authSecurityAuditService->logVerificationResendRequested($email, $user, false);
+
+            return 'ignored';
         }
 
         $this->sendCode($user);
+
+        $this->authSecurityAuditService->logVerificationResendRequested($email, $user, true);
+
+        return 'sent';
     }
 
     /**
@@ -70,51 +77,33 @@ class EmailVerificationService
         $user = $this->userRepository->findByEmail($email);
 
         if (! $user instanceof User) {
-            return [
-                'status' => 'invalid',
-                'user' => null,
-            ];
+            return $this->buildVerificationResult($email, 'invalid', null);
         }
 
         if ($user->hasVerifiedEmail()) {
-            return [
-                'status' => 'already-verified',
-                'user' => $user,
-            ];
+            return $this->buildVerificationResult($email, 'already-verified', $user);
         }
 
         $verificationCode = $this->emailVerificationCodeRepository->findByUserId($user->id);
 
         if ($verificationCode === null || $verificationCode->verified_at !== null) {
-            return [
-                'status' => 'invalid',
-                'user' => $user,
-            ];
+            return $this->buildVerificationResult($email, 'invalid', $user);
         }
 
         if ($verificationCode->expires_at->isPast()) {
-            return [
-                'status' => 'expired',
-                'user' => $user,
-            ];
+            return $this->buildVerificationResult($email, 'expired', $user);
         }
 
         if (! Hash::check($code, $verificationCode->code_hash)) {
-            return [
-                'status' => 'invalid',
-                'user' => $user,
-            ];
+            return $this->buildVerificationResult($email, 'invalid', $user);
         }
 
         $verifiedAt = now();
 
-        $this->userRepository->markEmailVerified($user, $verifiedAt);
+        $verifiedUser = $this->userRepository->markEmailVerified($user, $verifiedAt);
         $this->emailVerificationCodeRepository->markAsVerified($verificationCode, $verifiedAt);
 
-        return [
-            'status' => 'verified',
-            'user' => $user->fresh(),
-        ];
+        return $this->buildVerificationResult($email, 'verified', $verifiedUser);
     }
 
     /**
@@ -160,5 +149,23 @@ class EmailVerificationService
         $maximum = (10 ** $this->codeLength()) - 1;
 
         return (string) random_int($minimum, $maximum);
+    }
+
+    /**
+     * Return one verification result payload and emit the matching audit event.
+     *
+     * @param  string  $email
+     * @param  'verified'|'already-verified'|'invalid'|'expired'  $status
+     * @param  User|null  $user
+     * @return array{status:'verified'|'already-verified'|'invalid'|'expired',user:User|null}
+     */
+    private function buildVerificationResult(string $email, string $status, ?User $user): array
+    {
+        $this->authSecurityAuditService->logVerificationCodeChecked($email, $status, $user);
+
+        return [
+            'status' => $status,
+            'user' => $user,
+        ];
     }
 }
