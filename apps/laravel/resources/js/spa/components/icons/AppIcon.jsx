@@ -206,6 +206,9 @@ function LinkIcon() {
     );
 }
 
+/**
+ * Register the SVG icon components available to the SPA.
+ */
 const icons = {
     dashboard: DashboardIcon,
     coins: CoinsIcon,
@@ -227,12 +230,28 @@ const icons = {
     link: LinkIcon,
 };
 
+/**
+ * Expose the supported icon names for admin-configurable icon fields.
+ */
 export const availableAppIcons = Object.freeze(Object.keys(icons));
 
+/**
+ * Check whether one icon name is registered in the shared icon set.
+ */
 export function hasAppIcon(name) {
     return typeof name === 'string' && Object.prototype.hasOwnProperty.call(icons, name);
 }
 
+/**
+ * Render one shared application icon by its registered name.
+ *
+ * @param {{
+ *   name: string,
+ *   filled?: boolean,
+ *   className?: string,
+ * }} props
+ * @returns {import('react').JSX.Element | null}
+ */
 export default function AppIcon({ name, filled = false, className = '' }) {
     const Icon = icons[name];
 

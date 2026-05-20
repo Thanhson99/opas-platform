@@ -1,6 +1,22 @@
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 
+/**
+ * Render the shared confirmation modal used for destructive or important actions.
+ *
+ * @param {{
+ *   open: boolean,
+ *   eyebrow?: string,
+ *   title: string,
+ *   text: string,
+ *   confirmLabel: string,
+ *   cancelLabel: string,
+ *   tone?: 'primary' | 'danger',
+ *   onConfirm: () => void,
+ *   onCancel: () => void,
+ * }} props
+ * @returns {import('react').ReactPortal | import('react').JSX.Element | null}
+ */
 export default function ConfirmModal({
     open,
     eyebrow,

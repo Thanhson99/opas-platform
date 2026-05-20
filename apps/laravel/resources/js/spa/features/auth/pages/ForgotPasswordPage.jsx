@@ -6,6 +6,9 @@ import ErrorState from '../../../components/ui/ErrorState';
 import AuthShowcase from '../components/AuthShowcase';
 import { useLanguage } from '../../i18n/context/LanguageContext';
 
+/**
+ * Render the password-reset request screen for email-based recovery.
+ */
 export default function ForgotPasswordPage() {
     const { t } = useLanguage();
     const [email, setEmail] = useState('');

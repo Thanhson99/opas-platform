@@ -68,6 +68,31 @@ class AuthProviderOAuthApiControllerTest extends TestCase
     }
 
     /**
+     * Ready GitHub providers should redirect users to the GitHub authorization endpoint.
+     *
+     * @return void
+     */
+    public function test_github_redirect_sends_user_to_provider_authorization_url(): void
+    {
+        $provider = AuthProvider::query()->where('key', 'github')->firstOrFail();
+        $provider->update([
+            'enabled' => true,
+            'public_config' => [
+                'client_id' => 'github-client-id',
+                'redirect_uri' => route('api.auth.providers.callback', ['key' => 'github']),
+            ],
+            'secret_config' => [
+                'client_secret' => 'github-secret',
+            ],
+        ]);
+
+        $response = $this->get(route('api.auth.providers.redirect', ['key' => 'github']));
+
+        $response->assertRedirect();
+        $this->assertStringStartsWith('https://github.com/login/oauth/authorize?', $response->headers->get('Location', ''));
+    }
+
+    /**
      * A successful Google callback should sign the user in and persist the linked identity.
      *
      * @return void
@@ -190,6 +215,73 @@ class AuthProviderOAuthApiControllerTest extends TestCase
     }
 
     /**
+     * A successful GitHub callback should sign the user in and persist the linked identity.
+     *
+     * @return void
+     */
+    public function test_github_callback_logs_user_in_and_persists_identity(): void
+    {
+        $provider = AuthProvider::query()->where('key', 'github')->firstOrFail();
+        $provider->update([
+            'enabled' => true,
+            'public_config' => [
+                'client_id' => 'github-client-id',
+                'redirect_uri' => route('api.auth.providers.callback', ['key' => 'github']),
+            ],
+            'secret_config' => [
+                'client_secret' => 'github-secret',
+            ],
+        ]);
+
+        Http::fake([
+            'https://github.com/login/oauth/access_token' => Http::response([
+                'access_token' => 'github-token-123',
+                'expires_in' => 3600,
+            ]),
+            'https://api.github.com/user' => Http::response([
+                'id' => 9001,
+                'login' => 'octocat',
+                'name' => 'GitHub User',
+            ]),
+            'https://api.github.com/user/emails' => Http::response([
+                [
+                    'email' => 'github@example.com',
+                    'primary' => true,
+                    'verified' => true,
+                ],
+            ]),
+        ]);
+
+        $response = $this
+            ->withSession(['auth.oauth_state.github' => 'state-123'])
+            ->get(route('api.auth.providers.callback', [
+                'key' => 'github',
+                'state' => 'state-123',
+                'code' => 'oauth-code-123',
+            ]));
+
+        $response->assertRedirect('/');
+        $this->assertAuthenticated();
+        $this->assertDatabaseHas('users', [
+            'email' => 'github@example.com',
+            'name' => 'GitHub User',
+        ]);
+        $this->assertDatabaseHas('user_auth_identities', [
+            'provider_key' => 'github',
+            'provider_user_id' => '9001',
+            'provider_email' => 'github@example.com',
+        ]);
+
+        $meResponse = $this->getJson(route('api.auth.me'));
+
+        $meResponse->assertOk()
+            ->assertJsonPath('data.email', 'github@example.com')
+            ->assertJsonPath('data.current_sign_in_provider.key', 'github')
+            ->assertJsonPath('data.current_sign_in_provider.display_name', 'GitHub')
+            ->assertJsonPath('data.current_sign_in_provider.icon', 'github');
+    }
+
+    /**
      * Disabled providers must not expose a working OAuth redirect entrypoint.
      *
      * @return void
@@ -238,6 +330,30 @@ class AuthProviderOAuthApiControllerTest extends TestCase
     }
 
     /**
+     * Disabled GitHub providers must not expose a working OAuth redirect entrypoint.
+     *
+     * @return void
+     */
+    public function test_github_redirect_returns_not_found_when_provider_is_disabled(): void
+    {
+        $provider = AuthProvider::query()->where('key', 'github')->firstOrFail();
+        $provider->update([
+            'enabled' => false,
+            'public_config' => [
+                'client_id' => 'github-client-id',
+                'redirect_uri' => route('api.auth.providers.callback', ['key' => 'github']),
+            ],
+            'secret_config' => [
+                'client_secret' => 'github-secret',
+            ],
+        ]);
+
+        $response = $this->get(route('api.auth.providers.redirect', ['key' => 'github']));
+
+        $response->assertNotFound();
+    }
+
+    /**
      * Facebook redirect should stay unavailable when the provider is enabled without complete config.
      *
      * @return void
@@ -254,6 +370,27 @@ class AuthProviderOAuthApiControllerTest extends TestCase
         ]);
 
         $response = $this->get(route('api.auth.providers.redirect', ['key' => 'facebook']));
+
+        $response->assertNotFound();
+    }
+
+    /**
+     * GitHub redirect should stay unavailable when the provider is enabled without complete config.
+     *
+     * @return void
+     */
+    public function test_github_redirect_returns_not_found_when_provider_configuration_is_incomplete(): void
+    {
+        $provider = AuthProvider::query()->where('key', 'github')->firstOrFail();
+        $provider->update([
+            'enabled' => true,
+            'public_config' => [
+                'client_id' => 'github-client-id',
+            ],
+            'secret_config' => [],
+        ]);
+
+        $response = $this->get(route('api.auth.providers.redirect', ['key' => 'github']));
 
         $response->assertNotFound();
     }
@@ -326,6 +463,43 @@ class AuthProviderOAuthApiControllerTest extends TestCase
             ->withSession(['auth.oauth_state.facebook' => 'state-123'])
             ->get(route('api.auth.providers.callback', [
                 'key' => 'facebook',
+                'state' => 'state-123',
+                'code' => 'oauth-code-123',
+            ]));
+
+        $response->assertRedirectContains('/login?auth_error=');
+        $this->assertGuest();
+    }
+
+    /**
+     * GitHub token exchange failures should return safely to the login screen.
+     *
+     * @return void
+     */
+    public function test_github_callback_redirects_back_to_login_when_token_exchange_fails(): void
+    {
+        $provider = AuthProvider::query()->where('key', 'github')->firstOrFail();
+        $provider->update([
+            'enabled' => true,
+            'public_config' => [
+                'client_id' => 'github-client-id',
+                'redirect_uri' => route('api.auth.providers.callback', ['key' => 'github']),
+            ],
+            'secret_config' => [
+                'client_secret' => 'github-secret',
+            ],
+        ]);
+
+        Http::fake([
+            'https://github.com/login/oauth/access_token' => Http::response([
+                'error' => 'bad_verification_code',
+            ], 400),
+        ]);
+
+        $response = $this
+            ->withSession(['auth.oauth_state.github' => 'state-123'])
+            ->get(route('api.auth.providers.callback', [
+                'key' => 'github',
                 'state' => 'state-123',
                 'code' => 'oauth-code-123',
             ]));
@@ -433,6 +607,61 @@ class AuthProviderOAuthApiControllerTest extends TestCase
         $this->assertDatabaseMissing('user_auth_identities', [
             'provider_key' => 'facebook',
             'provider_user_id' => 'facebook-user-1',
+        ]);
+    }
+
+    /**
+     * GitHub callbacks must fail safely when neither the profile nor the emails endpoint returns a primary email.
+     *
+     * @return void
+     */
+    public function test_github_callback_redirects_back_to_login_when_provider_email_is_missing(): void
+    {
+        $provider = AuthProvider::query()->where('key', 'github')->firstOrFail();
+        $provider->update([
+            'enabled' => true,
+            'public_config' => [
+                'client_id' => 'github-client-id',
+                'redirect_uri' => route('api.auth.providers.callback', ['key' => 'github']),
+            ],
+            'secret_config' => [
+                'client_secret' => 'github-secret',
+            ],
+        ]);
+
+        Http::fake([
+            'https://github.com/login/oauth/access_token' => Http::response([
+                'access_token' => 'github-token-123',
+                'expires_in' => 3600,
+            ]),
+            'https://api.github.com/user' => Http::response([
+                'id' => 'github-user-1',
+                'login' => 'octocat',
+                'name' => 'GitHub User',
+                'email' => null,
+            ]),
+            'https://api.github.com/user/emails' => Http::response([
+                [
+                    'email' => 'secondary@example.com',
+                    'primary' => false,
+                    'verified' => true,
+                ],
+            ]),
+        ]);
+
+        $response = $this
+            ->withSession(['auth.oauth_state.github' => 'state-123'])
+            ->get(route('api.auth.providers.callback', [
+                'key' => 'github',
+                'state' => 'state-123',
+                'code' => 'oauth-code-123',
+            ]));
+
+        $response->assertRedirectContains('/login?auth_error=');
+        $this->assertGuest();
+        $this->assertDatabaseMissing('user_auth_identities', [
+            'provider_key' => 'github',
+            'provider_user_id' => 'github-user-1',
         ]);
     }
 
@@ -553,6 +782,72 @@ class AuthProviderOAuthApiControllerTest extends TestCase
             'provider_key' => 'facebook',
             'provider_user_id' => 'facebook-user-1',
             'provider_email' => 'facebook@example.com',
+        ]);
+    }
+
+    /**
+     * An authenticated email account should link GitHub onto the current account instead of switching users.
+     *
+     * @return void
+     */
+    public function test_authenticated_user_can_link_github_to_the_current_account(): void
+    {
+        $provider = AuthProvider::query()->where('key', 'github')->firstOrFail();
+        $provider->update([
+            'enabled' => true,
+            'public_config' => [
+                'client_id' => 'github-client-id',
+                'redirect_uri' => route('api.auth.providers.callback', ['key' => 'github']),
+            ],
+            'secret_config' => [
+                'client_secret' => 'github-secret',
+            ],
+        ]);
+
+        $user = User::factory()->create([
+            'email' => 'github@example.com',
+            'email_verified_at' => now(),
+        ]);
+
+        Http::fake([
+            'https://github.com/login/oauth/access_token' => Http::response([
+                'access_token' => 'github-token-123',
+                'expires_in' => 3600,
+            ]),
+            'https://api.github.com/user' => Http::response([
+                'id' => 9001,
+                'login' => 'octocat',
+                'name' => 'GitHub User',
+            ]),
+            'https://api.github.com/user/emails' => Http::response([
+                [
+                    'email' => 'github@example.com',
+                    'primary' => true,
+                    'verified' => true,
+                ],
+            ]),
+        ]);
+
+        $response = $this
+            ->actingAs($user)
+            ->withSession([
+                'auth.oauth_state.github' => 'state-123',
+                'auth.oauth_link.github' => $user->id,
+            ])
+            ->get(route('api.auth.providers.callback', [
+                'key' => 'github',
+                'state' => 'state-123',
+                'code' => 'oauth-code-123',
+            ]));
+
+        $response->assertRedirect('/');
+        $this->assertAuthenticatedAs($user);
+        $this->assertDatabaseCount('users', 1);
+        $this->assertDatabaseHas('user_auth_identities', [
+            'user_id' => $user->id,
+            'provider_key' => 'github',
+            'provider_user_id' => '9001',
+            'provider_email' => 'github@example.com',
         ]);
     }
 }

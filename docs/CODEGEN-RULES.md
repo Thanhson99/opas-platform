@@ -11,11 +11,11 @@ Read only the sections that match the task at hand:
 - [docs/rules/quality-rules.md](docs/rules/quality-rules.md)
   Use for method size, parameter count, typing, readability, data shaping, query efficiency, and maintainability heuristics.
 - [docs/rules/frontend-rules.md](docs/rules/frontend-rules.md)
-  Use for SPA visual design, layout systems, button/input/dropdown states, color usage, interaction behavior, accessibility, and frontend UX consistency.
+  Use for SPA visual design, layout systems, button/input/dropdown states, color usage, interaction behavior, accessibility, frontend UX consistency, and shared frontend architecture expectations.
 - [docs/rules/docblock-rules.md](docs/rules/docblock-rules.md)
-  Use for PHP docblock requirements in `app/` and documented test methods/helpers.
+  Use for PHP docblocks plus JSDoc requirements in `resources/js`, including shared frontend contracts, components, and test helpers.
 - [docs/rules/comment-rules.md](docs/rules/comment-rules.md)
-  Use when adding or reviewing code comments.
+  Use when adding or reviewing PHP comments, frontend JSDoc, and targeted inline comments.
 - [docs/rules/testing-rules.md](docs/rules/testing-rules.md)
   Use when adding or updating tests, including folder structure and coverage expectations.
 - [docs/rules/auth-provider-rules.md](docs/rules/auth-provider-rules.md)
@@ -39,6 +39,8 @@ Minimum reading path by task type:
   - `coding-rules.md`
   - `quality-rules.md`
   - `frontend-rules.md`
+  - `docblock-rules.md`
+  - `comment-rules.md`
   - `testing-rules.md`
   - `verification-rules.md`
 - Auth provider or login flow work:

@@ -38,6 +38,9 @@ function FacebookRedirectHashCleanup() {
     return null;
 }
 
+/**
+ * Render the top-level SPA providers and route tree.
+ */
 export default function App() {
     return (
         <BrowserRouter>

@@ -5,6 +5,9 @@ import PageHero from '../../../components/ui/PageHero';
 import { useAuth } from '../../auth/context/AuthContext';
 import api from '../../../lib/api';
 
+/**
+ * Render the edit screen for one coin price-alert rule.
+ */
 export default function AlertEditPage() {
     const { id } = useParams();
     const navigate = useNavigate();

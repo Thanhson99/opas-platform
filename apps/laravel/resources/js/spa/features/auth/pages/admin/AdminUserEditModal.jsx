@@ -2,6 +2,9 @@ import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import AppIcon from '../../../../components/icons/AppIcon';
 
+/**
+ * Render the admin modal used to edit one user profile and reset that account password.
+ */
 export default function AdminUserEditModal({
     open,
     t,

@@ -18,6 +18,9 @@ const money = new Intl.NumberFormat('en-US', {
     maximumFractionDigits: 3,
 });
 
+/**
+ * Render the main coin-monitor workspace with favorites and market summaries.
+ */
 export default function CoinsPage() {
     const navigate = useNavigate();
     const location = useLocation();

@@ -5,6 +5,9 @@ import LoadingState from '../../../components/ui/LoadingState';
 import PageHero from '../../../components/ui/PageHero';
 import api from '../../../lib/api';
 
+/**
+ * Render the detail view for one monitored coin symbol.
+ */
 export default function CoinDetailPage() {
     const { symbol } = useParams();
     const [coin, setCoin] = useState(null);

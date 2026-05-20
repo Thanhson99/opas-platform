@@ -19,6 +19,9 @@ const EMPTY_PAGINATION = {
     to: 0,
 };
 
+/**
+ * Build editable admin-form rows keyed by user id.
+ */
 function buildUserForms(users) {
     return Object.fromEntries(
         users.map((user) => [
@@ -32,6 +35,9 @@ function buildUserForms(users) {
     );
 }
 
+/**
+ * Collapse backend validation payloads into the first useful admin-user message.
+ */
 function firstErrorMessage(requestError, fallbackMessage) {
     const errors = requestError?.response?.data?.errors;
 
@@ -46,6 +52,9 @@ function firstErrorMessage(requestError, fallbackMessage) {
     return requestError?.response?.data?.message || fallbackMessage;
 }
 
+/**
+ * Detect whether one editable admin-user row diverged from its initial state.
+ */
 function hasRowChanged(form, initialForm) {
     if (!form || !initialForm) {
         return false;
@@ -54,10 +63,16 @@ function hasRowChanged(form, initialForm) {
     return form.name.trim() !== initialForm.name.trim() || form.role !== initialForm.role;
 }
 
+/**
+ * Check whether one admin-user row contains the minimum values required to save.
+ */
 function isRowSubmittable(form) {
     return Boolean(form?.name?.trim()) && Boolean(form?.role);
 }
 
+/**
+ * Build a compact pagination model centered around the current page.
+ */
 function buildPaginationItems(currentPage, lastPage) {
     if (lastPage <= 1) {
         return [1];
@@ -70,6 +85,9 @@ function buildPaginationItems(currentPage, lastPage) {
         .sort((left, right) => left - right);
 }
 
+/**
+ * Render the admin user-management screen with edit, delete, reset, and search actions.
+ */
 export default function AdminUsersPage() {
     const { t } = useLanguage();
     const { user: currentUser } = useAuth();

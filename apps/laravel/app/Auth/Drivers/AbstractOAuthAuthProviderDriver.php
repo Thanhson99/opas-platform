@@ -74,14 +74,18 @@ abstract class AbstractOAuthAuthProviderDriver extends AbstractAuthProviderDrive
     public function publicMetadata(AuthProvider $provider): array
     {
         $config = $provider->public_config;
-
-        return [
-            'button_text' => $config['button_text'] ?? sprintf('Continue with %s', $provider->display_name),
+        $metadata = [
             'scopes' => $config['scopes'] ?? [],
             'pkce' => (bool) ($config['pkce'] ?? false),
             'redirect_url' => route('api.auth.providers.redirect', ['key' => $provider->key]),
             'callback_url' => route('api.auth.providers.callback', ['key' => $provider->key]),
         ];
+
+        if (is_string($config['button_text'] ?? null) && trim($config['button_text']) !== '') {
+            $metadata['button_text'] = $config['button_text'];
+        }
+
+        return $metadata;
     }
 
     /**

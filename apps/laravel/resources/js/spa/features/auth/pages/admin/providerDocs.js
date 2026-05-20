@@ -1,3 +1,32 @@
+/**
+ * @typedef {{ label: string, url: string }} ProviderDocLink
+ */
+
+/**
+ * @typedef {{ title: string, items: string[] }} ProviderDocStep
+ */
+
+/**
+ * @typedef {{ label: string, text: string }} ProviderDocField
+ */
+
+/**
+ * @typedef {{
+ *   title: string,
+ *   intro: string,
+ *   links: ProviderDocLink[],
+ *   steps: ProviderDocStep[],
+ *   fields: ProviderDocField[],
+ * }} ProviderDocs
+ */
+
+/**
+ * Resolve the current website origin from a callback URL for provider setup instructions.
+ *
+ * @param {string} callbackUrl
+ * @param {string} language
+ * @returns {string}
+ */
 function resolveWebsiteUrl(callbackUrl, language) {
     try {
         return new URL(callbackUrl).origin;
@@ -6,6 +35,12 @@ function resolveWebsiteUrl(callbackUrl, language) {
     }
 }
 
+/**
+ * Detect localhost-style callback URLs so setup docs can warn about local quirks.
+ *
+ * @param {string} callbackUrl
+ * @returns {boolean}
+ */
 function isLocalCallbackUrl(callbackUrl) {
     try {
         const parsedUrl = new URL(callbackUrl);
@@ -16,6 +51,14 @@ function isLocalCallbackUrl(callbackUrl) {
     }
 }
 
+/**
+ * Build the Google provider setup guide in the active admin language.
+ *
+ * @param {string} language
+ * @param {string} callbackUrl
+ * @param {string} websiteUrl
+ * @returns {ProviderDocs}
+ */
 function buildGoogleDocs(language, callbackUrl, websiteUrl) {
     if (language === 'vi') {
         return {
@@ -212,6 +255,13 @@ function buildGoogleDocs(language, callbackUrl, websiteUrl) {
     };
 }
 
+/**
+ * Build the GitHub provider setup guide in the active admin language.
+ *
+ * @param {string} language
+ * @param {string} callbackUrl
+ * @returns {ProviderDocs}
+ */
 function buildGithubDocs(language, callbackUrl) {
     if (language === 'vi') {
         return {
@@ -358,6 +408,14 @@ function buildGithubDocs(language, callbackUrl) {
     };
 }
 
+/**
+ * Build the Facebook provider setup guide in the active admin language.
+ *
+ * @param {string} language
+ * @param {string} callbackUrl
+ * @param {string} websiteUrl
+ * @returns {ProviderDocs}
+ */
 function buildFacebookDocs(language, callbackUrl, websiteUrl) {
     const isLocalCallback = isLocalCallbackUrl(callbackUrl);
 
@@ -608,6 +666,12 @@ function buildFacebookDocs(language, callbackUrl, websiteUrl) {
     };
 }
 
+/**
+ * Build the email provider setup guide in the active admin language.
+ *
+ * @param {string} language
+ * @returns {ProviderDocs}
+ */
 function buildEmailDocs(language) {
     if (language === 'vi') {
         return {
@@ -698,13 +762,7 @@ function buildEmailDocs(language) {
  * @param {string} providerKey
  * @param {'en'|'vi'} language
  * @param {{ callbackUrl?: string | null }} options
- * @returns {{
- *   title: string,
- *   intro: string,
- *   links: Array<{label: string, url: string}>,
- *   steps: Array<{title: string, items: string[]}>,
- *   fields: Array<{label: string, text: string}>
- * }}
+ * @returns {ProviderDocs}
  */
 export function getProviderDocs(providerKey, language, options = {}) {
     const callbackUrl = options.callbackUrl || 'Callback URL is not available yet.';

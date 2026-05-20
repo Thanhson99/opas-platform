@@ -1,5 +1,10 @@
 import { useLanguage } from '../../features/i18n/context/LanguageContext';
 
+/**
+ * Render the shared language switcher for the SPA.
+ *
+ * @returns {import('react').JSX.Element}
+ */
 export default function LanguageSelect() {
     const { language, setLanguage, t } = useLanguage();
 

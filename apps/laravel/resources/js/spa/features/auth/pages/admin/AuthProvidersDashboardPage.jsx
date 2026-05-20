@@ -7,6 +7,9 @@ import PageHero from '../../../../components/ui/PageHero';
 import api from '../../../../lib/api';
 import { useLanguage } from '../../../i18n/context/LanguageContext';
 
+/**
+ * Render the provider dashboard used to jump into one auth-provider config screen.
+ */
 export default function AuthProvidersDashboardPage() {
     const { t } = useLanguage();
     const [providers, setProviders] = useState([]);

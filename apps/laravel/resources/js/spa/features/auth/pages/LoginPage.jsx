@@ -9,6 +9,9 @@ import { getNonFormProviders, getPasswordFormProvider } from '../lib/publicAuthP
 import { useLanguage } from '../../i18n/context/LanguageContext';
 import LanguageSelect from '../../../components/layout/LanguageSelect';
 
+/**
+ * Render the login screen with dynamic provider discovery and email fallback handling.
+ */
 export default function LoginPage() {
     const navigate = useNavigate();
     const location = useLocation();

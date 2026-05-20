@@ -189,6 +189,8 @@ Use these rules whenever a task touches `resources/js/spa`, `resources/scss`, UI
 - Prefer feature-local helpers over duplicating formatting or provider logic across multiple screens.
 - SCSS should mirror feature intent. Reuse existing component classes when possible before adding more one-off variants.
 - Shared shell components such as `Header`, `Sidebar`, and `Footer` should accept explicit variants or props when admin and workspace need different presentation. Do not rely on accidental placement differences alone.
+- Shared frontend contracts should be documented close to the owning code with JSDoc or local `@typedef` shapes instead of being left implicit across multiple files.
+- Context hooks, config registries, shared payload builders, and shared render helpers should expose a readable documentation contract before they are reused broadly.
 
 ## Workspace Shell Rules
 

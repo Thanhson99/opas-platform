@@ -1,3 +1,6 @@
+/**
+ * Render the shared marketing panel used across auth entry screens.
+ */
 export default function AuthShowcase({ eyebrow, title, text, tags = [], cta, imageSrc }) {
     return (
         <article className="app-auth-showcase">

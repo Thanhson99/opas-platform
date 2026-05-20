@@ -11,6 +11,9 @@ import { useAuth } from '../../features/auth/context/AuthContext';
  *
  * Keeps layout concerns in one place: sidebar, sticky header,
  * footer, and mobile sidebar state.
+ *
+ * @param {{ children: import('react').ReactNode }} props
+ * @returns {import('react').JSX.Element}
  */
 export default function AppShell({ children }) {
     const [sidebarOpen, setSidebarOpen] = useState(false);

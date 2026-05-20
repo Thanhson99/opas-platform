@@ -2,8 +2,66 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import api from '../../../lib/api';
 import { getLinkableProviders, getProvidersForCapability } from '../lib/publicAuthProviders';
 
+/**
+ * @typedef {{
+ *   key: string,
+ *   display_name?: string,
+ *   type?: string,
+ *   icon?: string | null,
+ *   capabilities?: Record<string, boolean>,
+ *   metadata?: Record<string, unknown>,
+ * }} AuthRuntimeProvider
+ */
+
+/**
+ * @typedef {{
+ *   key: string,
+ *   display_name?: string,
+ *   icon?: string | null,
+ * }} AuthLinkedProvider
+ */
+
+/**
+ * @typedef {{
+ *   id?: number,
+ *   name?: string,
+ *   email?: string,
+ *   role?: string,
+ *   role_label?: string,
+ *   linked_providers?: AuthLinkedProvider[],
+ *   current_sign_in_provider?: AuthLinkedProvider | null,
+ * }} AuthUser
+ */
+
+/**
+ * @typedef {{
+ *   user: AuthUser | null,
+ *   loading: boolean,
+ *   authProviders: AuthRuntimeProvider[],
+ *   providersLoading: boolean,
+ *   providersError: string | null,
+ *   isAuthenticated: boolean,
+ *   hasEmailLogin: boolean,
+ *   loginProviders: AuthRuntimeProvider[],
+ *   registerProviders: AuthRuntimeProvider[],
+ *   linkableProviders: AuthRuntimeProvider[],
+ *   login: (payload: Record<string, unknown>) => Promise<any>,
+ *   register: (payload: Record<string, unknown>) => Promise<any>,
+ *   logout: () => Promise<void>,
+ *   refreshUser: () => Promise<void>,
+ *   refreshAuthProviders: () => Promise<void>,
+ * }} AuthContextValue
+ */
+
+/** @type {import('react').Context<AuthContextValue | null>} */
 const AuthContext = createContext(null);
 
+/**
+ * Provide the authenticated user and runtime auth-provider contracts to the SPA.
+ *
+ * @param {{ children: import('react').ReactNode }} props
+ * @returns {import('react').JSX.Element}
+ */
 export function AuthProvider({ children }) {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -99,6 +157,11 @@ export function AuthProvider({ children }) {
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
+/**
+ * Read the shared auth context and fail fast when it is missing.
+ *
+ * @returns {AuthContextValue}
+ */
 export function useAuth() {
     const context = useContext(AuthContext);
 

@@ -11,6 +11,11 @@ import AuthProvidersDashboardPage from '../../features/auth/pages/admin/AuthProv
 import AuthProviderAdminPage from '../../features/auth/pages/admin/AuthProviderAdminPage';
 import AdminUsersPage from '../../features/auth/pages/admin/AdminUsersPage';
 
+/**
+ * Render the admin console shell, navigation, and admin-only route tree.
+ *
+ * @returns {import('react').JSX.Element}
+ */
 export default function AdminShell() {
     const navigate = useNavigate();
     const location = useLocation();

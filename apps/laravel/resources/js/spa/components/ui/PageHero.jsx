@@ -1,3 +1,16 @@
+/**
+ * Render the shared page hero used by workspace and admin feature screens.
+ *
+ * @param {{
+ *   eyebrow?: string,
+ *   title: string,
+ *   text?: string,
+ *   actions?: import('react').ReactNode,
+ *   aside?: import('react').ReactNode,
+ *   children?: import('react').ReactNode,
+ * }} props
+ * @returns {import('react').JSX.Element}
+ */
 export default function PageHero({ eyebrow, title, text, actions, aside, children }) {
     return (
         <section className="app-hero">

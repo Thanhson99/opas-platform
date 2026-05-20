@@ -1,3 +1,6 @@
+/**
+ * Render a shared error message surface.
+ */
 export default function ErrorState({ text = 'Something went wrong.' }) {
     return (
         <div className="app-feedback app-feedback--error">

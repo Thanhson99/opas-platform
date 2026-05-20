@@ -8,6 +8,9 @@ import SensitiveInput from '../components/SensitiveInput';
 import { getMissingPasswordRuleKeys, isStrongPassword } from '../lib/passwordValidation';
 import { useLanguage } from '../../i18n/context/LanguageContext';
 
+/**
+ * Render the password reset completion screen for one reset token.
+ */
 export default function ResetPasswordPage() {
     const { token = '' } = useParams();
     const location = useLocation();

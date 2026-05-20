@@ -1,3 +1,6 @@
+/**
+ * Render one highlighted metric card with an optional hint and tone.
+ */
 export default function MetricCard({ label, value, hint, tone = 'sky' }) {
     return (
         <article className={`app-metric app-metric--${tone}`}>

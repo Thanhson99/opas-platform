@@ -1,5 +1,43 @@
 import { availableAppIcons, hasAppIcon } from '../../../../components/icons/AppIcon';
 
+/**
+ * @typedef {{
+ *   key: string,
+ *   enabled?: boolean,
+ *   display_name?: string,
+ *   icon?: string | null,
+ *   sort_order?: number,
+ *   visibility?: string,
+ *   email_verification_mode?: string | null,
+ *   public_config?: Record<string, unknown>,
+ *   required_public_keys?: string[],
+ *   required_secret_keys?: string[],
+ *   secret_status?: Record<string, boolean>,
+ * }} AuthProviderAdminRecord
+ */
+
+/**
+ * @typedef {{
+ *   enabled: boolean,
+ *   display_name: string,
+ *   icon: string,
+ *   sort_order: string,
+ *   visibility: string,
+ *   email_verification_mode: string,
+ *   public_config: Record<string, string>,
+ *   secret_config: Record<string, string>,
+ * }} AuthProviderAdminForm
+ */
+
+/**
+ * @typedef {{
+ *   label: string,
+ *   description: string,
+ *   placeholder: string,
+ *   span: 'half' | 'full',
+ * }} AuthProviderFieldMeta
+ */
+
 const staticFieldMeta = {
     client_id: { key: 'client_id', span: 'half' },
     redirect_uri: { key: 'redirect_uri', span: 'full' },
@@ -14,6 +52,12 @@ const staticBaseMeta = {
     sort_order: { key: 'sort_order', span: 'half' },
 };
 
+/**
+ * Normalize mixed form values into text input values the admin screen can render.
+ *
+ * @param {unknown} value
+ * @returns {string}
+ */
 function toTextValue(value) {
     if (value === null || value === undefined) {
         return '';
@@ -26,12 +70,42 @@ function toTextValue(value) {
     return String(value);
 }
 
+/**
+ * Build a provider-aware button text placeholder instead of reusing a Google-specific example.
+ *
+ * @param {(key: string) => string} t
+ * @param {string | null | undefined} providerDisplayName
+ * @returns {string}
+ */
+function buildProviderButtonTextPlaceholder(t, providerDisplayName) {
+    const prefix = t('auth.continueWithProvider');
+    const displayName = String(providerDisplayName ?? '').trim();
+
+    if (displayName === '' || prefix === 'auth.continueWithProvider') {
+        return t('adminAuth.fields.button_text.placeholder');
+    }
+
+    return `${prefix} ${displayName}`;
+}
+
+/**
+ * Keep object-key comparisons deterministic before dirty-checking form snapshots.
+ *
+ * @param {Record<string, string>} input
+ * @returns {Record<string, string>}
+ */
 function sortEntries(input) {
     return Object.fromEntries(
         Object.entries(input).sort(([left], [right]) => left.localeCompare(right)),
     );
 }
 
+/**
+ * Reduce one provider form to a stable shape for unsaved-change detection.
+ *
+ * @param {AuthProviderAdminForm} form
+ * @returns {Omit<AuthProviderAdminForm, 'secret_config'>}
+ */
 function normalizeFormSnapshot(form) {
     return {
         enabled: Boolean(form.enabled),
@@ -51,6 +125,12 @@ function normalizeFormSnapshot(form) {
     };
 }
 
+/**
+ * Build the editable admin form state from one provider payload.
+ *
+ * @param {AuthProviderAdminRecord} provider
+ * @returns {AuthProviderAdminForm}
+ */
 export function buildInitialForm(provider) {
     const requiredPublicKeys = provider.required_public_keys ?? [];
     const requiredSecretKeys = provider.required_secret_keys ?? [];
@@ -77,6 +157,14 @@ export function buildInitialForm(provider) {
     };
 }
 
+/**
+ * Resolve metadata for one provider-specific config field in the admin form.
+ *
+ * @param {(key: string) => string} t
+ * @param {string} field
+ * @param {{ callbackUrl?: string | null, providerDisplayName?: string | null }} [options]
+ * @returns {AuthProviderFieldMeta}
+ */
 export function buildFieldMeta(t, field, options = {}) {
     const meta = staticFieldMeta[field];
 
@@ -92,7 +180,9 @@ export function buildFieldMeta(t, field, options = {}) {
     const placeholder =
         field === 'redirect_uri' && options.callbackUrl
             ? options.callbackUrl
-            : t(`adminAuth.fields.${meta.key}.placeholder`);
+            : field === 'button_text'
+              ? buildProviderButtonTextPlaceholder(t, options.providerDisplayName)
+              : t(`adminAuth.fields.${meta.key}.placeholder`);
 
     return {
         label: t(`adminAuth.fields.${meta.key}.label`),
@@ -102,6 +192,13 @@ export function buildFieldMeta(t, field, options = {}) {
     };
 }
 
+/**
+ * Resolve metadata for one base provider field in the admin form.
+ *
+ * @param {(key: string) => string} t
+ * @param {string} field
+ * @returns {AuthProviderFieldMeta}
+ */
 export function buildBaseMeta(t, field) {
     const meta = staticBaseMeta[field];
 
@@ -113,6 +210,13 @@ export function buildBaseMeta(t, field) {
     };
 }
 
+/**
+ * Prefer provider-specific admin summaries and fall back to the generic copy when missing.
+ *
+ * @param {AuthProviderAdminRecord} provider
+ * @param {(key: string) => string} t
+ * @returns {string}
+ */
 export function getProviderSummary(provider, t) {
     return t(`adminAuth.providers.${provider.key}.summary`) !==
         `adminAuth.providers.${provider.key}.summary`
@@ -120,6 +224,14 @@ export function getProviderSummary(provider, t) {
         : t('adminAuth.providers.default.summary');
 }
 
+/**
+ * Collect client-side validation issues before the admin submits a provider form.
+ *
+ * @param {AuthProviderAdminRecord} provider
+ * @param {AuthProviderAdminForm} form
+ * @param {(key: string) => string} t
+ * @returns {Record<string, string>}
+ */
 export function getFieldIssues(provider, form, t) {
     const issues = {};
 
@@ -170,16 +282,42 @@ export function getFieldIssues(provider, form, t) {
     return issues;
 }
 
+/**
+ * Expose the supported icon names for the provider icon picker.
+ *
+ * @returns {string[]}
+ */
 export function getAvailableIconNames() {
     return availableAppIcons;
 }
 
+/**
+ * Flatten validation message maps into one deduplicatable list for summary display.
+ *
+ * @param {Record<string, string | string[] | undefined>} errors
+ * @returns {string[]}
+ */
 export function flattenMessages(errors) {
     return Object.values(errors)
         .flatMap((value) => (Array.isArray(value) ? value : [value]))
         .filter(Boolean);
 }
 
+/**
+ * Build the API payload for one provider update, including normalized scopes.
+ *
+ * @param {AuthProviderAdminForm} form
+ * @returns {{
+ *   enabled: boolean,
+ *   display_name: string,
+ *   icon: string | null,
+ *   sort_order: number,
+ *   visibility: string,
+ *   email_verification_mode: string | null,
+ *   public_config: Record<string, string | string[]>,
+ *   secret_config: Record<string, string>,
+ * }}
+ */
 export function buildProviderPayload(form) {
     const publicConfig = Object.fromEntries(
         Object.entries(form.public_config).filter(([, value]) => value !== ''),
@@ -208,6 +346,13 @@ export function buildProviderPayload(form) {
     };
 }
 
+/**
+ * Detect whether the admin form diverged from its last saved provider snapshot.
+ *
+ * @param {AuthProviderAdminForm} form
+ * @param {AuthProviderAdminForm} initialForm
+ * @returns {boolean}
+ */
 export function isProviderFormDirty(form, initialForm) {
     const hasSecretUpdates = Object.values(form.secret_config ?? {}).some(
         (value) => String(value ?? '').trim() !== '',
