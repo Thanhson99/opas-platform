@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Controllers\Api;
 
 use App\Enums\UserRole;
+use App\Models\AutoCodingTaskRun;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -31,12 +32,16 @@ class AdminAutoCodingTaskRunApiControllerTest extends TestCase
             '--issue' => 'OPAS-0070',
         ])->assertExitCode(0);
 
-        $response = $this->actingAs($admin)->getJson('/api/admin/auto-coding/runs/1');
+        $run = AutoCodingTaskRun::query()->first();
+
+        self::assertNotNull($run);
+
+        $response = $this->actingAs($admin)->getJson('/api/admin/auto-coding/runs/'.$run->getKey());
 
         $response
             ->assertOk()
             ->assertJsonFragment([
-                'id' => 1,
+                'id' => $run->getKey(),
                 'status' => 'completed',
                 'summary' => 'Inspect run detail contract',
                 'issue_key' => 'OPAS-0070',
@@ -61,13 +66,17 @@ class AdminAutoCodingTaskRunApiControllerTest extends TestCase
             '--issue' => 'OPAS-0070',
         ])->assertExitCode(0);
 
-        $response = $this->actingAs($admin)->getJson('/api/admin/auto-coding/runs/1/artifacts');
+        $run = AutoCodingTaskRun::query()->first();
+
+        self::assertNotNull($run);
+
+        $response = $this->actingAs($admin)->getJson('/api/admin/auto-coding/runs/'.$run->getKey().'/artifacts');
 
         $response
             ->assertOk()
             ->assertJsonCount(5, 'data')
             ->assertJsonFragment([
-                'task_run_id' => 1,
+                'task_run_id' => $run->getKey(),
                 'type' => 'final_report',
             ]);
     }

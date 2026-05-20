@@ -59,7 +59,11 @@ class AdminAutoCodingMachineApiControllerTest extends TestCase
             '--issue' => 'OPAS-0070',
         ])->assertExitCode(0);
 
-        $response = $this->actingAs($admin)->getJson('/api/admin/auto-coding/machines/1');
+        $machine = AutoCodingMachine::query()->first();
+
+        self::assertNotNull($machine);
+
+        $response = $this->actingAs($admin)->getJson('/api/admin/auto-coding/machines/'.$machine->getKey());
 
         $response
             ->assertOk()

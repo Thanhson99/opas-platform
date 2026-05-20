@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Controllers\Api;
 
 use App\Enums\UserRole;
+use App\Models\AutoCodingTask;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -31,7 +32,11 @@ class AdminAutoCodingTaskStatusApiControllerTest extends TestCase
             '--issue' => 'OPAS-0070',
         ])->assertExitCode(0);
 
-        $response = $this->actingAs($admin)->getJson('/api/admin/auto-coding/tasks/1/status');
+        $task = AutoCodingTask::query()->first();
+
+        self::assertNotNull($task);
+
+        $response = $this->actingAs($admin)->getJson('/api/admin/auto-coding/tasks/'.$task->getKey().'/status');
 
         $response
             ->assertOk()

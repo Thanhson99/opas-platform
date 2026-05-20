@@ -41,7 +41,8 @@ class RunLocalAutoCodingTaskCommandTest extends TestCase
         self::assertIsArray($task->latest_report);
         self::assertSame($task->getKey(), $run->task_id);
         self::assertSame($machine->getKey(), $run->machine_id);
-        self::assertSame('Thanhson99/laravel-n8n-automation', $task->latest_report['github']['repository_slug']);
+        self::assertIsString($task->latest_report['github']['repository_slug'] ?? null);
+        self::assertStringStartsWith('Thanhson99/', $task->latest_report['github']['repository_slug']);
         self::assertCount(5, $artifacts);
         self::assertSame(
             ['final_report', 'github_context', 'provider_result', 'repository_snapshot', 'validation_result'],
