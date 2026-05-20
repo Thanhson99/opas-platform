@@ -111,4 +111,35 @@ class AuthProviderConfigServiceTest extends TestCase
             $this->assertArrayHasKey('enabled', $errors);
         }
     }
+
+    /**
+     * Removing login capability from the final ready provider must be rejected like a hard disable.
+     */
+    public function test_update_rejects_disabling_last_active_login_capability(): void
+    {
+        $provider = AuthProvider::query()->where('key', 'email')->firstOrFail();
+
+        AuthProvider::query()->whereIn('key', ['google', 'facebook', 'github'])->update([
+            'enabled' => false,
+        ]);
+
+        try {
+            $this->app->make(AuthProviderConfigService::class)->update($provider, [
+                'capabilities' => [
+                    'login' => false,
+                    'register' => true,
+                    'link_account' => false,
+                    'requires_redirect' => false,
+                    'supports_email_verification' => true,
+                    'supports_password' => true,
+                ],
+            ]);
+
+            $this->fail('Expected validation exception was not thrown.');
+        } catch (ValidationException $exception) {
+            $errors = $exception->errors();
+
+            $this->assertArrayHasKey('capabilities.login', $errors);
+        }
+    }
 }

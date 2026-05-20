@@ -8,6 +8,7 @@ use App\Enums\UserRole;
 use App\Models\AuthProvider;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Log;
 use Tests\TestCase;
 
 /**
@@ -171,6 +172,50 @@ class AdminAuthProviderApiControllerTest extends TestCase
     }
 
     /**
+     * Successful provider updates should emit a structured audit entry without leaking secret values.
+     */
+    public function test_admin_update_logs_auditable_provider_changes_without_secret_values(): void
+    {
+        Log::spy();
+
+        $admin = User::factory()->create([
+            'role' => UserRole::Admin,
+        ]);
+
+        $response = $this
+            ->actingAs($admin)
+            ->putJson(route('api.admin.auth.providers.update', ['key' => 'google']), [
+                'enabled' => true,
+                'visibility' => 'public',
+                'public_config' => [
+                    'client_id' => 'google-client-id',
+                    'redirect_uri' => 'https://example.com/auth/google/callback',
+                ],
+                'secret_config' => [
+                    'client_secret' => 'google-secret',
+                ],
+            ]);
+
+        $response->assertOk();
+
+        Log::shouldHaveReceived('info')
+            ->once()
+            ->withArgs(function (string $message, array $context) use ($admin): bool {
+                $encodedContext = json_encode($context);
+
+                return $message === 'security.auth_provider_settings_updated'
+                    && $context['actor_user_id'] === $admin->id
+                    && $context['provider_key'] === 'google'
+                    && in_array('client_id', $context['changed_public_config_keys'], true)
+                    && in_array('redirect_uri', $context['changed_public_config_keys'], true)
+                    && in_array('client_secret', $context['changed_secret_config_keys'], true)
+                    && array_key_exists('enabled', $context['changed_attributes'])
+                    && is_string($encodedContext)
+                    && ! str_contains($encodedContext, 'google-secret');
+            });
+    }
+
+    /**
      * Email provider updates must persist the locked required verification policy.
      */
     public function test_admin_email_provider_update_forces_required_email_verification_mode(): void
@@ -245,6 +290,40 @@ class AdminAuthProviderApiControllerTest extends TestCase
     }
 
     /**
+     * Provider updates should reject unexpected nested config keys instead of storing free-form payloads.
+     */
+    public function test_admin_update_rejects_unexpected_nested_provider_config_keys(): void
+    {
+        $admin = User::factory()->create([
+            'role' => UserRole::Admin,
+        ]);
+
+        $response = $this
+            ->actingAs($admin)
+            ->putJson(route('api.admin.auth.providers.update', ['key' => 'google']), [
+                'capabilities' => [
+                    'login' => true,
+                    'unexpected' => true,
+                ],
+                'public_config' => [
+                    'client_id' => 'google-client-id',
+                    'unexpected' => 'value',
+                ],
+                'secret_config' => [
+                    'client_secret' => 'google-secret',
+                    'unexpected' => 'value',
+                ],
+            ]);
+
+        $response->assertUnprocessable()
+            ->assertJsonValidationErrors([
+                'capabilities',
+                'public_config',
+                'secret_config',
+            ]);
+    }
+
+    /**
      * Email provider updates must reject verification policies weaker than required.
      */
     public function test_admin_update_rejects_non_required_email_verification_mode_for_email_provider(): void
@@ -287,5 +366,36 @@ class AdminAuthProviderApiControllerTest extends TestCase
 
         $response->assertUnprocessable()
             ->assertJsonValidationErrors(['enabled']);
+    }
+
+    /**
+     * The final working login path must stay usable even if a client submits capability changes directly.
+     */
+    public function test_admin_cannot_disable_last_active_login_capability(): void
+    {
+        $admin = User::factory()->create([
+            'role' => UserRole::Admin,
+        ]);
+
+        AuthProvider::query()->where('key', 'google')->update(['enabled' => false]);
+        AuthProvider::query()->where('key', 'facebook')->update(['enabled' => false]);
+        AuthProvider::query()->where('key', 'github')->update(['enabled' => false]);
+
+        $response = $this
+            ->actingAs($admin)
+            ->putJson(route('api.admin.auth.providers.update', ['key' => 'email']), [
+                'enabled' => true,
+                'capabilities' => [
+                    'login' => false,
+                    'register' => true,
+                    'link_account' => false,
+                    'requires_redirect' => false,
+                    'supports_email_verification' => true,
+                    'supports_password' => true,
+                ],
+            ]);
+
+        $response->assertUnprocessable()
+            ->assertJsonValidationErrors(['capabilities.login']);
     }
 }

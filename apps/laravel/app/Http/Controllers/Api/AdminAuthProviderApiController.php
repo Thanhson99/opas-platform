@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\UpdateAuthProviderRequest;
 use App\Http\Resources\AdminAuthProviderResource;
+use App\Models\User;
 use App\Services\Auth\AuthProviderConfigService;
 use App\Services\Auth\AuthProviderService;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -43,10 +44,12 @@ class AdminAuthProviderApiController extends Controller
         $resolved = $this->authProviderService->resolve($key);
 
         abort_if($resolved === null, 404);
+        $actor = $request->user();
 
         $provider = $this->authProviderConfigService->update(
             $resolved['provider'],
             $request->validated(),
+            $actor instanceof User ? $actor : null,
         );
 
         $next = $this->authProviderService->resolve($provider->key);
