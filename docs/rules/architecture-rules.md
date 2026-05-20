@@ -45,6 +45,7 @@ Use these rules to keep Laravel application code organized around clear responsi
   - contain large inline SQL/query-builder logic that belongs in repositories
   - act as generic utility bags
 - When a service method updates multiple aggregates or persistence records that must stay in sync, use an explicit transaction.
+- If multiple controllers, jobs, or machine-facing entrypoints share the same workflow semantics, extract one service that owns that workflow instead of duplicating branching across adapters.
 
 ## Repository Rules
 
@@ -117,6 +118,12 @@ Use these rules to keep Laravel application code organized around clear responsi
 - Prefer composition over inheritance unless inheritance genuinely models a stable contract.
 - Introduce interfaces when they represent a real boundary such as pluggable providers, external clients, or testable infrastructure seams.
 - Do not create interfaces "just in case" for classes with only one concrete use and no boundary value.
+
+## Cross-Machine Source Of Truth Rules
+
+- When a feature depends on cross-machine behavior, long-lived task semantics, or machine-agent contracts, keep one committed source-of-truth document that explains the current contract.
+- If code changes execution ownership, task lifecycle meaning, repository scoping, token flow, worker behavior, or report semantics, update the corresponding source-of-truth docs in the same change.
+- Do not rely on chat history, local notes, or code alone to preserve multi-machine operational understanding.
 
 ## Architecture Review Checklist
 
