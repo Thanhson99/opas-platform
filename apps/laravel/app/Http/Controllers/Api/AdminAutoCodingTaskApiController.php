@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ClaimAutoCodingTaskRequest;
 use App\Http\Requests\ListAutoCodingTasksRequest;
+use App\Http\Requests\ResumeAutoCodingTaskRequest;
 use App\Http\Requests\StoreAutoCodingTaskRequest;
 use App\Http\Resources\AutoCodingTaskResource;
 use App\Http\Resources\AutoCodingTaskStatusResource;
@@ -124,5 +125,27 @@ class AdminAutoCodingTaskApiController extends Controller
         return (new AutoCodingTaskResource($task))
             ->response()
             ->setStatusCode(Response::HTTP_ACCEPTED);
+    }
+
+    /**
+     * Resume one blocked local auto-coding task with admin follow-up input.
+     *
+     * @param  ResumeAutoCodingTaskRequest  $request
+     * @param  int  $id
+     * @return JsonResponse
+     */
+    public function resume(ResumeAutoCodingTaskRequest $request, int $id): JsonResponse
+    {
+        /** @var array{response:string,resume_token:string,response_payload?:array<string, mixed>} $validated */
+        $validated = $request->validated();
+
+        $task = $this->taskDispatchService->resumeBlockedTask(
+            $id,
+            trim($validated['response']),
+            trim($validated['resume_token']),
+            is_array($validated['response_payload'] ?? null) ? $validated['response_payload'] : null,
+        );
+
+        return (new AutoCodingTaskResource($task))->response();
     }
 }

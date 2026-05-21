@@ -68,6 +68,9 @@ Route::middleware('throttle:api')->group(function (): void {
         Route::get('/tasks/{id}/status', [AdminAutoCodingTaskApiController::class, 'status'])
             ->whereNumber('id')
             ->name('tasks.status');
+        Route::post('/tasks/{id}/resume', [AdminAutoCodingTaskApiController::class, 'resume'])
+            ->whereNumber('id')
+            ->name('tasks.resume');
         Route::get('/tasks/{id}', [AdminAutoCodingTaskApiController::class, 'show'])
             ->whereNumber('id')
             ->name('tasks.show');

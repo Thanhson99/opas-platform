@@ -8,6 +8,7 @@ use App\Services\AutoCoding\LocalAutoCodingWorkerService;
 use App\Services\AutoCoding\LocalMachineService;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Validation\ValidationException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -16,7 +17,7 @@ Artisan::command('inspire', function (OutputInterface $output) {
 });
 
 Artisan::command(
-    'opas:auto-coding:run {summary : Short local coding task summary} {--issue=} {--path=} {--validate} {--provider=} {--model=}',
+    'opas:auto-coding:run {summary : Short local coding task summary} {--issue=} {--path=} {--validate} {--provider=} {--model=} {--dirty-policy=warn} {--scope=} {--scope-policy=warn}',
     function (LocalAutoCodingTaskService $taskService): void {
         $rawSummary = $this->argument('summary');
         $summary = is_string($rawSummary) ? $rawSummary : '';
@@ -25,6 +26,9 @@ Artisan::command(
         $shouldRunValidation = (bool) $this->option('validate');
         $providerName = $this->option('provider');
         $modelName = $this->option('model');
+        $dirtyPolicy = $this->option('dirty-policy');
+        $scope = $this->option('scope');
+        $scopePolicy = $this->option('scope-policy');
 
         $run = $taskService->runInspectionTask(
             $summary,
@@ -35,6 +39,11 @@ Artisan::command(
             [
                 'model' => is_string($modelName) && $modelName !== '' ? $modelName : null,
             ],
+            is_string($dirtyPolicy) && $dirtyPolicy !== '' ? $dirtyPolicy : 'warn',
+            is_string($scope) && trim($scope) !== ''
+                ? array_values(array_filter(array_map('trim', explode(',', $scope)), static fn (string $path): bool => $path !== ''))
+                : [],
+            is_string($scopePolicy) && $scopePolicy !== '' ? $scopePolicy : 'warn',
         );
 
         $report = $run->final_report;
@@ -103,6 +112,49 @@ Artisan::command(
         return Command::SUCCESS;
     }
 )->purpose('Claim the next pending local auto-coding task and optionally execute it.');
+
+Artisan::command(
+    'opas:auto-coding:resume {taskId : The blocked local auto-coding task id} {response : Follow-up response text} {--token= : Resume token from the blocked task status payload}',
+    function (LocalAutoCodingTaskService $taskService): int {
+        $rawTaskId = $this->argument('taskId');
+        $rawResponse = $this->argument('response');
+        $rawToken = $this->option('token');
+
+        if (
+            ! is_numeric($rawTaskId)
+            || ! is_string($rawResponse)
+            || trim($rawResponse) === ''
+            || ! is_string($rawToken)
+            || trim($rawToken) === ''
+        ) {
+            $this->error('A numeric task id, non-empty response, and non-empty resume token are required.');
+
+            return Command::FAILURE;
+        }
+
+        try {
+            $run = $taskService->resumeBlockedTask((int) $rawTaskId, trim($rawResponse), trim($rawToken));
+        } catch (ValidationException $exception) {
+            foreach ($exception->errors() as $messages) {
+                if (! is_array($messages)) {
+                    continue;
+                }
+
+                foreach ($messages as $message) {
+                    if (is_string($message) && $message !== '') {
+                        $this->error($message);
+                    }
+                }
+            }
+
+            return Command::FAILURE;
+        }
+
+        $this->line(json_encode($run->final_report, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) ?: '{}');
+
+        return Command::SUCCESS;
+    }
+)->purpose('Resume one blocked local auto-coding task with follow-up input.');
 
 Artisan::command(
     'opas:auto-coding:work {--path=} {--execute} {--interval=5} {--max-iterations=1}',
@@ -180,7 +232,7 @@ Artisan::command(
         $shouldShowLatest = (bool) $this->option('latest');
 
         $query = AutoCodingTask::query()
-            ->with('runs.artifacts')
+            ->with('runs.artifacts', 'runs.steps')
             ->orderByDesc('id');
 
         $task = is_numeric($taskId)
@@ -224,6 +276,7 @@ Artisan::command(
                     'started_at' => $latestRun->started_at?->toIso8601String(),
                     'completed_at' => $latestRun->completed_at?->toIso8601String(),
                     'artifact_count' => $latestRun->artifacts->count(),
+                    'step_count' => $latestRun->steps->count(),
                 ] : null,
             ],
             'artifacts' => $artifactSummary,

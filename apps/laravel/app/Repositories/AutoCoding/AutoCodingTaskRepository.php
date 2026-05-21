@@ -105,7 +105,7 @@ class AutoCodingTaskRepository implements AutoCodingTaskRepositoryInterface
     protected function baseDetailedQuery(): Builder
     {
         return AutoCodingTask::query()
-            ->with(['runs.artifacts', 'runs.machine'])
+            ->with(['runs.artifacts', 'runs.machine', 'runs.steps'])
             ->orderByDesc('id');
     }
 }

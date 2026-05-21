@@ -10,6 +10,7 @@ Comments should make code easier to maintain, not compensate for weak naming or 
 - Add a comment when a block protects a security, auth, or data-integrity constraint.
 - Add a comment when the code performs non-trivial normalization, formatting, or branching that would otherwise cost time to re-derive.
 - Add a short section comment when a method has a necessary but dense block that cannot be simplified further without making the code worse.
+- Add short section comments in shared config files when multiple feature areas or workflow safety settings live in the same array and the purpose of each block would otherwise be ambiguous.
 
 ## When Not To Add Comments
 

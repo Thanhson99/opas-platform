@@ -36,6 +36,10 @@ class StoreAutoCodingTaskRequest extends FormRequest
             'provider' => ['nullable', 'string', Rule::in(['null', 'ollama'])],
             'provider_options' => ['nullable', 'array'],
             'provider_options.model' => ['nullable', 'string', 'max:120'],
+            'dirty_workspace_policy' => ['nullable', 'string', Rule::in(['warn', 'block', 'allow'])],
+            'scope_paths' => ['nullable', 'array'],
+            'scope_paths.*' => ['required', 'string', 'max:2048'],
+            'scope_policy' => ['nullable', 'string', Rule::in(['warn', 'block', 'allow'])],
         ];
     }
 }

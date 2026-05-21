@@ -21,7 +21,7 @@ Read only the sections that match the task at hand:
 - [docs/rules/auth-provider-rules.md](docs/rules/auth-provider-rules.md)
   Use when changing authentication providers, OAuth configuration, verification policy, or provider-facing admin screens.
 - [docs/rules/github-rules.md](docs/rules/github-rules.md)
-  Use when creating branches, staging changes, writing commits, pushing, force-pushing, or preparing PR/issue follow-up notes.
+  Use when creating branches, staging changes, writing commits, choosing commit message format, pushing, force-pushing, or preparing PR/issue follow-up notes.
 - [docs/rules/verification-rules.md](docs/rules/verification-rules.md)
   Use before closing a Laravel task and before commit/push to run formatting, static analysis, tests, and local CI-style checks consistently.
 
@@ -56,3 +56,4 @@ Minimum reading path by task type:
   - `verification-rules.md`
 - Documentation-only work:
   - read only the relevant docs file being edited unless `AGENTS.md` says otherwise
+  - also read `github-rules.md` when the task includes branch, commit, push, or PR note preparation

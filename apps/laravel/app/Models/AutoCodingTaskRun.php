@@ -91,4 +91,14 @@ class AutoCodingTaskRun extends Model
     {
         return $this->hasMany(AutoCodingRunArtifact::class, 'task_run_id');
     }
+
+    /**
+     * Get the persisted workflow-step attempts emitted during this run.
+     *
+     * @return HasMany<AutoCodingTaskRunStep, $this>
+     */
+    public function steps(): HasMany
+    {
+        return $this->hasMany(AutoCodingTaskRunStep::class, 'task_run_id')->orderBy('sequence');
+    }
 }

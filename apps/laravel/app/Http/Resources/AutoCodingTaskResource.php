@@ -50,6 +50,21 @@ class AutoCodingTaskResource extends JsonResource
             'artifact_types' => $latestRun instanceof AutoCodingTaskRun
                 ? $latestRun->artifacts->pluck('type')->values()->all()
                 : [],
+            'preflight' => is_array($task->latest_report['preflight'] ?? null)
+                ? $task->latest_report['preflight']
+                : null,
+            'retry' => is_array($task->latest_report['retry'] ?? null)
+                ? $task->latest_report['retry']
+                : null,
+            'failure' => is_array($task->latest_report['failure'] ?? null)
+                ? $task->latest_report['failure']
+                : null,
+            'recommended_action' => is_array($task->latest_report['recommended_action'] ?? null)
+                ? $task->latest_report['recommended_action']
+                : null,
+            'follow_up' => is_array($task->latest_report['follow_up'] ?? null)
+                ? $task->latest_report['follow_up']
+                : null,
             'latest_report' => $task->latest_report,
         ];
     }
