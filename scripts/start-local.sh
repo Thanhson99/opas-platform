@@ -24,7 +24,7 @@ for arg in "$@"; do
 done
 
 step_index=0
-step_total=8
+step_total=9
 
 show_spinner() {
   local pid="$1"

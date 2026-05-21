@@ -8,8 +8,8 @@ use App\Enums\AutoCodingExecutionStatus;
 use App\Models\AutoCodingTask;
 use App\Models\AutoCodingTaskRun;
 use App\Repositories\AutoCoding\Interfaces\AutoCodingTaskRepositoryInterface;
-use Carbon\CarbonInterface;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use Throwable;
 
 class LocalAutoCodingTaskService
@@ -23,6 +23,9 @@ class LocalAutoCodingTaskService
      * @param  bool  $shouldRunValidation
      * @param  string|null  $providerName
      * @param  array<string, mixed>  $providerOptions
+     * @param  string  $dirtyWorkspacePolicy
+     * @param  array<int, string>  $scopePaths
+     * @param  string  $scopePolicy
      * @return AutoCodingTask
      */
     public function createPendingTask(
@@ -32,9 +35,12 @@ class LocalAutoCodingTaskService
         bool $shouldRunValidation = false,
         ?string $providerName = null,
         array $providerOptions = [],
+        string $dirtyWorkspacePolicy = 'warn',
+        array $scopePaths = [],
+        string $scopePolicy = 'warn',
     ): AutoCodingTask {
         $effectiveRepositoryPath = $this->resolveRequestedRepositoryPath($repositoryPath);
-        $pendingReport = $this->buildPendingReport($summary, $issueKey, $effectiveRepositoryPath);
+        $pendingReport = $this->queueStateService->buildPendingReport($summary, $issueKey, $effectiveRepositoryPath);
 
         /** @var AutoCodingTask $task */
         $task = DB::transaction(function () use (
@@ -44,6 +50,9 @@ class LocalAutoCodingTaskService
             $shouldRunValidation,
             $providerName,
             $providerOptions,
+            $dirtyWorkspacePolicy,
+            $scopePaths,
+            $scopePolicy,
             $pendingReport,
         ): AutoCodingTask {
             /** @var AutoCodingTask $createdTask */
@@ -58,6 +67,10 @@ class LocalAutoCodingTaskService
                     'should_run_validation' => $shouldRunValidation,
                     'provider_name' => $providerName,
                     'provider_options' => $providerOptions,
+                    'dirty_workspace_policy' => $this->executionContextService->normalizeDirtyWorkspacePolicy($dirtyWorkspacePolicy),
+                    'scope_paths' => $this->executionContextService->normalizeScopePaths($scopePaths),
+                    'scope_policy' => $this->executionContextService->normalizeScopePolicy($scopePolicy),
+                    'follow_up_answers' => [],
                 ],
                 'latest_report' => $pendingReport,
             ]);
@@ -69,14 +82,15 @@ class LocalAutoCodingTaskService
     }
 
     public function __construct(
-        private readonly RepositoryContextService $repositoryContextService,
         private readonly LocalMachineService $localMachineService,
-        private readonly ValidationPipelineService $validationPipelineService,
-        private readonly GitHubContextService $gitHubContextService,
-        private readonly RunArtifactService $runArtifactService,
-        private readonly PromptContextAssembler $promptContextAssembler,
-        private readonly AutoCodingProviderResolver $providerResolver,
+        private readonly AutoCodingQueueStateService $queueStateService,
         private readonly AutoCodingTaskRepositoryInterface $taskRepository,
+        private readonly AutoCodingExecutionContextService $executionContextService,
+        private readonly AutoCodingExecutionStateService $executionStateService,
+        private readonly AutoCodingFollowUpRequestService $followUpRequestService,
+        private readonly AutoCodingFollowUpResponseService $followUpResponseService,
+        private readonly AutoCodingFollowUpWorkflowService $followUpWorkflowService,
+        private readonly AutoCodingWorkflowStepRunnerService $workflowStepRunnerService,
     ) {}
 
     /**
@@ -88,6 +102,9 @@ class LocalAutoCodingTaskService
      * @param  bool  $shouldRunValidation
      * @param  string|null  $providerName
      * @param  array<string, mixed>  $providerOptions
+     * @param  string  $dirtyWorkspacePolicy
+     * @param  array<int, string>  $scopePaths
+     * @param  string  $scopePolicy
      * @return AutoCodingTaskRun
      */
     public function runInspectionTask(
@@ -97,6 +114,9 @@ class LocalAutoCodingTaskService
         bool $shouldRunValidation = false,
         ?string $providerName = null,
         array $providerOptions = [],
+        string $dirtyWorkspacePolicy = 'warn',
+        array $scopePaths = [],
+        string $scopePolicy = 'warn',
     ): AutoCodingTaskRun {
         $task = $this->createPendingTask(
             $summary,
@@ -105,6 +125,9 @@ class LocalAutoCodingTaskService
             $shouldRunValidation,
             $providerName,
             $providerOptions,
+            $dirtyWorkspacePolicy,
+            $scopePaths,
+            $scopePolicy,
         );
 
         return $this->executePendingTask($task->id);
@@ -119,33 +142,266 @@ class LocalAutoCodingTaskService
     public function executePendingTask(int $taskId): AutoCodingTaskRun
     {
         $task = $this->findTaskOrFail($taskId);
-        $executionContext = $this->buildExecutionContext($task);
-        $repositoryContext = $this->repositoryContextService->inspect($executionContext['repository_path']);
-        $machine = $this->localMachineService->resolve($repositoryContext['repository_path']);
-
-        $this->markTaskAsRunning($task, $executionContext['task_context'], $repositoryContext);
-        $run = $this->createRunningTaskRun($task, $machine->id, $repositoryContext);
+        $executionContext = $this->executionContextService->buildExecutionContext($task);
+        $machine = $this->localMachineService->resolve($executionContext['repository_path']);
+        $run = $this->executionStateService->createRunningTaskRun($task, $machine->id, [
+            'repository_path' => $executionContext['repository_path'],
+        ]);
 
         try {
-            $executionArtifacts = $this->collectExecutionArtifacts(
-                $task,
+            $repositoryContext = $this->workflowStepRunnerService->runRepositoryInspectionStep(
+                $run,
+                $executionContext['repository_path']
+            );
+            $this->executionStateService->markTaskAsRunning($task, $executionContext['task_context'], $repositoryContext);
+            $run->update([
+                'repository_snapshot' => $repositoryContext,
+            ]);
+
+            $dirtyWorkspaceFollowUp = $this->followUpRequestService->buildDirtyWorkspaceFollowUp(
                 $repositoryContext,
-                $executionContext['provider_name'],
-                $executionContext['provider_options'],
-                $executionContext['should_run_validation'],
+                $executionContext['dirty_workspace_policy']
             );
 
-            return $this->finalizeSuccessfulExecution(
+            if ($dirtyWorkspaceFollowUp['required']) {
+                return $this->executionStateService->finalizeTerminalExecution(
+                    $task,
+                    $run,
+                    AutoCodingExecutionStatus::Blocked,
+                    $machine->machine_key,
+                    $repositoryContext,
+                    [
+                        'prompt_package' => [],
+                        'provider_result' => [
+                            'status' => 'blocked',
+                            'message' => $dirtyWorkspaceFollowUp['message'],
+                        ],
+                        'github_context' => [],
+                        'validation_results' => $this->buildSkippedValidationResult(),
+                    ],
+                    $dirtyWorkspaceFollowUp,
+                    is_string($dirtyWorkspaceFollowUp['message'] ?? null)
+                        ? $dirtyWorkspaceFollowUp['message']
+                        : null
+                );
+            }
+
+            $scopeFollowUp = $this->followUpRequestService->buildScopeMismatchFollowUp(
+                $repositoryContext,
+                $executionContext['scope_paths'],
+                $executionContext['scope_policy']
+            );
+
+            if ($scopeFollowUp['required']) {
+                return $this->executionStateService->finalizeTerminalExecution(
+                    $task,
+                    $run,
+                    AutoCodingExecutionStatus::Blocked,
+                    $machine->machine_key,
+                    $repositoryContext,
+                    [
+                        'prompt_package' => [],
+                        'provider_result' => [
+                            'status' => 'blocked',
+                            'message' => $scopeFollowUp['message'],
+                        ],
+                        'github_context' => [],
+                        'validation_results' => $this->buildSkippedValidationResult(),
+                    ],
+                    $scopeFollowUp,
+                    is_string($scopeFollowUp['message'] ?? null)
+                        ? $scopeFollowUp['message']
+                        : null
+                );
+            }
+
+            $providerContext = $this->executionContextService->buildProviderContext(
+                $task,
+                $repositoryContext,
+                $executionContext['provider_options'],
+                $executionContext['follow_up_answers'],
+                $executionContext['follow_up_answer_summary'],
+            );
+            $promptPackage = $this->workflowStepRunnerService->runPromptPreparationStep($run, $providerContext);
+            $providerResult = $this->workflowStepRunnerService->runProviderStep(
+                $run,
+                $providerContext,
+                $executionContext['provider_name']
+            );
+
+            $followUp = $this->extractFollowUpRequest($providerResult);
+            if ($followUp['required']) {
+                return $this->executionStateService->finalizeTerminalExecution(
+                    $task,
+                    $run,
+                    AutoCodingExecutionStatus::Blocked,
+                    $machine->machine_key,
+                    $repositoryContext,
+                    [
+                        'prompt_package' => $promptPackage,
+                        'provider_result' => $providerResult,
+                        'github_context' => [],
+                        'validation_results' => $this->buildSkippedValidationResult(),
+                    ],
+                    $followUp,
+                    null
+                );
+            }
+
+            $gitHubContext = $this->workflowStepRunnerService->runGithubContextStep($run, $repositoryContext, $task->issue_key);
+            $validationResults = $this->workflowStepRunnerService->runValidationStep(
+                $run,
+                $repositoryContext,
+                $executionContext['should_run_validation']
+            );
+
+            $status = $this->resolveTerminalStatus($providerResult, $validationResults);
+
+            return $this->executionStateService->finalizeTerminalExecution(
                 $task,
                 $run,
+                $status,
                 $machine->machine_key,
                 $repositoryContext,
-                $executionArtifacts,
+                [
+                    'prompt_package' => $promptPackage,
+                    'provider_result' => $providerResult,
+                    'github_context' => $gitHubContext,
+                    'validation_results' => $validationResults,
+                ],
+                ['required' => false, 'questions' => []],
+                null
             );
         } catch (Throwable $throwable) {
-            $this->markExecutionAsFailed($task, $run, $throwable);
-            throw $throwable;
+            return $this->markExecutionAsFailed($task, $run, $machine->machine_key, $throwable);
         }
+    }
+
+    /**
+     * Resume one blocked local auto-coding task with additional follow-up input.
+     *
+     * @param  int  $taskId
+     * @param  string  $response
+     * @param  string|null  $resumeToken
+     * @param  array<string, mixed>|null  $responsePayload
+     * @return AutoCodingTaskRun
+     */
+    public function resumeBlockedTask(
+        int $taskId,
+        string $response,
+        ?string $resumeToken = null,
+        ?array $responsePayload = null,
+    ): AutoCodingTaskRun {
+        $task = $this->findTaskOrFail($taskId);
+        $this->assertResumeGuard($task, $resumeToken);
+        /** @var array{
+         *   type: string,
+         *   value: string,
+         *   metadata: array<string, mixed>,
+         *   answers: array<int, array{question_id: string, type: string, value: string, metadata: array<string, mixed>}>
+         * } $normalizedResponsePayload
+         */
+        $normalizedResponsePayload = $this->followUpResponseService->normalizePayload($responsePayload, $response);
+        $effectiveResponse = $normalizedResponsePayload['value'];
+        $this->assertResumeResponseMatchesContract($task, $normalizedResponsePayload);
+        $context = is_array($task->context_payload) ? $task->context_payload : [];
+        $followUpAnswers = is_array($context['follow_up_answers'] ?? null)
+            ? $context['follow_up_answers']
+            : [];
+        $followUpAnswers[] = $this->followUpResponseService->buildAnswerRecord($effectiveResponse, $normalizedResponsePayload);
+        $dirtyWorkspacePolicy = $this->followUpWorkflowService->resolveDirtyWorkspacePolicyFromResume($task, $effectiveResponse);
+        $scopePolicy = $this->followUpWorkflowService->resolveScopePolicyFromResume($task, $effectiveResponse);
+
+        $task->update([
+            'status' => AutoCodingExecutionStatus::Pending,
+            'context_payload' => array_merge($context, [
+                'follow_up_answers' => $followUpAnswers,
+                'dirty_workspace_policy' => $dirtyWorkspacePolicy,
+                'scope_policy' => $scopePolicy,
+            ]),
+            'latest_report' => $this->queueStateService->buildResumedLatestReport($task),
+            'completed_at' => null,
+        ]);
+
+        return $this->executePendingTask($taskId);
+    }
+
+    /**
+     * Ensure one resume request still targets the latest blocked workflow state.
+     *
+     * @param  AutoCodingTask  $task
+     * @param  string|null  $resumeToken
+     * @return void
+     */
+    protected function assertResumeGuard(AutoCodingTask $task, ?string $resumeToken): void
+    {
+        if ($task->status !== AutoCodingExecutionStatus::Blocked) {
+            throw ValidationException::withMessages([
+                'task' => 'Only blocked auto-coding tasks can be resumed.',
+            ]);
+        }
+
+        $expectedResumeToken = $this->resolveExpectedResumeToken($task);
+
+        if ($expectedResumeToken === null) {
+            throw ValidationException::withMessages([
+                'resume_token' => 'The blocked task is missing a resume token. Refresh task status before retrying.',
+            ]);
+        }
+
+        if (! is_string($resumeToken) || trim($resumeToken) === '') {
+            throw ValidationException::withMessages([
+                'resume_token' => 'A valid resume token is required to continue this blocked task.',
+            ]);
+        }
+
+        if (! hash_equals($expectedResumeToken, trim($resumeToken))) {
+            throw ValidationException::withMessages([
+                'resume_token' => 'Resume token is stale or invalid. Refresh task status and retry with the latest blocked state.',
+            ]);
+        }
+    }
+
+    /**
+     * Ensure one follow-up response matches the currently expected blocked-task input contract.
+     *
+     * @param  AutoCodingTask  $task
+     * @param  array{
+     *   type: string,
+     *   value: string,
+     *   metadata: array<string, mixed>,
+     *   answers: array<int, array{question_id: string, type: string, value: string, metadata: array<string, mixed>}>
+     * }  $responsePayload
+     * @return void
+     */
+    protected function assertResumeResponseMatchesContract(
+        AutoCodingTask $task,
+        array $responsePayload,
+    ): void {
+        /** @var array<string, mixed> $followUp */
+        $followUp = is_array($task->latest_report['follow_up'] ?? null)
+            ? $task->latest_report['follow_up']
+            : [];
+        $this->followUpResponseService->assertMatchesFollowUpContract($followUp, $responsePayload);
+    }
+
+    /**
+     * Resolve the authoritative resume token for the latest blocked run.
+     *
+     * @param  AutoCodingTask  $task
+     * @return string|null
+     */
+    protected function resolveExpectedResumeToken(AutoCodingTask $task): ?string
+    {
+        $latestRun = $task->relationLoaded('runs')
+            ? $task->runs->sortByDesc('id')->first()
+            : $task->runs()->latest('id')->first();
+
+        if (! $latestRun instanceof AutoCodingTaskRun || $latestRun->status !== AutoCodingExecutionStatus::Blocked) {
+            return null;
+        }
+
+        return sprintf('task:%d:run:%d:blocked', $task->id, $latestRun->id);
     }
 
     /**
@@ -163,19 +419,12 @@ class LocalAutoCodingTaskService
                 return null;
             }
 
-            $queueReport = $this->resolveQueueReport($task);
             $updated = AutoCodingTask::query()
                 ->whereKey($task->id)
                 ->where('status', AutoCodingExecutionStatus::Pending->value)
                 ->update([
                     'status' => AutoCodingExecutionStatus::Running,
-                    'latest_report' => array_merge($task->latest_report ?? [], [
-                        'status' => AutoCodingExecutionStatus::Running->value,
-                        'queue' => array_merge($queueReport, [
-                            'status' => 'claimed',
-                            'claimed_at' => now()->toIso8601String(),
-                        ]),
-                    ]),
+                    'latest_report' => $this->queueStateService->buildClaimedLatestReport($task),
                 ]);
 
             if ($updated !== 1) {
@@ -206,55 +455,6 @@ class LocalAutoCodingTaskService
     }
 
     /**
-     * Build the initial pending report returned before queue execution starts.
-     *
-     * @param  string  $summary
-     * @param  string|null  $issueKey
-     * @param  string  $repositoryPath
-     * @return array<string, mixed>
-     */
-    protected function buildPendingReport(string $summary, ?string $issueKey, string $repositoryPath): array
-    {
-        return [
-            'status' => AutoCodingExecutionStatus::Pending->value,
-            'task' => [
-                'summary' => $summary,
-                'issue_key' => $issueKey,
-            ],
-            'queue' => [
-                'status' => 'queued',
-            ],
-            'repository' => [
-                'repository_path' => $repositoryPath,
-            ],
-            'provider_result' => [
-                'status' => 'pending',
-            ],
-            'validation' => [
-                'overall_status' => 'pending',
-            ],
-            'summary' => [
-                'artifact_count' => 0,
-            ],
-        ];
-    }
-
-    /**
-     * Resolve the existing queue report block from one local auto-coding task safely.
-     *
-     * @param  AutoCodingTask  $task
-     * @return array<string, mixed>
-     */
-    protected function resolveQueueReport(AutoCodingTask $task): array
-    {
-        $latestReport = $task->latest_report;
-        $queueReport = is_array($latestReport['queue'] ?? null) ? $latestReport['queue'] : [];
-
-        /** @var array<string, mixed> $queueReport */
-        return $queueReport;
-    }
-
-    /**
      * Find one local auto-coding task by id or fail when it does not exist.
      *
      * @param  int  $taskId
@@ -269,355 +469,90 @@ class LocalAutoCodingTaskService
     }
 
     /**
-     * Build the normalized execution context used to run one pending task.
-     *
-     * @param  AutoCodingTask  $task
-     * @return array{
-     *   task_context: array<string, mixed>,
-     *   repository_path: string,
-     *   should_run_validation: bool,
-     *   provider_name: string|null,
-     *   provider_options: array<string, mixed>
-     * }
-     */
-    protected function buildExecutionContext(AutoCodingTask $task): array
-    {
-        $taskContext = is_array($task->context_payload) ? $task->context_payload : [];
-        $providerOptions = is_array($taskContext['provider_options'] ?? null)
-            ? $taskContext['provider_options']
-            : [];
-
-        return [
-            'task_context' => $taskContext,
-            'repository_path' => is_string($taskContext['repository_path'] ?? null)
-                ? $taskContext['repository_path']
-                : $task->repository_path,
-            'should_run_validation' => (bool) ($taskContext['should_run_validation'] ?? false),
-            'provider_name' => is_string($taskContext['provider_name'] ?? null)
-                ? $taskContext['provider_name']
-                : null,
-            'provider_options' => $this->normalizeProviderOptions($providerOptions),
-        ];
-    }
-
-    /**
-     * Normalize one provider-options payload into a string-keyed array.
-     *
-     * @param  array<int|string, mixed>  $providerOptions
-     * @return array<string, mixed>
-     */
-    protected function normalizeProviderOptions(array $providerOptions): array
-    {
-        $normalizedOptions = [];
-
-        foreach ($providerOptions as $key => $value) {
-            if (! is_string($key) || $key === '') {
-                continue;
-            }
-
-            $normalizedOptions[$key] = $value;
-        }
-
-        return $normalizedOptions;
-    }
-
-    /**
-     * Mark one local auto-coding task as running with refreshed repository context.
-     *
-     * @param  AutoCodingTask  $task
-     * @param  array<string, mixed>  $taskContext
-     * @param  array<string, mixed>  $repositoryContext
-     * @return void
-     */
-    protected function markTaskAsRunning(
-        AutoCodingTask $task,
-        array $taskContext,
-        array $repositoryContext,
-    ): void {
-        $task->update([
-            'repository_path' => $repositoryContext['repository_path'],
-            'branch_name' => $repositoryContext['branch_name'],
-            'status' => AutoCodingExecutionStatus::Running,
-            'context_payload' => array_merge($taskContext, [
-                'repository_context' => $repositoryContext,
-            ]),
-        ]);
-    }
-
-    /**
-     * Create one running task-run record for the current execution attempt.
-     *
-     * @param  AutoCodingTask  $task
-     * @param  int  $machineId
-     * @param  array<string, mixed>  $repositoryContext
-     * @return AutoCodingTaskRun
-     */
-    protected function createRunningTaskRun(
-        AutoCodingTask $task,
-        int $machineId,
-        array $repositoryContext,
-    ): AutoCodingTaskRun {
-        /** @var AutoCodingTaskRun $run */
-        $run = AutoCodingTaskRun::query()->create([
-            'task_id' => $task->getKey(),
-            'machine_id' => $machineId,
-            'status' => AutoCodingExecutionStatus::Running,
-            'repository_snapshot' => $repositoryContext,
-            'started_at' => now(),
-        ]);
-
-        return $run;
-    }
-
-    /**
-     * Collect provider, GitHub, validation, and report artifacts for one execution attempt.
-     *
-     * @param  AutoCodingTask  $task
-     * @param  array<string, mixed>  $repositoryContext
-     * @param  string|null  $providerName
-     * @param  array<string, mixed>  $providerOptions
-     * @param  bool  $shouldRunValidation
-     * @return array{
-     *   prompt_package: array<string, mixed>,
-     *   provider_result: array<string, mixed>,
-     *   github_context: array<string, mixed>,
-     *   validation_results: array<string, mixed>
-     * }
-     */
-    protected function collectExecutionArtifacts(
-        AutoCodingTask $task,
-        array $repositoryContext,
-        ?string $providerName,
-        array $providerOptions,
-        bool $shouldRunValidation,
-    ): array {
-        $providerContext = $this->buildProviderContext($task, $repositoryContext, $providerOptions);
-        $provider = $this->providerResolver->resolve($providerName);
-        $promptPackage = $this->promptContextAssembler->assemble($providerContext);
-        $providerResult = $provider->plan($providerContext);
-        $repositoryPath = $this->resolveRepositoryPathFromContext($repositoryContext);
-        $branchName = $this->resolveBranchNameFromContext($repositoryContext);
-
-        return [
-            'prompt_package' => $promptPackage,
-            'provider_result' => $providerResult,
-            'github_context' => $this->gitHubContextService->inspect(
-                $repositoryPath,
-                $branchName,
-                $task->issue_key
-            ),
-            'validation_results' => $this->validationPipelineService->run(
-                $repositoryPath,
-                $shouldRunValidation
-            ),
-        ];
-    }
-
-    /**
-     * Build the provider context payload for one local auto-coding execution.
-     *
-     * @param  AutoCodingTask  $task
-     * @param  array<string, mixed>  $repositoryContext
-     * @param  array<string, mixed>  $providerOptions
-     * @return array<string, mixed>
-     */
-    protected function buildProviderContext(
-        AutoCodingTask $task,
-        array $repositoryContext,
-        array $providerOptions,
-    ): array {
-        return [
-            'task_summary' => $task->summary,
-            'issue_key' => $task->issue_key,
-            'repository_context' => $repositoryContext,
-            'provider_options' => $providerOptions,
-        ];
-    }
-
-    /**
-     * Finalize one successful local auto-coding execution and persist reports and artifacts.
-     *
-     * @param  AutoCodingTask  $task
-     * @param  AutoCodingTaskRun  $run
-     * @param  string  $machineKey
-     * @param  array<string, mixed>  $repositoryContext
-     * @param  array{
-     *   prompt_package: array<string, mixed>,
-     *   provider_result: array<string, mixed>,
-     *   github_context: array<string, mixed>,
-     *   validation_results: array<string, mixed>
-     * }  $executionArtifacts
-     * @return AutoCodingTaskRun
-     */
-    protected function finalizeSuccessfulExecution(
-        AutoCodingTask $task,
-        AutoCodingTaskRun $run,
-        string $machineKey,
-        array $repositoryContext,
-        array $executionArtifacts,
-    ): AutoCodingTaskRun {
-        $report = $this->buildFinalReport(
-            $task,
-            $run,
-            $machineKey,
-            $executionArtifacts['provider_result'],
-            $executionArtifacts['validation_results'],
-            $executionArtifacts['github_context'],
-        );
-
-        $this->runArtifactService->persistRunArtifacts(
-            $run,
-            $repositoryContext,
-            $executionArtifacts['github_context'],
-            array_merge($executionArtifacts['provider_result'], [
-                'prompt_package' => $executionArtifacts['prompt_package'],
-            ]),
-            $executionArtifacts['validation_results'],
-            $report
-        );
-
-        $run->update([
-            'status' => AutoCodingExecutionStatus::Completed,
-            'changed_files' => $repositoryContext['changed_files'],
-            'provider_result' => $executionArtifacts['provider_result'],
-            'validation_results' => $executionArtifacts['validation_results'],
-            'final_report' => $report,
-            'completed_at' => now(),
-        ]);
-
-        $task->update([
-            'status' => AutoCodingExecutionStatus::Completed,
-            'latest_report' => $report,
-            'completed_at' => now(),
-        ]);
-
-        /** @var AutoCodingTaskRun $freshRun */
-        $freshRun = $run->fresh();
-
-        return $freshRun;
-    }
-
-    /**
      * Mark one local auto-coding execution as failed and persist the failure report.
      *
      * @param  AutoCodingTask  $task
      * @param  AutoCodingTaskRun  $run
+     * @param  string  $machineKey
      * @param  Throwable  $throwable
-     * @return void
+     * @return AutoCodingTaskRun
      */
     protected function markExecutionAsFailed(
         AutoCodingTask $task,
         AutoCodingTaskRun $run,
+        string $machineKey,
         Throwable $throwable,
-    ): void {
-        $failureReport = [
-            'status' => AutoCodingExecutionStatus::Failed->value,
-            'error' => $throwable->getMessage(),
-        ];
-
-        $run->update([
-            'status' => AutoCodingExecutionStatus::Failed,
-            'final_report' => $failureReport,
-            'completed_at' => now(),
-        ]);
-
-        $task->update([
-            'status' => AutoCodingExecutionStatus::Failed,
-            'latest_report' => $failureReport,
-            'completed_at' => now(),
-        ]);
+    ): AutoCodingTaskRun {
+        return $this->executionStateService->finalizeTerminalExecution(
+            $task,
+            $run,
+            AutoCodingExecutionStatus::Failed,
+            $machineKey,
+            $run->repository_snapshot,
+            [
+                'prompt_package' => [],
+                'provider_result' => [
+                    'status' => 'failed',
+                ],
+                'github_context' => [],
+                'validation_results' => $this->buildSkippedValidationResult(),
+            ],
+            ['required' => false, 'questions' => []],
+            $throwable->getMessage()
+        );
     }
 
     /**
-     * Resolve the repository path from one inspected repository context.
+     * Resolve the terminal execution status from provider and validation outputs.
      *
-     * @param  array<string, mixed>  $repositoryContext
-     * @return string
-     */
-    protected function resolveRepositoryPathFromContext(array $repositoryContext): string
-    {
-        $repositoryPath = $repositoryContext['repository_path'] ?? null;
-
-        return is_string($repositoryPath) ? $repositoryPath : base_path('..');
-    }
-
-    /**
-     * Resolve the branch name from one inspected repository context.
-     *
-     * @param  array<string, mixed>  $repositoryContext
-     * @return string|null
-     */
-    protected function resolveBranchNameFromContext(array $repositoryContext): ?string
-    {
-        $branchName = $repositoryContext['branch_name'] ?? null;
-
-        return is_string($branchName) ? $branchName : null;
-    }
-
-    /**
-     * Build the structured final report for one local task run.
-     *
-     * @param  AutoCodingTask  $task
-     * @param  AutoCodingTaskRun  $run
-     * @param  string  $machineKey
      * @param  array<string, mixed>  $providerResult
      * @param  array<string, mixed>  $validationResults
-     * @param  array<string, mixed>  $gitHubContext
-     * @return array<string, mixed>
+     * @return AutoCodingExecutionStatus
      */
-    protected function buildFinalReport(
-        AutoCodingTask $task,
-        AutoCodingTaskRun $run,
-        string $machineKey,
-        array $providerResult,
-        array $validationResults,
-        array $gitHubContext,
-    ): array {
-        return [
-            'task' => [
-                'id' => $task->getKey(),
-                'summary' => $task->summary,
-                'issue_key' => $task->issue_key,
-                'status' => AutoCodingExecutionStatus::Completed->value,
-            ],
-            'run' => [
-                'id' => $run->getKey(),
-                'status' => AutoCodingExecutionStatus::Completed->value,
-                'started_at' => $run->started_at instanceof CarbonInterface
-                    ? $run->started_at->toIso8601String()
-                    : null,
-                'completed_at' => now()->toIso8601String(),
-            ],
-            'machine' => [
-                'machine_key' => $machineKey,
-            ],
-            'repository' => $run->repository_snapshot,
-            'github' => $gitHubContext,
-            'provider' => $providerResult,
-            'validation' => $validationResults,
-            'summary' => [
-                'artifact_count' => 5,
-                'changed_file_count' => count($this->resolveChangedFiles($run)),
-                'is_dirty' => (bool) ($run->repository_snapshot['is_dirty'] ?? false),
-            ],
-        ];
+    protected function resolveTerminalStatus(array $providerResult, array $validationResults): AutoCodingExecutionStatus
+    {
+        $providerStatus = is_string($providerResult['status'] ?? null) ? $providerResult['status'] : 'failed';
+        if (! in_array($providerStatus, ['completed', 'skipped'], true)) {
+            return AutoCodingExecutionStatus::Failed;
+        }
+
+        $validationStatus = is_string($validationResults['overall_status'] ?? null)
+            ? $validationResults['overall_status']
+            : 'failed';
+
+        return in_array($validationStatus, ['passed', 'skipped', 'not_configured'], true)
+            ? AutoCodingExecutionStatus::Completed
+            : AutoCodingExecutionStatus::Failed;
     }
 
     /**
-     * Resolve the changed file payload from the repository snapshot safely.
+     * Extract one normalized follow-up request from the provider output.
      *
-     * @param  AutoCodingTaskRun  $run
-     * @return array<int, array<string, string>>
+     * @param  array<string, mixed>  $providerResult
+     * @return array<string, mixed>
      */
-    protected function resolveChangedFiles(AutoCodingTaskRun $run): array
+    protected function extractFollowUpRequest(array $providerResult): array
     {
-        $changedFiles = $run->repository_snapshot['changed_files'] ?? [];
+        return $this->followUpWorkflowService->extractFollowUpRequest($providerResult);
+    }
 
-        if (! is_array($changedFiles)) {
-            return [];
-        }
-
-        /** @var array<int, array<string, string>> $changedFiles */
-        return $changedFiles;
+    /**
+     * Build the default skipped validation result payload.
+     *
+     * @return array<string, mixed>
+     */
+    protected function buildSkippedValidationResult(): array
+    {
+        return [
+            'requested' => false,
+            'overall_status' => 'skipped',
+            'total_commands' => 0,
+            'failed_commands' => 0,
+            'groups' => [],
+            'commands' => [],
+            'summary' => 'Validation commands were not requested.',
+            'can_retry' => false,
+            'completion_ready' => true,
+        ];
     }
 }

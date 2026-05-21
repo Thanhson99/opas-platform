@@ -295,6 +295,34 @@ Hệ thống không chỉ cần chạy task, mà còn phải biết:
 - Không ghi đè state cũ một cách mơ hồ
 - Giữ lịch sử từng lần retry để audit được
 
+### Trạng thái triển khai hiện tại
+
+Phase 2 hiện không còn chỉ là ý tưởng thiết kế. Trong code, workflow engine đã có các khối chính sau:
+
+- workflow step persisted theo từng lần chạy, có step status, attempt history, current step và decision point
+- validation pipeline có retry budget, retryable step summary, completion readiness và final checklist
+- preflight safety cho dirty workspace và changed-file scope mismatch
+- blocked follow-up flow có resume token, input contract, question contract, structured answer payload và resume guard
+- final report đã chuẩn hóa các block như workflow, preflight, failure, retry, recommended_action, follow_up
+
+### Service boundaries hiện tại
+
+Sau nhiều lần refactor, `LocalAutoCodingTaskService` hiện đóng vai trò coordinator ở mức cao. Phần lớn logic nặng của Phase 2 đã được tách ra service riêng:
+
+- `AutoCodingExecutionContextService`: build execution context, provider context, normalize policy và scope
+- `AutoCodingQueueStateService`: build pending or claimed queue report và queue-state transition
+- `AutoCodingExecutionStateService`: tạo run, mark running, finalize blocked or failed or completed execution
+- `AutoCodingWorkflowStepRunnerService`: chạy từng workflow step có persisted tracking
+- `AutoCodingWorkflowReportService`: build workflow report, preflight report, retry report, failure classification và recommended action
+- `AutoCodingFollowUpRequestService`: build preflight follow-up request và normalized provider follow-up request
+- `AutoCodingFollowUpWorkflowService`: extract provider follow-up và resolve policy khi resume
+- `AutoCodingFollowUpQuestionService`: normalize question contracts
+- `AutoCodingFollowUpContractService`: build input contract cho blocked task
+- `AutoCodingFollowUpResponseService`: validate resume payload, normalize structured answers và build persisted answer record
+- `AutoCodingFollowUpAnswerService`: summarize answer history thành provider-friendly answer map
+
+Điểm quan trọng là source of truth của Phase 2 bây giờ không chỉ nằm ở roadmap này nữa. Khi cần hiểu subsystem hiện tại, nên đọc `LocalAutoCodingTaskService` như entrypoint orchestration, sau đó đọc các service boundary bên trên để thấy trách nhiệm thật sự của từng phần.
+
 ### Khi xong Phase 2 phải đạt được gì
 
 - mỗi task có lifecycle rõ ràng

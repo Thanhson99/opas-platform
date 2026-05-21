@@ -69,8 +69,20 @@ Use these rules whenever the task includes branch creation, staging, commits, pu
   - `fix: ...`
   - `chore: ...`
   - `docs: ...`
+- Prefer the format `<type>: <short outcome>`.
+- Keep the summary short, imperative, and specific to the delivered outcome.
 - Commit messages should describe the user-facing or architectural outcome, not the mechanics of editing.
+- Avoid vague messages such as:
+  - `update code`
+  - `fix stuff`
+  - `misc changes`
+- Good examples:
+  - `feat: add Google OAuth callback handling`
+  - `fix: prevent duplicate webhook execution`
+  - `docs: clarify branch and commit rules`
+  - `chore: align local verification commands with CI`
 - If a commit closes or addresses a specific issue, include that in the PR or issue description even when the commit title stays short.
+- Do not force the issue key into every commit title when it hurts readability; keep the issue reference in the branch name, PR title, or PR description when that is cleaner.
 
 ## Push And Force-Push
 

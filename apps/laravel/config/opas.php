@@ -1,12 +1,14 @@
 <?php
 
 return [
+    // Brand values shared across shells and generated UI labels.
     'brand' => [
         'name' => 'OPAS',
         'tagline' => 'operations platform',
         'mark' => 'OP',
     ],
 
+    // Authentication and provider defaults for runtime auth flows.
     'auth' => [
         'provider_key_pattern' => (string) env('AUTH_PROVIDER_KEY_PATTERN', '^[a-z][a-z0-9_-]{1,63}$'),
         'provider_key_example' => (string) env('AUTH_PROVIDER_KEY_EXAMPLE', 'google'),
@@ -38,6 +40,7 @@ return [
         ],
     ],
 
+    // Workspace and admin navigation groups rendered in the shared shell.
     'navigation' => [
         [
             'label' => 'Workspace',
@@ -91,6 +94,7 @@ return [
         ],
     ],
 
+    // Local-first auto-coding orchestration, provider, and validation settings.
     'auto_coding' => [
         'default_repository_path' => env('AUTO_CODING_DEFAULT_REPOSITORY_PATH'),
         'machine_key' => env('AUTO_CODING_MACHINE_KEY'),
@@ -123,6 +127,14 @@ return [
             'frontend' => array_filter([
                 env('AUTO_CODING_VALIDATE_FRONTEND'),
             ], static fn (mixed $value): bool => is_string($value) && trim($value) !== ''),
+        ],
+        'workflow' => [
+            // Retry and validation-group controls for structured workflow execution.
+            'validation_retry_limit' => (int) env('AUTO_CODING_WORKFLOW_VALIDATION_RETRY_LIMIT', 2),
+            'retryable_validation_groups' => array_values(array_filter(array_map(
+                static fn (string $group): string => trim($group),
+                explode(',', (string) env('AUTO_CODING_WORKFLOW_RETRYABLE_VALIDATION_GROUPS', 'tests,frontend'))
+            ), static fn (string $group): bool => $group !== '')),
         ],
     ],
 ];
