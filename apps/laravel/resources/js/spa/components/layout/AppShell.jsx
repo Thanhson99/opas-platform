@@ -1,10 +1,12 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Header from './Header';
 import Footer from './Footer';
 import { useLanguage } from '../../features/i18n/context/LanguageContext';
 import { useAuth } from '../../features/auth/context/AuthContext';
+import '../../../../scss/modules/_cyberpunk-system.scss';
+import '../../../../scss/modules/_workspace-shell.scss';
 
 /**
  * Main application shell for the React SPA.
@@ -21,6 +23,9 @@ export default function AppShell({ children }) {
     const { t } = useLanguage();
     const { user, loading } = useAuth();
     const isAdmin = user?.role === 'admin';
+    const handleToggleSidebar = useCallback(() => {
+        setSidebarOpen((value) => !value);
+    }, []);
 
     const title = useMemo(() => {
         if (location.pathname === '/') {
@@ -103,16 +108,26 @@ export default function AppShell({ children }) {
         return <Navigate to="/admin/users" replace />;
     }
 
+    const shellClassName = [
+        'opas-app',
+        sidebarOpen ? 'is-sidebar-collapsed is-mobile-sidebar-open' : '',
+    ]
+        .filter(Boolean)
+        .join(' ');
+
     return (
-        <div className={`opas-app ${sidebarOpen ? 'is-sidebar-open' : ''}`} id="app-shell">
+        <div className={shellClassName} id="app-shell">
             <Sidebar />
             <div className="opas-main">
                 <Header
                     title={title.title}
                     description={title.description}
-                    onToggleSidebar={() => setSidebarOpen((value) => !value)}
+                    sidebarOpen={sidebarOpen}
+                    onToggleSidebar={handleToggleSidebar}
                 />
-                <main className="opas-content">{children}</main>
+                <main className="opas-content">
+                    <div className="opas-content__inner">{children}</div>
+                </main>
                 <Footer variant="workspace" />
             </div>
         </div>

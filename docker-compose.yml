@@ -7,9 +7,10 @@ services:
     container_name: laravel-app
     volumes:
       - ./apps/laravel:/var/www
+      - ./:/workspace/repo
     depends_on:
       - postgres
-      - python-services
+      - postgres-testing
     environment:
       DB_CONNECTION: pgsql
       DB_HOST: ${LARAVEL_DB_HOST:-postgres}
@@ -31,12 +32,29 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-root}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
-      - ./docker/postgres/data:/var/lib/postgresql/data
+      - ${POSTGRES_DATA_PATH:-./docker/postgres/data}:/var/lib/postgresql/data
+    networks:
+      - backend
+
+  # PostgreSQL Database dedicated to PHPUnit only.
+  postgres-testing:
+    image: postgres:15
+    container_name: postgres-testing
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_DB: ${POSTGRES_TEST_DB:-laravel_testing}
+      POSTGRES_USER: ${POSTGRES_TEST_USER:-root}
+      POSTGRES_PASSWORD: ${POSTGRES_TEST_PASSWORD:-change-me}
+    volumes:
+      - ${POSTGRES_TEST_DATA_PATH:-./docker/postgres-testing/data}:/var/lib/postgresql/data
     networks:
       - backend
 
   # Python microservices (FastAPI / Flask)
   python-services:
+    profiles:
+      - automation
     build:
       context: ./services/python
       dockerfile: Dockerfile
@@ -48,8 +66,12 @@ services:
 
   # n8n Automation Tool
   n8n:
+    profiles:
+      - automation
     image: n8nio/n8n:latest
     container_name: n8n
+    cpus: "1.00"
+    mem_limit: 768m
     ports:
       - "5678:5678"
     volumes:
@@ -58,6 +80,10 @@ services:
       - ./videos_uploaded:/data/videos_uploaded
     env_file:
       - ./services/n8n/.env
+    environment:
+      N8N_DIAGNOSTICS_ENABLED: "false"
+      N8N_VERSION_NOTIFICATIONS_ENABLED: "false"
+      N8N_TEMPLATES_ENABLED: "false"
     depends_on:
       - ollama
     networks:
@@ -72,8 +98,12 @@ services:
   # In n8n, call: http://ollama:11434/api/chat
   # and set "model" to either "qwen2.5:7b" or "mistral:7b"
   ollama:
+    profiles:
+      - automation
     image: ollama/ollama:latest
     container_name: ollama
+    cpus: "2.00"
+    mem_limit: 3g
     ports:
       - "11434:11434"
     volumes:
@@ -83,10 +113,14 @@ services:
 
   # LibreTranslate - Translation API
   libretranslate:
+    profiles:
+      - automation
     build:
       context: ./services/libretranslate
       dockerfile: Dockerfile
     container_name: libretranslate
+    cpus: "1.00"
+    mem_limit: 1g
     ports:
       - "5001:5000"
     networks:
@@ -106,14 +140,8 @@ services:
       - ./apps/laravel:/var/www
     depends_on:
       - laravel
-      - n8n
-      - libretranslate
-      - python-services
     networks:
       - backend
-
-volumes:
-  postgres-data:
 
 networks:
   backend:

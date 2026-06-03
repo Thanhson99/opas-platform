@@ -57,6 +57,7 @@ videos_uploaded/*.mov
 # ---- Docker ----
 docker/mysql/
 docker/postgres/
+docker/postgres-testing/
 *.pid
 *.sock
 

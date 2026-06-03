@@ -10,6 +10,9 @@ apply the same method-level documentation standards there as well.
 Apply the same documentation discipline to frontend code in `apps/laravel/resources/js/`
 using concise JSDoc blocks instead of PHP docblocks.
 
+For `apps/laravel/routes/api.php`, `routes/web.php`, and `routes/console.php`,
+prefer concise section comments over docblocks on executable route or command definitions.
+
 ## Method Rules
 
 - Every public and protected PHP method in `app/` must have a docblock with a one-line summary.
@@ -18,9 +21,13 @@ using concise JSDoc blocks instead of PHP docblocks.
 - Private PHP methods should also have a docblock when they contain branching, data shaping, persistence rules, auth rules, or non-trivial formatting logic.
 - Enums that define reusable workflow states, status contracts, or recommendation outputs should carry a short class docblock explaining what contract they represent.
 - When a config file introduces non-obvious feature sections or safety-sensitive settings, add short section comments so operators can identify the purpose of each block quickly.
+- When a route file contains multiple feature areas or command families, add short section comments so operators can scan the file by boundary instead of reading each definition line by line.
 - Every documented method except `__construct` must include `@return`, even when the native PHP return type is obvious.
 - Every documented method with parameters must include `@param` for each parameter.
 - Array-shaped payloads must declare their array shape in `@param` or `@return` whenever practical.
+- Use explicit scalar/object union shapes in `@param` and `@return` when runtime input can vary, for example `int|string|null`.
+- Keep `@param` names exactly aligned with method signatures.
+- Keep docblock contracts synchronized with native types after each refactor.
 - PHPUnit test methods should include a concise summary docblock and `@return void`.
 - Test helper methods with parameters or non-trivial behavior must include `@param` and `@return`.
 - Every `export default function` in `resources/js` must have a concise JSDoc summary block.
@@ -56,6 +63,8 @@ using concise JSDoc blocks instead of PHP docblocks.
 - If TypeScript-style detail would repeat obvious runtime shapes, keep the JSDoc lighter instead of adding noise.
 - Prefer documenting the data contract or workflow rule over DOM mechanics.
 - For shared components and context providers, prefer documenting the props or return contract once in the JSDoc rather than scattering explanatory comments through the render body.
+- Do not use docblocks to justify avoidable complexity. Split code first, then document the stable contract.
+- If a method has 5 or more parameters, document the payload strategy explicitly in the summary or convert to a typed payload array/object.
 
 ## Review Checklist
 

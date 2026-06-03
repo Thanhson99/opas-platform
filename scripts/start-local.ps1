@@ -1,13 +1,18 @@
 $ErrorActionPreference = "Stop"
 
 $ForceRebuild = $false
+$FullStack = $true
+$CoreServices = @("postgres", "laravel", "nginx")
+$OptionalServices = @("python-services", "n8n", "ollama", "libretranslate")
 
 foreach ($arg in $args) {
     switch ($arg) {
         "--fresh" { $ForceRebuild = $true }
         "--build" { $ForceRebuild = $true }
+        "--full" { $FullStack = $true }
+        "--core" { $FullStack = $false }
         default {
-            throw "Unknown argument: $arg. Usage: .\scripts\start-local.ps1 [--fresh]"
+            throw "Unknown argument: $arg. Usage: .\scripts\start-local.ps1 [--fresh] [--core]"
         }
     }
 }
@@ -16,7 +21,7 @@ $RootDir = Split-Path -Parent $PSScriptRoot
 Set-Location $RootDir
 
 $StepIndex = 0
-$StepTotal = 8
+$StepTotal = if ($FullStack) { 8 } else { 9 }
 
 function Copy-IfMissing {
     param(
@@ -144,12 +149,30 @@ Invoke-Step "Create shared docker network" {
 }
 
 if ($ForceRebuild) {
-    Invoke-Step "Build and start containers" {
-        docker compose up -d --build | Out-Null
+    if ($FullStack) {
+        Invoke-Step "Build and start containers" {
+            docker compose --profile automation up -d --build | Out-Null
+        }
+    } else {
+        Invoke-Step "Stop optional automation services" {
+            docker compose stop @OptionalServices | Out-Null
+        }
+        Invoke-Step "Build and start core containers" {
+            docker compose up -d --build @CoreServices | Out-Null
+        }
     }
 } else {
-    Invoke-Step "Start containers" {
-        docker compose up -d | Out-Null
+    if ($FullStack) {
+        Invoke-Step "Start containers" {
+            docker compose --profile automation up -d | Out-Null
+        }
+    } else {
+        Invoke-Step "Stop optional automation services" {
+            docker compose stop @OptionalServices | Out-Null
+        }
+        Invoke-Step "Start core containers" {
+            docker compose up -d @CoreServices | Out-Null
+        }
     }
 }
 
@@ -164,7 +187,7 @@ if ($ForceRebuild -or -not (Test-Path (Join-Path $RootDir "apps/laravel/vendor/a
 
 if ($ForceRebuild -or -not (Test-Path (Join-Path $RootDir "apps/laravel/public/build/manifest.json"))) {
     Invoke-Step "Build Laravel frontend assets" {
-        docker run --rm -v "${RootDir}/apps/laravel:/app" -w /app node:20-alpine sh -lc "npm ci --silent && npm run build -- --logLevel error" | Out-Null
+        docker run --rm -v "${RootDir}/apps/laravel:/app" -w /app node:20-alpine sh -lc "if [ ! -d node_modules ] || [ ! -f node_modules/.package-lock.json ] || [ package-lock.json -nt node_modules/.package-lock.json ]; then npm ci --silent; fi; npm run build -- --logLevel error" | Out-Null
     }
 } else {
     $script:StepIndex++
@@ -201,6 +224,13 @@ Write-Host ""
 Write-Host "Local stack is ready."
 Write-Host ""
 Write-Host "- Laravel App:      http://localhost:8881"
-Write-Host "- n8n:              http://localhost:5678"
-Write-Host "- LibreTranslate:   http://localhost:8884"
+if ($FullStack) {
+    Write-Host "- n8n:              http://localhost:5678"
+    Write-Host "- LibreTranslate:   http://localhost:8884"
+} else {
+    Write-Host ""
+    Write-Host "Core Docker services are ready."
+    Write-Host "Optional automation services are stopped because --core was used."
+    Write-Host "Run .\scripts\start-local.ps1 to start the full Docker stack."
+}
 Write-Host ""

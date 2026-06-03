@@ -14,10 +14,6 @@ vi.mock('../../i18n/context/LanguageContext', () => ({
     useLanguage: () => useLanguageMock(),
 }));
 
-vi.mock('../components/AuthShowcase', () => ({
-    default: () => <div>Auth showcase</div>,
-}));
-
 vi.mock('../../../components/layout/LanguageSelect', () => ({
     default: () => <div>Language select</div>,
 }));
@@ -64,6 +60,7 @@ beforeEach(() => {
         t: (key) =>
             ({
                 'auth.account': 'OPAS account',
+                'auth.secureAccess': 'Sign-in access',
                 'auth.backHome': 'Back to home',
                 'auth.loginTitle': 'Login',
                 'auth.loginText': 'Sign in to continue your work inside OPAS.',
@@ -88,11 +85,6 @@ beforeEach(() => {
                 'auth.loginError': 'Unable to sign in with this account.',
                 'auth.resetPasswordSuccess': 'Password updated successfully. You can sign in now.',
                 'auth.loginEyebrow': 'Welcome Back',
-                'auth.loginShowcaseTitle': 'Login showcase',
-                'auth.loginShowcaseText': 'Login showcase text',
-                'auth.marketTracking': 'Market tracking',
-                'auth.contentWorkflow': 'Content workflow',
-                'auth.automationAccess': 'Automation access',
             })[key] ?? key,
     });
 

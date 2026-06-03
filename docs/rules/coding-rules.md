@@ -14,6 +14,15 @@ Use these rules as the default engineering baseline for Laravel application code
 - DB-stored provider credentials belong in the database and must be encrypted at rest when sensitive.
 - Frontend code must never receive secrets. Expose only safe metadata.
 
+## Operator-Facing Copy
+
+- Do not hardcode operator-facing UI text, bot text, menu labels, webhook error copy, status labels, or user guidance directly inside controllers, services, models, jobs, or listeners.
+- Put reusable operator-facing copy behind one central catalog such as a Laravel config file, translation file, or dedicated text service that reads from config.
+- When a feature supports multiple locales, keep the locale variants together in the same central catalog instead of scattering English and Vietnamese strings through application code.
+- Application code should reference stable text keys or dedicated text-accessor methods such as `line()`, `label()`, or `button()` instead of embedding literal copy.
+- Prefer one domain-specific text accessor per feature area when that keeps message keys discoverable, for example a Telegram copy service for Telegram workflows.
+- Exception: tiny internal-only debug strings or one-off test fixtures may stay inline when they are not operator-facing and are not part of the product or workflow contract.
+
 ## Laravel Layering
 
 - Keep controllers thin.
@@ -34,6 +43,9 @@ Use these rules as the default engineering baseline for Laravel application code
 - Keep nesting shallow. Prefer guard clauses and early returns over deeply nested conditionals.
 - If a method needs comments to explain each branch, the method likely needs to be split.
 - Follow `quality-rules.md` heuristics for method length, parameter count, branch count, and extraction triggers.
+- Use domain-first names for workflow actions and statuses. Avoid transport-driven names in core domain services.
+- Prefer suffix consistency for action handlers, for example `handleX`, `buildX`, `resolveX`, `normalizeX`.
+- For boolean values, use explicit prefixes such as `is`, `has`, `should`, `can`, `requires`.
 
 ## Validation And Error Handling Rules
 
@@ -67,6 +79,20 @@ Use these rules as the default engineering baseline for Laravel application code
 - Do not return plaintext secrets, privileged config, or debug-only fields from resources.
 - Keep API contracts predictable. Avoid returning the same concept under multiple names.
 
+## Route And Console Definition Rules
+
+- Keep `routes/api.php`, `routes/web.php`, and `routes/console.php` organized by boundary first, then by feature area.
+- In `routes/api.php`, prefer a stable order such as public auth flows, privileged admin APIs, machine or integration ingress, then product-domain APIs.
+- In `routes/web.php`, group SPA entrypoints and browser routes by feature area, and keep the final catch-all fallback at the bottom of the file.
+- In `routes/console.php`, group commands by operational family such as local execution, external integrations, and reporting or inspection.
+- Route group names, URI prefixes, and route name prefixes should line up. Avoid a prefix or route name that hides the owning feature area.
+- Apply shared middleware at the highest safe group level instead of repeating the same middleware chain on every route.
+- When a route group has a stricter trust boundary such as admin-only, machine-only, webhook-only, or browser-session-only access, make that boundary obvious in the grouping and naming.
+- Prefer one nested group per meaningful boundary. If route nesting becomes hard to scan, flatten the structure or extract a clearer prefix.
+- Keep route files declarative. If a route closure or inline console command body becomes branch-heavy, move the logic into a service or dedicated command class.
+- Every project command defined in `routes/console.php` should include a clear `purpose()` description for operators and scripts.
+- Use section comments in route files to explain group intent, and use route names to explain individual endpoint purpose. Do not duplicate that explanation in per-route comments unless a specific route has an unusual constraint.
+
 ## Database Rules
 
 - Every schema change must go through a migration.
@@ -83,6 +109,22 @@ Use these rules as the default engineering baseline for Laravel application code
 - Services should expose a small public API and hide branching logic in private methods.
 - When a class grows by feature area, split by responsibility rather than adding unrelated helper methods.
 - Prefer cohesive feature-oriented class design over generic utility dumping.
+- When 3 or more methods repeat the same lookup + not-found handling pattern, extract one shared helper method.
+- For workflow handlers, separate:
+- boundary checks
+- lookup/resolution
+- outcome rendering
+- persistence mutation
+- Avoid mixing all four phases in one method body.
+
+## Strict Naming And Style Contract
+
+- Use `camelCase` for methods and variables, `PascalCase` for classes/enums, and `snake_case` only for serialized payload keys or DB fields.
+- Avoid abbreviated variable names except conventional counters like `i`.
+- Keep line length at a practical maximum of 120 characters; wrap long arrays and conditions.
+- Prefer one return-path style per method:
+- guard-clause style for validations and exits
+- linear orchestration style for workflow methods
 
 ## Frontend Rules
 
@@ -96,6 +138,8 @@ Use these rules as the default engineering baseline for Laravel application code
 - Architecture boundaries match the owning layer.
 - Required env keys are present in `apps/laravel/.env.example`.
 - Runtime config reads from `config()`, not direct `env()` calls in app code.
+- Route and console definitions remain grouped by boundary and feature area.
+- Route name prefixes, URI prefixes, and middleware boundaries stay aligned.
 - Controllers remain thin.
 - Database logic is in repositories or models only where appropriate.
 - Sensitive values are not exposed to frontend or logs.

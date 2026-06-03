@@ -26,4 +26,4 @@ PY
 
 EXPOSE 5000
 ENTRYPOINT []
-CMD ["/app/venv/bin/libretranslate", "--host", "0.0.0.0", "--port", "5000", "--debug"]
+CMD ["/app/venv/bin/libretranslate", "--host", "0.0.0.0", "--port", "5000"]
