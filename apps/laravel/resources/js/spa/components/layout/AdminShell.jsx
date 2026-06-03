@@ -1,15 +1,90 @@
-import { useEffect, useState } from 'react';
-import { Navigate, NavLink, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
-import AppIcon from '../icons/AppIcon';
-import LanguageSelect from './LanguageSelect';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import ConfirmModal from '../ui/ConfirmModal';
-import Footer from './Footer';
 import api from '../../lib/api';
 import { useAuth } from '../../features/auth/context/AuthContext';
 import { useLanguage } from '../../features/i18n/context/LanguageContext';
-import AuthProvidersDashboardPage from '../../features/auth/pages/admin/AuthProvidersDashboardPage';
-import AuthProviderAdminPage from '../../features/auth/pages/admin/AuthProviderAdminPage';
-import AdminUsersPage from '../../features/auth/pages/admin/AdminUsersPage';
+import AdminRoutes from './AdminRoutes';
+import AdminSidebar from './AdminSidebar';
+import AdminTopbar from './AdminTopbar';
+import Footer from './Footer';
+import '../../../../scss/modules/_cyberpunk-system.scss';
+import '../../../../scss/modules/_admin-auth-providers.scss';
+import '../../../../scss/modules/_admin-console.scss';
+
+let cachedAdminProviderMenuItems = null;
+let pendingAdminProviderMenuRequest = null;
+
+function isAuthProvidersDashboardPath(pathname) {
+    return pathname === '/admin/auth/providers';
+}
+
+function isAuthProviderDetailPath(pathname) {
+    return pathname.startsWith('/admin/auth/providers/');
+}
+
+function resolveAdminPageLabel(pathname, t) {
+    if (pathname.startsWith('/admin/auto-coding/telegram-bots')) {
+        return t('adminTelegramBots.menuLabel');
+    }
+
+    if (pathname.startsWith('/admin/users')) {
+        return t('adminUsers.menuLabel');
+    }
+
+    if (pathname.startsWith('/admin/auth/providers')) {
+        return t('nav.authProviders');
+    }
+
+    return t('adminConsole.sectionLabel');
+}
+
+async function loadAdminProviderMenuItems() {
+    if (cachedAdminProviderMenuItems) {
+        return cachedAdminProviderMenuItems;
+    }
+
+    if (pendingAdminProviderMenuRequest) {
+        return pendingAdminProviderMenuRequest;
+    }
+
+    pendingAdminProviderMenuRequest = api
+        .get('/admin/auth/providers')
+        .then((response) => {
+            const providers = response.data.data ?? [];
+
+            cachedAdminProviderMenuItems = providers.map((provider) => ({
+                href: `/admin/auth/providers/${provider.key}`,
+                label: provider.display_name,
+                icon: provider.icon,
+            }));
+
+            return cachedAdminProviderMenuItems;
+        })
+        .finally(() => {
+            pendingAdminProviderMenuRequest = null;
+        });
+
+    return pendingAdminProviderMenuRequest;
+}
+
+function scheduleAdminProviderMenuLoad(callback) {
+    if (typeof window === 'undefined') {
+        callback();
+
+        return () => {};
+    }
+
+    if ('requestIdleCallback' in window) {
+        const handle = window.requestIdleCallback(callback, { timeout: 1400 });
+
+        return () => window.cancelIdleCallback(handle);
+    }
+
+    const handle = window.setTimeout(callback, 250);
+
+    return () => window.clearTimeout(handle);
+}
 
 /**
  * Render the admin console shell, navigation, and admin-only route tree.
@@ -22,169 +97,106 @@ export default function AdminShell() {
     const { user, loading, logout } = useAuth();
     const { t } = useLanguage();
     const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
-    const [authMenuOpen, setAuthMenuOpen] = useState(true);
+    const [authMenuOpen, setAuthMenuOpen] = useState(false);
     const [authProviderMenuItems, setAuthProviderMenuItems] = useState([]);
 
     useEffect(() => {
-        const loadAdminProviders = async () => {
-            try {
-                const response = await api.get('/admin/auth/providers');
-                const providers = response.data.data ?? [];
+        if (loading || user?.role !== 'admin') {
+            return undefined;
+        }
 
-                setAuthProviderMenuItems(
-                    providers.map((provider) => ({
-                        href: `/admin/auth/providers/${provider.key}`,
-                        label: provider.display_name,
-                        icon: provider.icon,
-                    })),
-                );
-            } catch {
-                setAuthProviderMenuItems([]);
-            }
+        const loadMenu = () => {
+            void loadAdminProviderMenuItems()
+                .then(setAuthProviderMenuItems)
+                .catch(() => setAuthProviderMenuItems([]));
         };
 
-        void loadAdminProviders();
-    }, []);
+        if (
+            isAuthProvidersDashboardPath(location.pathname) ||
+            isAuthProviderDetailPath(location.pathname)
+        ) {
+            loadMenu();
 
-    if (!loading && user?.role !== 'admin') {
-        return <Navigate to="/login" replace />;
-    }
+            return undefined;
+        }
 
-    const handleLogout = async () => {
+        return scheduleAdminProviderMenuLoad(loadMenu);
+    }, [loading, location.pathname, user?.role]);
+
+    useEffect(() => {
+        if (isAuthProviderDetailPath(location.pathname)) {
+            setAuthMenuOpen(true);
+
+            return;
+        }
+
+        if (!isAuthProvidersDashboardPath(location.pathname)) {
+            setAuthMenuOpen(false);
+        }
+    }, [location.pathname]);
+
+    const handleLogout = useCallback(async () => {
         try {
             await logout();
         } finally {
             navigate('/login', { replace: true });
         }
-    };
+    }, [logout, navigate]);
 
-    const authProvidersActive = location.pathname.startsWith('/admin/auth/providers');
-    const usersActive = location.pathname.startsWith('/admin/users');
+    const authProvidersDashboardActive = isAuthProvidersDashboardPath(location.pathname);
+    const authProviderDetailActive = isAuthProviderDetailPath(location.pathname);
+    const currentPageLabel = useMemo(
+        () => resolveAdminPageLabel(location.pathname, t),
+        [location.pathname, t],
+    );
+    const handleAuthMenuToggle = useCallback(() => {
+        setAuthMenuOpen((value) => !value);
+    }, []);
+    const handleAuthMenuLinkClick = useCallback(() => {
+        setAuthMenuOpen((value) => (authProvidersDashboardActive ? !value : true));
+    }, [authProvidersDashboardActive]);
+    const handleLogoutClick = useCallback(() => {
+        setLogoutConfirmOpen(true);
+    }, []);
+    const handleLogoutCancel = useCallback(() => {
+        setLogoutConfirmOpen(false);
+    }, []);
+    const handleLogoutConfirm = useCallback(() => {
+        setLogoutConfirmOpen(false);
+        void handleLogout();
+    }, [handleLogout]);
+
+    if (!loading && user?.role !== 'admin') {
+        return <Navigate to="/login" replace />;
+    }
 
     return (
         <div className="admin-console">
-            <header className="admin-console__header">
-                <div className="admin-console__header-brand">
-                    <NavLink to="/admin/users" className="admin-console__brand">
-                        <span className="admin-console__brand-mark" aria-hidden="true">
-                            <img src="/storage/images/brand/opas-logo-mark.png" alt="" />
-                        </span>
-                        <span className="admin-console__brand-copy">
-                            <strong>{t('adminConsole.brandTitle')}</strong>
-                            <small>{t('adminConsole.brandText')}</small>
-                        </span>
-                    </NavLink>
-                </div>
+            <AdminSidebar
+                authMenuOpen={authMenuOpen}
+                authProviderDetailActive={authProviderDetailActive}
+                authProvidersDashboardActive={authProvidersDashboardActive}
+                authProviderMenuItems={authProviderMenuItems}
+                currentPath={location.pathname}
+                t={t}
+                onAuthMenuToggle={handleAuthMenuToggle}
+                onAuthMenuLinkClick={handleAuthMenuLinkClick}
+            />
 
-                <div className="admin-console__header-main">
-                    <div className="admin-console__intro">
-                        <p className="admin-console__eyebrow">{t('adminConsole.eyebrow')}</p>
-                        <h1 className="admin-console__title">
-                            {usersActive
-                                ? t('adminUsers.menuLabel')
-                                : t('shell.authProvidersTitle')}
-                        </h1>
-                    </div>
-
-                    <div className="admin-console__actions">
-                        <div className="admin-console__account">
-                            <strong>{user?.name ?? t('header.guest')}</strong>
-                            <span>{user?.email ?? ''}</span>
-                        </div>
-                        <LanguageSelect />
-                        <button
-                            type="button"
-                            className="app-button app-button--ghost"
-                            onClick={() => setLogoutConfirmOpen(true)}
-                        >
-                            {t('common.logout')}
-                        </button>
-                    </div>
-                </div>
-            </header>
-
-            <div className="admin-console__body">
-                <aside className="admin-console__sidebar">
-                    <div className="admin-console__section">
-                        <div className="admin-console__nav">
-                            <NavLink
-                                to="/admin/users"
-                                className={({ isActive }) =>
-                                    `admin-console__nav-link ${isActive ? 'is-active' : ''}`
-                                }
-                            >
-                                <AppIcon name="users" />
-                                <span>{t('adminUsers.menuLabel')}</span>
-                            </NavLink>
-                            <div className="admin-console__nav-group">
-                                <div
-                                    className={`admin-console__nav-parent ${
-                                        authProvidersActive ? 'is-active' : ''
-                                    }`}
-                                >
-                                    <NavLink
-                                        to="/admin/auth/providers"
-                                        className="admin-console__nav-link admin-console__nav-link--parent"
-                                        onClick={() => {
-                                            setAuthMenuOpen((value) =>
-                                                authProvidersActive ? !value : true,
-                                            );
-                                        }}
-                                    >
-                                        <AppIcon name="shield" />
-                                        <span>{t('nav.authProviders')}</span>
-                                    </NavLink>
-                                    <button
-                                        type="button"
-                                        className={`admin-console__nav-toggle ${
-                                            authMenuOpen ? 'is-open' : ''
-                                        }`}
-                                        onClick={() => setAuthMenuOpen((value) => !value)}
-                                        aria-expanded={authMenuOpen}
-                                        aria-label={t('adminAuth.menu.toggle')}
-                                    >
-                                        <AppIcon name="chevron-down" />
-                                    </button>
-                                </div>
-                                {authMenuOpen ? (
-                                    <div className="admin-console__subnav">
-                                        {authProviderMenuItems.map((item) => (
-                                            <NavLink
-                                                key={item.href}
-                                                to={item.href}
-                                                className={({ isActive }) =>
-                                                    `admin-console__subnav-link ${isActive ? 'is-active' : ''}`
-                                                }
-                                            >
-                                                <AppIcon name={item.icon} />
-                                                <span>{item.label}</span>
-                                            </NavLink>
-                                        ))}
-                                    </div>
-                                ) : null}
-                            </div>
-                        </div>
-                    </div>
-                </aside>
-
-                <main className="admin-console__content">
+            <main className="admin-console__main">
+                <AdminTopbar
+                    currentPageLabel={currentPageLabel}
+                    user={user}
+                    t={t}
+                    onLogoutClick={handleLogoutClick}
+                />
+                <div className="admin-console__content">
                     <div className="admin-console__content-main">
-                        <Routes>
-                            <Route path="/users" element={<AdminUsersPage />} />
-                            <Route
-                                path="/auth/providers"
-                                element={<AuthProvidersDashboardPage />}
-                            />
-                            <Route
-                                path="/auth/providers/:key"
-                                element={<AuthProviderAdminPage />}
-                            />
-                            <Route path="*" element={<Navigate to="/admin/users" replace />} />
-                        </Routes>
+                        <AdminRoutes />
                     </div>
                     <Footer variant="admin" />
-                </main>
-            </div>
+                </div>
+            </main>
 
             <ConfirmModal
                 open={logoutConfirmOpen}
@@ -194,11 +206,8 @@ export default function AdminShell() {
                 confirmLabel={t('common.logout')}
                 cancelLabel={t('common.cancel')}
                 tone="danger"
-                onCancel={() => setLogoutConfirmOpen(false)}
-                onConfirm={() => {
-                    setLogoutConfirmOpen(false);
-                    void handleLogout();
-                }}
+                onCancel={handleLogoutCancel}
+                onConfirm={handleLogoutConfirm}
             />
         </div>
     );

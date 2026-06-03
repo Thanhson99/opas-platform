@@ -6,6 +6,7 @@ namespace App\Services\AutoCoding;
 
 use App\Services\AutoCoding\Contracts\CommandRunnerInterface;
 use RuntimeException;
+use Throwable;
 
 class RepositoryContextService
 {
@@ -48,20 +49,120 @@ class RepositoryContextService
      */
     protected function resolveRepositoryPath(?string $repositoryPath): string
     {
-        $candidatePath = $repositoryPath;
-        if (! is_string($candidatePath) || $candidatePath === '') {
+        foreach ($this->buildRepositoryPathCandidates($repositoryPath) as $candidatePath) {
+            $result = $this->commandRunner->run('git rev-parse --show-toplevel', $candidatePath);
+
+            if ($result['successful'] && $result['output'] !== '') {
+                return $result['output'];
+            }
+        }
+
+        throw new RuntimeException('Unable to resolve the local git repository path.');
+    }
+
+    /**
+     * Build the ordered repository path candidates that may contain the git working tree.
+     *
+     * @param  string|null  $repositoryPath
+     * @return array<int, string>
+     */
+    protected function buildRepositoryPathCandidates(?string $repositoryPath): array
+    {
+        $candidates = [];
+
+        $this->appendCandidatePath($candidates, $repositoryPath);
+        $this->appendCandidatePath($candidates, $this->resolveConfiguredRepositoryPath());
+        $this->appendCandidatePath($candidates, $this->resolveConfiguredContainerRepositoryPath());
+        $this->appendCandidatePath($candidates, $this->resolveBasePath(''));
+        $this->appendCandidatePath($candidates, $this->resolveBasePath('..'));
+        $this->appendCandidatePath($candidates, $this->resolveBasePath('../..'));
+
+        return array_values(array_unique($candidates));
+    }
+
+    /**
+     * Append one normalized repository candidate path when it is non-empty.
+     *
+     * @param  array<int, string>  $candidates
+     * @param  string|null  $candidatePath
+     * @return void
+     */
+    protected function appendCandidatePath(array &$candidates, ?string $candidatePath): void
+    {
+        if (! is_string($candidatePath)) {
+            return;
+        }
+
+        $normalizedCandidatePath = trim($candidatePath);
+
+        if ($normalizedCandidatePath === '') {
+            return;
+        }
+
+        $resolvedPath = realpath($normalizedCandidatePath);
+
+        $candidates[] = is_string($resolvedPath)
+            ? $resolvedPath
+            : $normalizedCandidatePath;
+    }
+
+    /**
+     * Resolve the configured repository-path override safely outside full Laravel runtime tests.
+     *
+     * @return string|null
+     */
+    protected function resolveConfiguredRepositoryPath(): ?string
+    {
+        try {
             $configuredPath = config('opas.auto_coding.default_repository_path');
-            $candidatePath = is_string($configuredPath) && $configuredPath !== ''
-                ? $configuredPath
-                : base_path('..');
+        } catch (Throwable) {
+            return null;
         }
 
-        $result = $this->commandRunner->run('git rev-parse --show-toplevel', $candidatePath);
-        if (! $result['successful'] || $result['output'] === '') {
-            throw new RuntimeException('Unable to resolve the local git repository path.');
+        return is_string($configuredPath) && trim($configuredPath) !== ''
+            ? trim($configuredPath)
+            : null;
+    }
+
+    /**
+     * Resolve the configured container/server repository-path override.
+     *
+     * @return string|null
+     */
+    protected function resolveConfiguredContainerRepositoryPath(): ?string
+    {
+        try {
+            $configuredPath = config('opas.auto_coding.container_repository_path');
+        } catch (Throwable) {
+            $configuredPath = getenv('AUTO_CODING_CONTAINER_REPOSITORY_PATH') ?: null;
         }
 
-        return $result['output'];
+        return is_string($configuredPath) && trim($configuredPath) !== ''
+            ? trim($configuredPath)
+            : null;
+    }
+
+    /**
+     * Resolve one Laravel base path safely outside full Laravel runtime tests.
+     *
+     * @param  string  $suffix
+     * @return string|null
+     */
+    protected function resolveBasePath(string $suffix): ?string
+    {
+        if (! function_exists('base_path')) {
+            return null;
+        }
+
+        try {
+            $resolvedBasePath = base_path($suffix);
+        } catch (Throwable) {
+            return null;
+        }
+
+        return trim($resolvedBasePath) !== ''
+            ? trim($resolvedBasePath)
+            : null;
     }
 
     /**

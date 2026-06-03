@@ -26,13 +26,16 @@ class PromptContextAssembler
         $repositoryContext = $context['repository_context'] ?? [];
         $taskSummary = is_string($context['task_summary'] ?? null) ? $context['task_summary'] : '';
         $issueKey = is_string($context['issue_key'] ?? null) ? $context['issue_key'] : null;
+        /** @var array<string, mixed> $issueContext */
+        $issueContext = is_array($context['issue_context'] ?? null) ? $context['issue_context'] : [];
 
         return [
             'system_prompt' => trim($systemPrompt),
-            'user_prompt' => $this->buildUserPrompt($taskSummary, $issueKey, $repositoryContext),
+            'user_prompt' => $this->buildUserPrompt($taskSummary, $issueKey, $issueContext, $repositoryContext),
             'goal' => $taskSummary,
             'input_payload' => [
                 'issue_key' => $issueKey,
+                'issue_context' => $issueContext,
                 'repository_context' => $repositoryContext,
             ],
             'available_services' => [
@@ -56,11 +59,27 @@ class PromptContextAssembler
      */
     protected function resolvePromptPath(): string
     {
-        $promptPath = config('opas.auto_coding.providers.ollama.prompt_path');
+        $promptPath = config('opas.auto_coding.prompt_path');
+        $providerPromptPath = config('opas.auto_coding.providers.ollama.prompt_path');
+        $containerRepositoryPath = config('opas.auto_coding.container_repository_path');
+        $containerPromptPath = is_string($containerRepositoryPath) && trim($containerRepositoryPath) !== ''
+            ? rtrim(trim($containerRepositoryPath), '/').'/ai-local/agents/laravel-n8n-orchestrator.md'
+            : null;
 
-        return is_string($promptPath) && $promptPath !== ''
-            ? $promptPath
-            : base_path('../../ai-local/agents/laravel-n8n-orchestrator.md');
+        $candidatePaths = array_values(array_filter([
+            is_string($promptPath) && trim($promptPath) !== '' ? trim($promptPath) : null,
+            is_string($providerPromptPath) && trim($providerPromptPath) !== '' ? trim($providerPromptPath) : null,
+            base_path('../../ai-local/agents/laravel-n8n-orchestrator.md'),
+            $containerPromptPath,
+        ], static fn (?string $path): bool => is_string($path) && trim($path) !== ''));
+
+        foreach ($candidatePaths as $candidatePath) {
+            if (is_readable($candidatePath)) {
+                return $candidatePath;
+            }
+        }
+
+        return $candidatePaths[0] ?? base_path('../../ai-local/agents/laravel-n8n-orchestrator.md');
     }
 
     /**
@@ -70,9 +89,9 @@ class PromptContextAssembler
      */
     protected function resolveOllamaModel(): string
     {
-        $model = config('opas.auto_coding.providers.ollama.model', 'qwen2.5:7b');
+        $model = config('opas.auto_coding.providers.ollama.model');
 
-        return is_string($model) && $model !== '' ? $model : 'qwen2.5:7b';
+        return is_string($model) && $model !== '' ? $model : '';
     }
 
     /**
@@ -80,15 +99,21 @@ class PromptContextAssembler
      *
      * @param  string  $taskSummary
      * @param  string|null  $issueKey
+     * @param  array<string, mixed>  $issueContext
      * @param  mixed  $repositoryContext
      * @return string
      */
-    protected function buildUserPrompt(string $taskSummary, ?string $issueKey, mixed $repositoryContext): string
-    {
+    protected function buildUserPrompt(
+        string $taskSummary,
+        ?string $issueKey,
+        array $issueContext,
+        mixed $repositoryContext,
+    ): string {
         $normalizedRepositoryContext = is_array($repositoryContext) ? $repositoryContext : [];
         $payload = [
             'task_summary' => $taskSummary,
             'issue_key' => $issueKey,
+            'issue_context' => $issueContext,
             'repository_context' => $normalizedRepositoryContext,
         ];
 

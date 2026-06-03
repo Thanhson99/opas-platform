@@ -21,6 +21,8 @@ use App\Repositories\AutoCoding\AutoCodingTaskRunRepository;
 use App\Repositories\AutoCoding\Interfaces\AutoCodingMachineRepositoryInterface;
 use App\Repositories\AutoCoding\Interfaces\AutoCodingTaskRepositoryInterface;
 use App\Repositories\AutoCoding\Interfaces\AutoCodingTaskRunRepositoryInterface;
+use App\Repositories\AutoCoding\Interfaces\TelegramBotConfigRepositoryInterface;
+use App\Repositories\AutoCoding\TelegramBotConfigRepository;
 use App\Repositories\Coin\FavoriteCoinRepository;
 use App\Repositories\Coin\FeedKeywordRepository;
 use App\Repositories\Coin\Interfaces\FavoriteCoinRepositoryInterface;
@@ -49,6 +51,7 @@ use App\Services\AutoCoding\AutoCodingFollowUpQuestionService;
 use App\Services\AutoCoding\AutoCodingFollowUpRequestService;
 use App\Services\AutoCoding\AutoCodingFollowUpResponseService;
 use App\Services\AutoCoding\AutoCodingFollowUpWorkflowService;
+use App\Services\AutoCoding\AutoCodingGitHubStatusQueryService;
 use App\Services\AutoCoding\AutoCodingMachineQueryService;
 use App\Services\AutoCoding\AutoCodingProviderResolver;
 use App\Services\AutoCoding\AutoCodingQueueStateService;
@@ -58,6 +61,7 @@ use App\Services\AutoCoding\AutoCodingTaskRunQueryService;
 use App\Services\AutoCoding\AutoCodingWorkflowReportService;
 use App\Services\AutoCoding\AutoCodingWorkflowStepRunnerService;
 use App\Services\AutoCoding\AutoCodingWorkflowTracker;
+use App\Services\AutoCoding\CodexCliAutoCodingProvider;
 use App\Services\AutoCoding\Contracts\AutoCodingProviderInterface;
 use App\Services\AutoCoding\Contracts\CommandRunnerInterface;
 use App\Services\AutoCoding\GitHubContextService;
@@ -70,6 +74,15 @@ use App\Services\AutoCoding\ProcessCommandRunner;
 use App\Services\AutoCoding\PromptContextAssembler;
 use App\Services\AutoCoding\RepositoryContextService;
 use App\Services\AutoCoding\RunArtifactService;
+use App\Services\AutoCoding\Telegram\AutoCodingTelegramAccessControlService;
+use App\Services\AutoCoding\Telegram\AutoCodingTelegramBotService;
+use App\Services\AutoCoding\Telegram\AutoCodingTelegramCommandParser;
+use App\Services\AutoCoding\Telegram\AutoCodingTelegramLocaleService;
+use App\Services\AutoCoding\Telegram\AutoCodingTelegramMessageFormatter;
+use App\Services\AutoCoding\Telegram\AutoCodingTelegramNotificationService;
+use App\Services\AutoCoding\Telegram\AutoCodingTelegramRuntimeConfigService;
+use App\Services\AutoCoding\Telegram\AutoCodingTelegramTextService;
+use App\Services\AutoCoding\Telegram\AutoCodingTelegramWebhookService;
 use App\Services\AutoCoding\ValidationPipelineService;
 use App\Services\Coin\BinanceCoinApiClient;
 use App\Services\Coin\CoinApiClientInterface;
@@ -124,6 +137,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(AutoCodingMachineRepositoryInterface::class, AutoCodingMachineRepository::class);
         $this->app->bind(AutoCodingTaskRepositoryInterface::class, AutoCodingTaskRepository::class);
         $this->app->bind(AutoCodingTaskRunRepositoryInterface::class, AutoCodingTaskRunRepository::class);
+        $this->app->bind(TelegramBotConfigRepositoryInterface::class, TelegramBotConfigRepository::class);
         $this->app->singleton(AuthProviderConfigService::class);
         $this->app->singleton(AuthProviderOAuthService::class);
         $this->app->singleton(AuthProviderService::class);
@@ -135,16 +149,19 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(CommandRunnerInterface::class, ProcessCommandRunner::class);
         $this->app->singleton(PromptContextAssembler::class);
         $this->app->singleton(AutoCodingProviderInterface::class, function (Application $app): AutoCodingProviderInterface {
-            $provider = config('opas.auto_coding.provider', 'null');
+            $provider = config('opas.auto_coding.provider');
 
-            return $provider === 'ollama'
-                ? $app->make(OllamaAutoCodingProvider::class)
-                : new NullAutoCodingProvider;
+            return match ($provider) {
+                'codex' => $app->make(CodexCliAutoCodingProvider::class),
+                'ollama' => $app->make(OllamaAutoCodingProvider::class),
+                default => new NullAutoCodingProvider,
+            };
         });
         $this->app->singleton(LocalMachineService::class);
         $this->app->singleton(RepositoryContextService::class);
         $this->app->singleton(ValidationPipelineService::class);
         $this->app->singleton(GitHubContextService::class);
+        $this->app->singleton(AutoCodingGitHubStatusQueryService::class);
         $this->app->singleton(RunArtifactService::class);
         $this->app->singleton(AutoCodingCompletionChecklistService::class);
         $this->app->singleton(AutoCodingExecutionContextService::class);
@@ -158,6 +175,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(AutoCodingWorkflowReportService::class);
         $this->app->singleton(AutoCodingWorkflowStepRunnerService::class);
         $this->app->singleton(AutoCodingWorkflowTracker::class);
+        $this->app->singleton(CodexCliAutoCodingProvider::class);
         $this->app->singleton(OllamaAutoCodingProvider::class);
         $this->app->singleton(AutoCodingProviderResolver::class);
         $this->app->singleton(AutoCodingQueueStateService::class);
@@ -166,6 +184,16 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(AutoCodingTaskDispatchService::class);
         $this->app->singleton(AutoCodingTaskQueryService::class);
         $this->app->singleton(AutoCodingTaskRunQueryService::class);
+        $this->app->singleton(AutoCodingTelegramRuntimeConfigService::class);
+        $this->app->singleton(AutoCodingTelegramBotConfigService::class);
+        $this->app->singleton(AutoCodingTelegramAccessControlService::class);
+        $this->app->singleton(AutoCodingTelegramBotService::class);
+        $this->app->singleton(AutoCodingTelegramCommandParser::class);
+        $this->app->singleton(AutoCodingTelegramLocaleService::class);
+        $this->app->singleton(AutoCodingTelegramTextService::class);
+        $this->app->singleton(AutoCodingTelegramMessageFormatter::class);
+        $this->app->singleton(AutoCodingTelegramNotificationService::class);
+        $this->app->singleton(AutoCodingTelegramWebhookService::class);
         $this->app->singleton(LocalAutoCodingTaskService::class);
         $this->app->singleton(LocalAutoCodingWorkerService::class);
 
@@ -215,5 +243,6 @@ class AppServiceProvider extends ServiceProvider
         } catch (Throwable) {
             // Skip provider synchronization until the database connection is available.
         }
+
     }
 }

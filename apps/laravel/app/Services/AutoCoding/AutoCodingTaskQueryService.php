@@ -71,4 +71,66 @@ class AutoCodingTaskQueryService
     {
         return $this->taskRepository->findLatestDetailed();
     }
+
+    /**
+     * Resolve the latest detailed local auto-coding task for one status.
+     *
+     * @param  string  $status
+     * @return AutoCodingTask|null
+     */
+    public function findLatestDetailedByStatus(string $status): ?AutoCodingTask
+    {
+        $tasks = $this->taskRepository->getLatest(1, trim($status), null);
+
+        return $tasks[0] ?? null;
+    }
+
+    /**
+     * Resolve the latest detailed local auto-coding task for one issue key.
+     *
+     * @param  string  $issueKey
+     * @return AutoCodingTask|null
+     */
+    public function findLatestDetailedByIssueKey(string $issueKey): ?AutoCodingTask
+    {
+        $tasks = $this->taskRepository->getLatest(1, null, trim($issueKey));
+
+        return $tasks[0] ?? null;
+    }
+
+    /**
+     * Resolve the latest detailed local auto-coding task for one branch name.
+     *
+     * @param  string  $branchName
+     * @return AutoCodingTask|null
+     */
+    public function findLatestDetailedByBranchName(string $branchName): ?AutoCodingTask
+    {
+        return $this->taskRepository->findLatestDetailedByBranchName(trim($branchName));
+    }
+
+    /**
+     * Resolve the latest detailed local auto-coding task for one pull request number.
+     *
+     * This lookup stays local-first by scanning recent detailed tasks for a
+     * persisted GitHub PR URL that ends with the requested numeric id.
+     *
+     * @param  int  $pullRequestNumber
+     * @return AutoCodingTask|null
+     */
+    public function findLatestDetailedByPullRequestNumber(int $pullRequestNumber): ?AutoCodingTask
+    {
+        foreach ($this->taskRepository->getLatest(50, null, null) as $task) {
+            $latestReport = is_array($task->latest_report) ? $task->latest_report : [];
+            $githubContext = is_array($latestReport['github'] ?? null) ? $latestReport['github'] : [];
+            $pullRequest = is_array($githubContext['pull_request'] ?? null) ? $githubContext['pull_request'] : [];
+            $pullRequestUrl = is_string($pullRequest['url'] ?? null) ? trim((string) $pullRequest['url']) : '';
+
+            if ($pullRequestUrl !== '' && preg_match('#/pull/'.preg_quote((string) $pullRequestNumber, '#').'$#', $pullRequestUrl) === 1) {
+                return $task;
+            }
+        }
+
+        return null;
+    }
 }

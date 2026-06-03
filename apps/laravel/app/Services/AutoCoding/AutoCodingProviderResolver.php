@@ -31,6 +31,7 @@ class AutoCodingProviderResolver
             : $this->defaultProviderName();
 
         return match ($resolvedName) {
+            'codex' => $this->app->make(CodexCliAutoCodingProvider::class),
             'ollama' => $this->app->make(OllamaAutoCodingProvider::class),
             default => new NullAutoCodingProvider,
         };
@@ -43,7 +44,7 @@ class AutoCodingProviderResolver
      */
     protected function defaultProviderName(): string
     {
-        $provider = config('opas.auto_coding.provider', 'null');
+        $provider = config('opas.auto_coding.provider');
 
         return is_string($provider) && $provider !== '' ? $provider : 'null';
     }

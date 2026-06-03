@@ -24,4 +24,11 @@ interface AutoCodingMachineRepositoryInterface
      * @return AutoCodingMachine|null
      */
     public function findDetailedById(int $machineId): ?AutoCodingMachine;
+
+    /**
+     * Find the latest detailed local auto-coding machine.
+     *
+     * @return AutoCodingMachine|null
+     */
+    public function findLatestDetailed(): ?AutoCodingMachine;
 }

@@ -63,8 +63,8 @@ class AutoCodingMachineResource extends JsonResource
             return 'unknown';
         }
 
-        $staleSeconds = config('opas.auto_coding.machine_stale_seconds', 300);
-        $threshold = is_numeric($staleSeconds) && (int) $staleSeconds > 0 ? (int) $staleSeconds : 300;
+        $staleSeconds = config('opas.auto_coding.machine_stale_seconds');
+        $threshold = is_numeric($staleSeconds) && (int) $staleSeconds > 0 ? (int) $staleSeconds : 0;
 
         return $machine->last_seen_at->diffInSeconds(now()) <= $threshold ? 'online' : 'stale';
     }

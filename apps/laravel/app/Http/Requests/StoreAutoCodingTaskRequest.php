@@ -33,7 +33,7 @@ class StoreAutoCodingTaskRequest extends FormRequest
             'issue_key' => ['nullable', 'string', 'max:32'],
             'repository_path' => ['nullable', 'string', 'max:2048'],
             'validate' => ['nullable', 'boolean'],
-            'provider' => ['nullable', 'string', Rule::in(['null', 'ollama'])],
+            'provider' => ['nullable', 'string', Rule::in(['null', 'ollama', 'codex'])],
             'provider_options' => ['nullable', 'array'],
             'provider_options.model' => ['nullable', 'string', 'max:120'],
             'dirty_workspace_policy' => ['nullable', 'string', Rule::in(['warn', 'block', 'allow'])],

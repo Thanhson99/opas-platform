@@ -37,6 +37,19 @@ class AutoCodingMachineRepository implements AutoCodingMachineRepositoryInterfac
     }
 
     /**
+     * Find the latest detailed local auto-coding machine.
+     *
+     * @return AutoCodingMachine|null
+     */
+    public function findLatestDetailed(): ?AutoCodingMachine
+    {
+        /** @var AutoCodingMachine|null $machine */
+        $machine = $this->baseDetailedQuery()->first();
+
+        return $machine;
+    }
+
+    /**
      * Build the shared detailed query for local auto-coding machine reads.
      *
      * @return Builder<AutoCodingMachine>

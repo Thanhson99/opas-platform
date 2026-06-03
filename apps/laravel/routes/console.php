@@ -6,16 +6,22 @@ use App\Services\AutoCoding\AutoCodingTaskQueryService;
 use App\Services\AutoCoding\LocalAutoCodingTaskService;
 use App\Services\AutoCoding\LocalAutoCodingWorkerService;
 use App\Services\AutoCoding\LocalMachineService;
+use App\Services\AutoCoding\Telegram\AutoCodingTelegramBotConfigService;
+use App\Services\AutoCoding\Telegram\AutoCodingTelegramBotService;
+use App\Services\AutoCoding\Telegram\AutoCodingTelegramLegacyEnvImportService;
+use App\Services\AutoCoding\Telegram\AutoCodingTelegramRuntimeConfigService;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Output\OutputInterface;
 
+// Keep the framework sample command separate from project-specific operational commands.
 Artisan::command('inspire', function (OutputInterface $output) {
     $output->writeln(Inspiring::quote());
 });
 
+// Local execution commands let one machine create, claim, resume, and run auto-coding tasks.
 Artisan::command(
     'opas:auto-coding:run {summary : Short local coding task summary} {--issue=} {--path=} {--validate} {--provider=} {--model=} {--dirty-policy=warn} {--scope=} {--scope-policy=warn}',
     function (LocalAutoCodingTaskService $taskService): void {
@@ -190,6 +196,129 @@ Artisan::command(
     }
 )->purpose('Run the local auto-coding worker loop to heartbeat, claim, and optionally execute tasks.');
 
+// Telegram operator commands manage webhook state and default bot command registration.
+Artisan::command(
+    'opas:auto-coding:telegram:default-bot:update {--locale= : Optional locale to store on the default Telegram bot}',
+    function (AutoCodingTelegramBotConfigService $telegramBotConfigService): int {
+        $config = $telegramBotConfigService->ensureDefaultBotExists();
+        $rawLocale = $this->option('locale');
+        $payload = [
+            'key' => $config->key,
+            'display_name' => $config->display_name,
+        ];
+
+        if (is_string($rawLocale) && trim($rawLocale) !== '') {
+            $payload['locale'] = trim(strtolower($rawLocale)) === 'vi' ? 'vi' : 'en';
+        }
+
+        $updatedConfig = $telegramBotConfigService->update($config, $payload);
+
+        $this->line(json_encode([
+            'key' => $updatedConfig->key,
+            'display_name' => $updatedConfig->display_name,
+            'locale' => $updatedConfig->locale,
+        ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) ?: '{}');
+
+        return Command::SUCCESS;
+    }
+)->purpose('Update lightweight default Telegram bot settings such as locale from operator scripts.');
+
+Artisan::command(
+    'opas:auto-coding:telegram:default-bot:import-env',
+    function (AutoCodingTelegramLegacyEnvImportService $legacyEnvImportService): int {
+        $config = $legacyEnvImportService->importDefaultBotFromEnv();
+
+        if (! $config instanceof \App\Models\TelegramBotConfig) {
+            $this->line(json_encode([
+                'ok' => false,
+                'message' => 'No legacy Telegram environment values were found to import.',
+            ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) ?: '{}');
+
+            return Command::FAILURE;
+        }
+
+        $this->line(json_encode([
+            'ok' => true,
+            'key' => $config->key,
+            'display_name' => $config->display_name,
+            'purpose' => $config->purpose,
+            'environment' => $config->environment,
+            'enabled' => $config->enabled,
+            'locale' => $config->locale,
+            'allowed_chat_ids_count' => count($config->allowed_chat_ids),
+            'allowed_user_ids_count' => count($config->allowed_user_ids),
+            'allowed_actions_count' => count($config->allowed_actions),
+            'secret_status' => [
+                'bot_token' => array_key_exists('bot_token', $config->secret_config),
+                'webhook_secret' => array_key_exists('webhook_secret', $config->secret_config),
+            ],
+        ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) ?: '{}');
+
+        return Command::SUCCESS;
+    }
+)->purpose('Bootstrap the default Telegram bot record from legacy AUTO_CODING_TELEGRAM_* environment values.');
+
+Artisan::command(
+    'opas:auto-coding:telegram:runtime',
+    function (AutoCodingTelegramRuntimeConfigService $runtimeConfigService): int {
+        $this->line(json_encode(
+            $runtimeConfigService->getRuntimeConfig(),
+            JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES
+        ) ?: '{}');
+
+        return Command::SUCCESS;
+    }
+)->purpose('Inspect the active Telegram bot runtime config resolved from the database.');
+
+Artisan::command(
+    'opas:auto-coding:telegram:webhook {url? : The webhook URL to register. Omit to inspect the current webhook info.} {--secret= : Optional secret token override for Telegram webhook registration} {--drop-pending-updates : Ask Telegram to discard queued updates during webhook registration}',
+    function (AutoCodingTelegramBotService $telegramBotService): int {
+        $rawUrl = $this->argument('url');
+        $rawSecret = $this->option('secret');
+        $dropPendingUpdates = (bool) $this->option('drop-pending-updates');
+
+        if (! is_string($rawUrl) || trim($rawUrl) === '') {
+            $payload = $telegramBotService->getWebhookInfo();
+            $this->line(json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) ?: '{}');
+
+            return ($payload['ok'] ?? false) === true ? Command::SUCCESS : Command::FAILURE;
+        }
+
+        $payload = $telegramBotService->setWebhook(
+            trim($rawUrl),
+            is_string($rawSecret) && trim($rawSecret) !== '' ? trim($rawSecret) : null,
+            $dropPendingUpdates,
+        );
+
+        $this->line(json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) ?: '{}');
+
+        return ($payload['ok'] ?? false) === true ? Command::SUCCESS : Command::FAILURE;
+    }
+)->purpose('Inspect or register the Telegram webhook used by the remote auto-coding bot.');
+
+Artisan::command(
+    'opas:auto-coding:telegram:webhook-delete {--drop-pending-updates : Ask Telegram to discard queued updates while deleting the webhook}',
+    function (AutoCodingTelegramBotService $telegramBotService): int {
+        $payload = $telegramBotService->deleteWebhook((bool) $this->option('drop-pending-updates'));
+
+        $this->line(json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) ?: '{}');
+
+        return ($payload['ok'] ?? false) === true ? Command::SUCCESS : Command::FAILURE;
+    }
+)->purpose('Delete the Telegram webhook used by the remote auto-coding bot.');
+
+Artisan::command(
+    'opas:auto-coding:telegram:commands-sync',
+    function (AutoCodingTelegramBotService $telegramBotService): int {
+        $payload = $telegramBotService->setDefaultCommands();
+
+        $this->line(json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) ?: '{}');
+
+        return ($payload['ok'] ?? false) === true ? Command::SUCCESS : Command::FAILURE;
+    }
+)->purpose('Sync the default Telegram bot commands for remote auto-coding control.');
+
+// Inspection commands expose compact task summaries for local operators and scripts.
 Artisan::command(
     'opas:auto-coding:list {--limit=10} {--status=} {--issue=}',
     function (AutoCodingTaskQueryService $taskQueryService): int {
@@ -225,6 +354,7 @@ Artisan::command(
     }
 )->purpose('List the latest local auto-coding tasks with compact run summaries.');
 
+// Detailed inspection keeps one command focused on the latest run, artifacts, and report payload.
 Artisan::command(
     'opas:auto-coding:show {taskId? : The local auto-coding task id} {--latest : Show the latest local auto-coding task}',
     function (): int {

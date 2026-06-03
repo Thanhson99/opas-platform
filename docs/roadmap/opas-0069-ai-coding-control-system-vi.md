@@ -347,6 +347,22 @@ Cho phép người dùng điều khiển workflow coding từ Telegram thay vì 
 
 Telegram ở đây không chỉ là nơi nhận text message, mà là một remote control layer cho máy local đang có repo và coding environment.
 
+Quan trọng:
+
+- Telegram không nên dừng ở mức bot slash-command đơn thuần
+- Telegram phải dần tiến tới vai trò một conversational remote client cho coding workflow
+- nghĩa là ngoài command mode, người dùng còn có thể chat tự nhiên như đang nói chuyện với Codex trong VS Code
+- hệ thống phải biết khi nào một tin nhắn là:
+- yêu cầu tạo task mới
+- câu trả lời follow-up cho task đang blocked
+- câu hỏi kiểm tra trạng thái
+- hay một chỉ thị coding tự do cần được chuyển thành execution intent có cấu trúc
+
+Nói cách khác:
+
+- mục tiêu của Phase 3 không chỉ là “bấm lệnh từ xa”
+- mà là “có thể điều khiển và trao đổi công việc coding từ xa qua Telegram với trải nghiệm gần với chat thật”
+
 ### Cần làm chi tiết
 
 - Thiết kế Telegram interaction model
@@ -362,13 +378,75 @@ Telegram ở đây không chỉ là nơi nhận text message, mà là một remo
 - Hỗ trợ các lệnh như start task, review task, run validation, check status, show changed files, show GitHub status
 - Chuyển command Telegram thành task nội bộ có cấu trúc
 
+- Xây GitHub-aware task entry
+- Cho phép bắt đầu task từ issue key hoặc context GitHub
+- Ví dụ:
+- `/issue OPAS-0069`
+- `/pr 123`
+- hoặc `/code --issue OPAS-0069`
+- Bot phải đọc được title, body, acceptance intent, PR status, CI status nếu có
+- Nếu người dùng chỉ gửi issue key, hệ thống nên có thể dựng task summary cơ bản từ GitHub context thay vì bắt người dùng nhập lại toàn bộ
+- Telegram phải trả được GitHub status đủ dùng:
+- issue title
+- PR hiện tại nếu có
+- CI/check status nếu có
+- merge blocker chính nếu có
+
+- Xây conversational Telegram mode
+- Không phải lúc nào người dùng cũng nên bị buộc dùng slash command
+- Cần có một chế độ để người dùng gửi tin nhắn tự nhiên như:
+- “xem issue OPAS-0069 rồi fix lỗi telegram callback giúp tôi”
+- “review phần thay đổi mới nhất và báo rủi ro”
+- “tiếp tục task đang blocked, cứ dùng scope services”
+- Bot phải có lớp intent resolution để:
+- nhận diện task mới
+- map vào task type phù hợp như code, review, validate, status
+- hỏi lại khi thiếu thông tin quan trọng
+- tạo structured task payload trước khi dispatch
+- Với conversational mode, hệ thống phải lưu được session/task linkage tối thiểu để follow-up sau đó không bị rơi context ngay lập tức
+
+- Xây remote chat loop gần với Codex trong VS Code
+- Khi người dùng gửi yêu cầu coding tự nhiên qua Telegram, hệ thống không chỉ reply một lần rồi thôi
+- Nó phải có khả năng:
+- hỏi lại để làm rõ yêu cầu
+- báo đã hiểu task theo cách nào
+- báo đang chạy bước gì
+- báo khi cần confirm hoặc cần input thêm
+- trả summary cuối cùng giống một coding assistant thực tế
+- Về bản chất, đây là “agent conversation over Telegram”, không chỉ là “command dispatch over Telegram”
+
 - Xây action menus hoặc options
 - Cho các workflow phổ biến như review, rerun, check status, confirm action
 - Giảm phụ thuộc vào việc nhớ cú pháp lệnh dài
+- Tổ chức menu theo tầng thay vì chỉ một hàng nút phẳng
+- Menu gốc nên tách ít nhất thành:
+- Guide
+- Create
+- Reports
+- Maintenance
+- Trong từng menu con, phải có mô tả ngắn giải thích:
+- nút đó dùng để làm gì
+- khi nào nên bấm
+- nếu cần nhập text tiếp theo thì cần nhập theo mẫu nào
+- Ví dụ:
+- menu Telegram đã được rút gọn về các workflow chính: chat, queue, changes, clear chat, clear all chat
+- queue submenu hỗ trợ lọc nhanh theo pending, running, blocked, failed, completed và các action cancel/delete cần thiết
+- các menu demo cũ như Create, Reports, Maintenance không còn là surface chính của bot
+- Với action không thể hoàn tất chỉ bằng button, bot phải trả về hướng dẫn cụ thể
+- Ví dụ nút Create không nên tạo task code mơ hồ nếu chưa có summary
+- Thay vào đó nó nên hướng dẫn mẫu `/code <summary>` rõ ràng cho người mới
+- dashboard `/help` hiện tại tập trung vào worker snapshot, activity snapshot, active tasks, và action ngắn cho chat/queue/changes/clear
+- task-specific keyboard vẫn giữ các report/action liên quan trực tiếp tới task như status, summary, validation, changes, github, cancel
 
 - Kết nối Telegram với local execution system
 - Khi người dùng ra lệnh, local agent nhận được đúng task
 - Context task không bị mất khi đi từ Telegram vào agent
+- Nếu máy local hiện tại là máy duy nhất đang online, Telegram có thể xem nó như active remote workstation mặc định
+- Việc chọn giữa nhiều máy khác nhau vẫn có thể để Phase 4 xử lý sâu hơn
+- Nhưng trong Phase 3, ít nhất phải có khái niệm:
+- máy nào đang connected
+- máy nào đang là active receiver của Telegram session hiện tại
+- Telegram phải báo rõ task đang được gửi vào máy nào
 
 - Trả kết quả về Telegram
 - Báo task đang chạy gì
@@ -376,10 +454,44 @@ Telegram ở đây không chỉ là nơi nhận text message, mà là một remo
 - Báo validation result
 - Báo blocked reason nếu có
 - Báo task hoàn thành hay chưa
+- Báo execution summary đủ rõ để người dùng không cần quay lại VS Code mới hiểu kết quả
+- Báo diff summary hoặc changed-file summary đủ tốt để review nhanh trên điện thoại
+- Báo next action rõ ràng khi task fail, blocked, hoặc validation chưa pass
+- Nếu task gắn issue/PR GitHub thì report nên gộp cả GitHub context liên quan
+
+- Xây report contract riêng cho Telegram
+- Không nên đẩy nguyên report nội bộ dài và thô lên Telegram
+- Cần thiết kế bản report tối ưu cho chat:
+- status headline
+- machine
+- task summary
+- changed files
+- validation
+- GitHub status
+- blocked reason
+- next action
+- follow-up prompt nếu cần
+- Khi report quá dài, bot phải biết chia thành nhiều message hợp lý hoặc ưu tiên phần quan trọng trước
 
 - Thêm safeguard cho action nguy hiểm
 - Những hành động rủi ro cao cần confirm
 - Tránh việc một tin nhắn mơ hồ gây chạy task sai
+- Với conversational mode, intent mơ hồ phải được bot hỏi lại thay vì tự suy diễn mạnh tay
+- Các action như delete task, cancel running task, hoặc execute trên workspace dirty nên có confirm flow rõ ràng
+
+### Ghi chú quan trọng về ranh giới Phase 3 và các phase sau
+
+Để tránh roadmap bị mơ hồ, cần chốt rõ:
+
+- Phase 3 nên đạt “conversational remote control trên một connected machine”
+- tức là người dùng có thể remote vào một máy đang mở đúng workspace và nói chuyện qua Telegram gần như đang nói với Codex trong VS Code
+- Phase 3 chưa nhất thiết phải giải quyết đầy đủ bài toán routing nhiều máy đồng thời
+- bài toán nhiều máy, chọn máy tốt nhất, tránh xung đột liên máy vẫn thuộc trọng tâm của Phase 4
+
+Nói ngắn gọn:
+
+- Phase 3 = remote chat + command + report đủ mạnh cho một connected machine
+- Phase 4 = multi-machine registration + routing + coordination
 
 ### Khi xong Phase 3 phải đạt được gì
 
@@ -387,10 +499,59 @@ Telegram ở đây không chỉ là nơi nhận text message, mà là một remo
 - máy local nhận task đúng và chạy được
 - Telegram hiển thị được tiến độ và kết quả đủ dùng
 - remote coding flow bắt đầu khả thi mà chưa cần dashboard
+- Telegram hiện tại đã vượt mức “chưa cần dashboard” và đã có dashboard text-based mức đầu tiên qua `/help`
+- người dùng có thể bắt đầu task từ GitHub issue context hoặc từ yêu cầu text tự nhiên
+- Telegram có thể dùng như một lớp chat điều khiển coding từ xa chứ không chỉ là menu command
+- report cuối đủ rõ để người dùng đọc trên điện thoại vẫn hiểu:
+- task đã làm gì
+- đổi file nào
+- validation ra sao
+- GitHub context liên quan đang thế nào
+- cần làm gì tiếp theo
+
+### Trạng thái implementation hiện tại
+
+- Telegram bot integration, webhook, allow-list chat/user, và command dispatch đã có
+- allow-list chat/user/action và token/webhook hiện đã có thể quản lý từ DB qua trang admin Telegram Bots, không còn chỉ phụ thuộc `.env`
+- dashboard `/help`, queue submenu, và action keyboard cho workflow phổ biến đã có
+- direct chat-session mode hiện đã có với `/start`, `/chat_status`, `/chat_reset`, `/stop`; alias cũ `/chat_start` và `/chat_stop` vẫn được giữ để tương thích
+- chat session được nhớ theo từng Telegram chat và gắn rõ vào transport context của task dưới dạng `chat_session`
+- plain-text conversational mode đã có cho code, review, validate, status, summary, changes, github, queue
+- tin nhắn mơ hồ hiện đã có clarify flow thay vì tự tạo task ngay
+- khi một `issue_key` có nhiều history local cùng loại nhưng reuse hint xung đột, Telegram hiện đã có conflict-aware clarify flow thay vì tự chọn im lặng
+- clarify issue-context đó có thể hoàn tất bằng button hoặc bằng cách reply trực tiếp `source task id` trong chat
+- action nguy hiểm như cancel, delete, deleteall hiện đã có confirm flow rõ ràng
+- task blocked đã có session linkage đủ để follow-up và resume qua Telegram
+- conversational mode hiện đã nhận được một số intent text tự nhiên hữu ích hơn:
+- `issue OPAS-xxxx ...` hoặc `github issue OPAS-xxxx ...` có thể tạo task code gắn issue key
+- `check github`, `xem github`, `check pr`, `check ci`, `check status` có thể map đúng sang report lookup thay vì bị hiểu nhầm thành validation task
+- conversational report lookup hiện cũng đã target tốt hơn:
+- có thể chỉ đúng task id như `status 12`
+- có thể chỉ status slice như `summary failed` hoặc `queue blocked`
+- có thể chỉ issue key như `github issue OPAS-xxxx` để lấy task gần nhất gắn issue đó
+- có thể chỉ branch như `github branch feature/...`
+- có thể chỉ PR number như `check pr 105` miễn là task gần đây đã có persisted GitHub PR URL
+- issue-only task creation hiện đã bớt “mù” hơn:
+- nếu local đã có task gần nhất cùng `issue_key`, Telegram có thể tái dùng summary gần nhất của issue đó
+- đồng thời gắn `issue_context` vào task context để provider prompt có thêm branch/PR/context local liên quan
+- Telegram report hiện đã có:
+- status
+- summary
+- changed files
+- validation
+- GitHub snapshot với headline, PR status, CI status, blocker chính, và next action
+- GitHub snapshot hiện tại vẫn là local-read hoặc persisted-report based
+- chưa phải GitHub API workflow đầy đủ để đọc live PR sâu, đọc issue body/title đầy đủ, hay thao tác write lên GitHub
+
+### Phần còn thiếu để xem Phase 3 là hoàn chỉnh hơn
+
+- issue-aware intake sâu hơn khi chỉ nhập issue key mà vẫn dựng được title/body/acceptance intent đầy đủ từ GitHub
+- GitHub integration sâu hơn cho live PR/CI state thay vì chủ yếu dựa vào local context và persisted report
+- report polish thêm cho completion summary theo kiểu chat gần Codex hơn nữa khi task dài hoặc nhiều bước
 
 ### Kết quả cuối cùng của Phase 3
 
-Sau khi xong phase này, Telegram đã trở thành một remote interface thực tế cho workflow coding local. Người dùng có thể ở ngoài máy nhưng vẫn theo dõi, ra lệnh, và nhận kết quả công việc từ xa.
+Sau khi xong phase này, Telegram đã trở thành một remote interface thực tế cho workflow coding local. Người dùng có thể ở ngoài máy nhưng vẫn theo dõi, ra lệnh, trao đổi theo kiểu chat, và nhận kết quả công việc từ xa trên một máy đang connected.
 
 ---
 

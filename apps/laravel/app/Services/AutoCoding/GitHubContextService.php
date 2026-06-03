@@ -26,7 +26,7 @@ class GitHubContextService
         $repositorySlug = $this->parseRepositorySlug($remoteUrl);
         $upstreamBranch = $this->resolveGitOutput('git rev-parse --abbrev-ref --symbolic-full-name @{upstream}', $repositoryPath);
         $headSha = $this->resolveGitOutput('git rev-parse HEAD', $repositoryPath);
-        $baseBranch = config('opas.auto_coding.github.base_branch', 'main');
+        $baseBranch = config('opas.auto_coding.github.base_branch');
 
         return [
             'issue' => [

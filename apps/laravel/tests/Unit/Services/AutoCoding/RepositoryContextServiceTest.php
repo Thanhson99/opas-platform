@@ -54,6 +54,50 @@ class RepositoryContextServiceTest extends TestCase
             ],
         ], $context['changed_files']);
     }
+
+    /**
+     * Confirm the repository context service can fall back to a secondary git path when the requested path is invalid.
+     *
+     * @return void
+     */
+    public function test_it_falls_back_to_an_accessible_repository_candidate(): void
+    {
+        putenv('AUTO_CODING_CONTAINER_REPOSITORY_PATH=/workspace/repo');
+
+        $service = new RepositoryContextService(new FakeCommandRunner([
+            'git rev-parse --show-toplevel@@/tmp/missing-repo' => [
+                'successful' => false,
+                'exit_code' => 128,
+                'output' => '',
+                'error_output' => 'fatal: not a git repository',
+            ],
+            'git rev-parse --show-toplevel@@/workspace/repo' => [
+                'successful' => true,
+                'exit_code' => 0,
+                'output' => '/workspace/repo',
+                'error_output' => '',
+            ],
+            'git branch --show-current@@/workspace/repo' => [
+                'successful' => true,
+                'exit_code' => 0,
+                'output' => 'main',
+                'error_output' => '',
+            ],
+            'git status --short@@/workspace/repo' => [
+                'successful' => true,
+                'exit_code' => 0,
+                'output' => '',
+                'error_output' => '',
+            ],
+        ]));
+
+        $context = $service->inspect('/tmp/missing-repo');
+
+        self::assertSame('/workspace/repo', $context['repository_path']);
+        self::assertSame('main', $context['branch_name']);
+        self::assertFalse($context['is_dirty']);
+        self::assertSame([], $context['changed_files']);
+    }
 }
 
 final class FakeCommandRunner implements CommandRunnerInterface
@@ -72,8 +116,21 @@ final class FakeCommandRunner implements CommandRunnerInterface
      * @param  string|null  $workingDirectory
      * @return array{successful: bool, exit_code: int, output: string, error_output: string}
      */
-    public function run(string $command, ?string $workingDirectory = null): array
+    public function run(string $command, ?string $workingDirectory = null, ?int $timeoutSeconds = null): array
     {
-        return $this->results[$command];
+        if (is_string($workingDirectory)) {
+            $compositeKey = sprintf('%s@@%s', $command, $workingDirectory);
+
+            if (array_key_exists($compositeKey, $this->results)) {
+                return $this->results[$compositeKey];
+            }
+        }
+
+        return $this->results[$command] ?? [
+            'successful' => false,
+            'exit_code' => 128,
+            'output' => '',
+            'error_output' => 'fatal: not a git repository',
+        ];
     }
 }

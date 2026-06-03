@@ -98,6 +98,22 @@ class AutoCodingTaskRepository implements AutoCodingTaskRepositoryInterface
     }
 
     /**
+     * Find the latest detailed local auto-coding task for one branch name.
+     *
+     * @param  string  $branchName
+     * @return AutoCodingTask|null
+     */
+    public function findLatestDetailedByBranchName(string $branchName): ?AutoCodingTask
+    {
+        /** @var AutoCodingTask|null $task */
+        $task = $this->baseDetailedQuery()
+            ->where('branch_name', trim($branchName))
+            ->first();
+
+        return $task;
+    }
+
+    /**
      * Build the shared detailed query with nested run and artifact relations.
      *
      * @return Builder<AutoCodingTask>

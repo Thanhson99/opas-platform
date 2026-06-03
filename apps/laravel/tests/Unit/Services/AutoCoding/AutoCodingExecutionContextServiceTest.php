@@ -62,6 +62,14 @@ class AutoCodingExecutionContextServiceTest extends TestCase
         $task = new AutoCodingTask([
             'summary' => 'Inspect workflow context',
             'issue_key' => 'OPAS-0070',
+            'context_payload' => [
+                'issue_context' => [
+                    'branch_name' => 'feature/opas-0070',
+                    'pull_request' => [
+                        'url' => 'https://github.com/example/repo/pull/70',
+                    ],
+                ],
+            ],
         ]);
 
         $context = $service->buildProviderContext(
@@ -74,6 +82,7 @@ class AutoCodingExecutionContextServiceTest extends TestCase
 
         self::assertSame('Inspect workflow context', $context['task_summary'] ?? null);
         self::assertSame('OPAS-0070', $context['issue_key'] ?? null);
+        self::assertSame('feature/opas-0070', $context['issue_context']['branch_name'] ?? null);
         self::assertSame(base_path('..'), $context['repository_context']['repository_path'] ?? null);
         self::assertSame('qwen2.5:7b', $context['provider_options']['model'] ?? null);
         self::assertSame(1, $context['follow_up_answer_summary']['answer_count'] ?? null);

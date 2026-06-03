@@ -134,8 +134,8 @@ class AutoCodingWorkflowStepRunnerService
     ): array {
         $repositoryPath = $this->resolveRepositoryPathFromContext($repositoryContext);
         $attempt = 0;
-        $configuredRetryLimit = config('opas.auto_coding.workflow.validation_retry_limit', 2);
-        $retryLimit = max(1, is_numeric($configuredRetryLimit) ? (int) $configuredRetryLimit : 2);
+        $configuredRetryLimit = config('opas.auto_coding.workflow.validation_retry_limit');
+        $retryLimit = max(1, is_numeric($configuredRetryLimit) ? (int) $configuredRetryLimit : 1);
         $validationResults = $this->buildSkippedValidationResult();
 
         do {

@@ -25,13 +25,14 @@ class AutoCodingTaskDispatchService
      *   provider_options?:array<string, mixed>,
      *   dirty_workspace_policy?:string,
      *   scope_paths?:array<int, string>,
-     *   scope_policy?:string
+     *   scope_policy?:string,
+     *   context_metadata?:array<string, mixed>
      * }  $payload
      * @return AutoCodingTask
      */
     public function createPendingTaskFromPayload(array $payload): AutoCodingTask
     {
-        return $this->localAutoCodingTaskService->createPendingTask(
+        $task = $this->localAutoCodingTaskService->createPendingTask(
             $payload['summary'],
             $this->normalizeOptionalString($payload['issue_key'] ?? null),
             $this->normalizeOptionalString($payload['repository_path'] ?? null),
@@ -42,6 +43,24 @@ class AutoCodingTaskDispatchService
             $this->normalizeScopePaths($payload['scope_paths'] ?? []),
             $this->normalizeScopePolicy($payload['scope_policy'] ?? null),
         );
+
+        $contextMetadata = $this->normalizeContextMetadata($payload['context_metadata'] ?? []);
+
+        if ($contextMetadata === []) {
+            return $task;
+        }
+
+        $task->update([
+            'context_payload' => array_merge(
+                is_array($task->context_payload) ? $task->context_payload : [],
+                $contextMetadata,
+            ),
+        ]);
+
+        /** @var AutoCodingTask $freshTask */
+        $freshTask = $task->fresh();
+
+        return $freshTask;
     }
 
     /**
@@ -89,6 +108,59 @@ class AutoCodingTaskDispatchService
         $task = $this->taskQueryService->findDetailedById($taskId);
 
         return $task;
+    }
+
+    /**
+     * Cancel one local auto-coding task by id.
+     *
+     * @param  int  $taskId
+     * @return AutoCodingTask
+     */
+    public function cancelTask(int $taskId): AutoCodingTask
+    {
+        return $this->localAutoCodingTaskService->cancelTask($taskId);
+    }
+
+    /**
+     * Cancel all active local auto-coding tasks.
+     *
+     * @return array{cancelled_count:int,cancellation_requested_count:int,unchanged_count:int}
+     */
+    public function cancelActiveTasks(): array
+    {
+        return $this->localAutoCodingTaskService->cancelActiveTasks();
+    }
+
+    /**
+     * Permanently delete one pending local auto-coding task by id.
+     *
+     * @param  int  $taskId
+     * @return array{id:int,summary:string}
+     */
+    public function deletePendingTask(int $taskId): array
+    {
+        return $this->localAutoCodingTaskService->deletePendingTask($taskId);
+    }
+
+    /**
+     * Permanently delete all pending local auto-coding tasks.
+     *
+     * @return array{deleted_count:int,scope:string}
+     */
+    public function deletePendingTasks(): array
+    {
+        return $this->localAutoCodingTaskService->deletePendingTasks();
+    }
+
+    /**
+     * Purge task history from persistence.
+     *
+     * @param  string  $scope
+     * @return array{deleted_count:int,scope:string}
+     */
+    public function purgeTasks(string $scope = 'terminal'): array
+    {
+        return $this->localAutoCodingTaskService->purgeTasks($scope);
     }
 
     /**
@@ -194,5 +266,30 @@ class AutoCodingTaskDispatchService
         return in_array($normalizedPolicy, ['warn', 'block', 'allow'], true)
             ? $normalizedPolicy
             : 'warn';
+    }
+
+    /**
+     * Normalize one transport-level context metadata payload.
+     *
+     * @param  mixed  $contextMetadata
+     * @return array<string, mixed>
+     */
+    protected function normalizeContextMetadata(mixed $contextMetadata): array
+    {
+        if (! is_array($contextMetadata)) {
+            return [];
+        }
+
+        $normalizedMetadata = [];
+
+        foreach ($contextMetadata as $key => $value) {
+            if (! is_string($key) || trim($key) === '') {
+                continue;
+            }
+
+            $normalizedMetadata[trim($key)] = $value;
+        }
+
+        return $normalizedMetadata;
     }
 }
