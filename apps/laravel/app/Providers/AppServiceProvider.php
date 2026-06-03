@@ -75,6 +75,7 @@ use App\Services\AutoCoding\PromptContextAssembler;
 use App\Services\AutoCoding\RepositoryContextService;
 use App\Services\AutoCoding\RunArtifactService;
 use App\Services\AutoCoding\Telegram\AutoCodingTelegramAccessControlService;
+use App\Services\AutoCoding\Telegram\AutoCodingTelegramBotConfigService;
 use App\Services\AutoCoding\Telegram\AutoCodingTelegramBotService;
 use App\Services\AutoCoding\Telegram\AutoCodingTelegramCommandParser;
 use App\Services\AutoCoding\Telegram\AutoCodingTelegramLocaleService;

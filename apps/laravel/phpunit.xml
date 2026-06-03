@@ -40,5 +40,11 @@
         <env name="QUEUE_CONNECTION" value="sync" force="true"/>
         <env name="SESSION_DRIVER" value="array" force="true"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
+        <env name="AUTO_CODING_PROVIDER" value="null" force="true"/>
+        <env name="AUTO_CODING_VALIDATE_LINT" value="" force="true"/>
+        <env name="AUTO_CODING_VALIDATE_STATIC_ANALYSIS" value="" force="true"/>
+        <env name="AUTO_CODING_VALIDATE_TESTS" value="" force="true"/>
+        <env name="AUTO_CODING_VALIDATE_FRONTEND" value="" force="true"/>
+        <env name="AUTO_CODING_WORKFLOW_VALIDATION_RETRY_LIMIT" value="2" force="true"/>
     </php>
 </phpunit>
