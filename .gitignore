@@ -75,6 +75,7 @@ python-services/__pycache__/
 *.env
 .DS_Store
 .codex-tmp/
+automated-flow-system/
 *.bak
 *.swp
 *.zip
