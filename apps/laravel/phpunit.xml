@@ -46,5 +46,10 @@
         <env name="AUTO_CODING_VALIDATE_TESTS" value="" force="true"/>
         <env name="AUTO_CODING_VALIDATE_FRONTEND" value="" force="true"/>
         <env name="AUTO_CODING_WORKFLOW_VALIDATION_RETRY_LIMIT" value="2" force="true"/>
+        <env name="AUTO_CODING_TELEGRAM_BOT_TOKEN" value="" force="true"/>
+        <env name="AUTO_CODING_TELEGRAM_WEBHOOK_SECRET" value="" force="true"/>
+        <env name="AUTO_CODING_TELEGRAM_ALLOWED_CHAT_IDS" value="" force="true"/>
+        <env name="AUTO_CODING_TELEGRAM_ALLOWED_USER_IDS" value="" force="true"/>
+        <env name="AUTO_CODING_TELEGRAM_ALLOWED_ACTIONS" value="" force="true"/>
     </php>
 </phpunit>
