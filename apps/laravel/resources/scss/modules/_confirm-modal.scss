@@ -5,8 +5,9 @@
     left: 0;
     z-index: 120;
     padding: 1.2rem;
-    background: rgba(21, 34, 53, 0.28);
-    backdrop-filter: blur(10px);
+    background:
+        radial-gradient(circle at 50% 0%, rgba(34, 211, 238, 0.12), transparent 38%),
+        rgba(3, 3, 12, 0.72);
 }
 
 .app-modal {
@@ -14,12 +15,17 @@
     width: min(460px, calc(100vw - 2.4rem));
     max-height: calc(100vh - 2.4rem);
     overflow: auto;
+    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 24px;
+    color: #e5e7eb;
     background:
-        radial-gradient(circle at 0% 0%, rgba(255, 189, 122, 0.16), transparent 30%),
-        radial-gradient(circle at 100% 0%, rgba(89, 190, 255, 0.14), transparent 34%),
-        rgba(255, 255, 255, 0.96);
-    box-shadow: 0 28px 56px rgba(27, 49, 74, 0.18);
+        radial-gradient(circle at 0% 0%, rgba(34, 211, 238, 0.14), transparent 34%),
+        radial-gradient(circle at 100% 0%, rgba(139, 92, 246, 0.12), transparent 32%),
+        linear-gradient(135deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.035)),
+        #101020;
+    box-shadow:
+        0 0 0 1px rgba(255, 255, 255, 0.045),
+        0 28px 64px rgba(0, 0, 0, 0.46);
     transform: translate(-50%, -50%);
 }
 
@@ -31,7 +37,7 @@
 
 .app-modal__eyebrow {
     margin: 0;
-    color: #7c8fa6;
+    color: #22d3ee;
     font-size: 0.76rem;
     font-weight: 800;
     letter-spacing: 0.12em;
@@ -40,14 +46,14 @@
 
 .app-modal__title {
     margin: 0;
-    color: #223654;
+    color: #f8fbff;
     font-size: 1.18rem;
     font-weight: 800;
 }
 
 .app-modal__text {
     margin: 0;
-    color: #5f7894;
+    color: #a8b3c7;
     line-height: 1.65;
 }
 

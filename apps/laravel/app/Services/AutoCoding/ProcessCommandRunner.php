@@ -14,13 +14,20 @@ class ProcessCommandRunner implements CommandRunnerInterface
      *
      * @param  string  $command
      * @param  string|null  $workingDirectory
+     * @param  int|null  $timeoutSeconds
      * @return array{successful: bool, exit_code: int, output: string, error_output: string}
      */
-    public function run(string $command, ?string $workingDirectory = null): array
+    public function run(string $command, ?string $workingDirectory = null, ?int $timeoutSeconds = null): array
     {
-        $result = $workingDirectory !== null
-            ? Process::path($workingDirectory)->run($command)
-            : Process::run($command);
+        $process = $workingDirectory !== null
+            ? Process::path($workingDirectory)
+            : Process::newPendingProcess();
+
+        if ($timeoutSeconds !== null && $timeoutSeconds > 0) {
+            $process = $process->timeout($timeoutSeconds);
+        }
+
+        $result = $process->run($command);
 
         return [
             'successful' => $result->successful(),

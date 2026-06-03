@@ -18,16 +18,38 @@
         </include>
     </source>
     <php>
-        <env name="APP_ENV" value="testing"/>
-        <env name="APP_MAINTENANCE_DRIVER" value="file"/>
-        <env name="BCRYPT_ROUNDS" value="4"/>
-        <env name="CACHE_STORE" value="array"/>
-        <env name="DB_CONNECTION" value="sqlite"/>
-        <env name="DB_DATABASE" value=":memory:"/>
-        <env name="MAIL_MAILER" value="array"/>
+        <env name="APP_ENV" value="testing" force="true"/>
+        <env name="APP_MAINTENANCE_DRIVER" value="file" force="true"/>
+        <env name="BCRYPT_ROUNDS" value="4" force="true"/>
+        <env name="CACHE_STORE" value="array" force="true"/>
+        <env name="DB_CONNECTION" value="pgsql" force="true"/>
+        <env name="DB_HOST" value="postgres-testing" force="true"/>
+        <env name="DB_PORT" value="5432" force="true"/>
+        <env name="DB_DATABASE" value="laravel_testing" force="true"/>
+        <env name="DB_USERNAME" value="root" force="true"/>
+        <env name="DB_PASSWORD" value="change-me" force="true"/>
+        <server name="APP_ENV" value="testing" force="true"/>
+        <server name="DB_CONNECTION" value="pgsql" force="true"/>
+        <server name="DB_HOST" value="postgres-testing" force="true"/>
+        <server name="DB_PORT" value="5432" force="true"/>
+        <server name="DB_DATABASE" value="laravel_testing" force="true"/>
+        <server name="DB_USERNAME" value="root" force="true"/>
+        <server name="DB_PASSWORD" value="change-me" force="true"/>
+        <env name="MAIL_MAILER" value="array" force="true"/>
         <env name="PULSE_ENABLED" value="false"/>
-        <env name="QUEUE_CONNECTION" value="sync"/>
-        <env name="SESSION_DRIVER" value="array"/>
+        <env name="QUEUE_CONNECTION" value="sync" force="true"/>
+        <env name="SESSION_DRIVER" value="array" force="true"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
+        <env name="AUTO_CODING_PROVIDER" value="null" force="true"/>
+        <env name="AUTO_CODING_VALIDATE_LINT" value="" force="true"/>
+        <env name="AUTO_CODING_VALIDATE_STATIC_ANALYSIS" value="" force="true"/>
+        <env name="AUTO_CODING_VALIDATE_TESTS" value="" force="true"/>
+        <env name="AUTO_CODING_VALIDATE_FRONTEND" value="" force="true"/>
+        <env name="AUTO_CODING_WORKFLOW_VALIDATION_RETRY_LIMIT" value="2" force="true"/>
+        <env name="AUTO_CODING_TELEGRAM_BOT_TOKEN" value="" force="true"/>
+        <env name="AUTO_CODING_TELEGRAM_WEBHOOK_SECRET" value="" force="true"/>
+        <env name="AUTO_CODING_TELEGRAM_ALLOWED_CHAT_IDS" value="" force="true"/>
+        <env name="AUTO_CODING_TELEGRAM_ALLOWED_USER_IDS" value="" force="true"/>
+        <env name="AUTO_CODING_TELEGRAM_ALLOWED_ACTIONS" value="" force="true"/>
     </php>
 </phpunit>

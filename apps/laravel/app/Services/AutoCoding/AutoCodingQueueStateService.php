@@ -106,4 +106,34 @@ class AutoCodingQueueStateService
             ]),
         ]);
     }
+
+    /**
+     * Build one cancelled queue-report transition for an operator-stopped task.
+     *
+     * @param  AutoCodingTask  $task
+     * @param  string  $scope
+     * @return array<string, mixed>
+     */
+    public function buildCancelledLatestReport(AutoCodingTask $task, string $scope = 'single'): array
+    {
+        $queueReport = $this->resolveQueueReport($task);
+
+        return array_merge($task->latest_report ?? [], [
+            'status' => AutoCodingExecutionStatus::Cancelled->value,
+            'queue' => array_merge($queueReport, [
+                'status' => 'cancelled',
+                'cancelled_at' => now()->toIso8601String(),
+                'cancel_scope' => trim($scope) !== '' ? trim($scope) : 'single',
+            ]),
+            'recommended_action' => [
+                'action' => 'task_complete',
+                'reason' => 'user_cancelled',
+                'message' => 'Task was cancelled by operator request.',
+            ],
+            'follow_up' => [
+                'required' => false,
+                'questions' => [],
+            ],
+        ]);
+    }
 }

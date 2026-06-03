@@ -1,23 +1,29 @@
-import { useEffect } from 'react';
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
-import AdminShell from './components/layout/AdminShell';
-import AppShell from './components/layout/AppShell';
+import { Suspense, lazy, useEffect, useLayoutEffect } from 'react';
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
+import LoadingState from './components/ui/LoadingState';
 import { AuthProvider } from './features/auth/context/AuthContext';
-import AccountSettingsPage from './features/auth/pages/AccountSettingsPage';
-import LoginPage from './features/auth/pages/LoginPage';
-import ForgotPasswordPage from './features/auth/pages/ForgotPasswordPage';
-import RegisterPage from './features/auth/pages/RegisterPage';
-import ResetPasswordPage from './features/auth/pages/ResetPasswordPage';
-import VerifyEmailPage from './features/auth/pages/VerifyEmailPage';
-import DashboardPage from './features/dashboard/pages/DashboardPage';
-import AlertEditPage from './features/coins/pages/AlertEditPage';
-import AlertsPage from './features/coins/pages/AlertsPage';
-import CoinDetailPage from './features/coins/pages/CoinDetailPage';
-import CoinsPage from './features/coins/pages/CoinsPage';
-import KeywordsPage from './features/coins/pages/KeywordsPage';
-import StocksPage from './features/stocks/pages/StocksPage';
-import VideosPage from './features/video-automation/pages/VideosPage';
 import { LanguageProvider } from './features/i18n/context/LanguageContext';
+import {
+    applyAuthRouteDocumentClasses,
+    isAuthRoutePath,
+} from './features/auth/utils/authRouteClasses';
+
+const AdminShell = lazy(() => import('./components/layout/AdminShell'));
+const AppShell = lazy(() => import('./components/layout/AppShell'));
+const AccountSettingsPage = lazy(() => import('./features/auth/pages/AccountSettingsPage'));
+const LoginPage = lazy(() => import('./features/auth/pages/LoginPage'));
+const ForgotPasswordPage = lazy(() => import('./features/auth/pages/ForgotPasswordPage'));
+const RegisterPage = lazy(() => import('./features/auth/pages/RegisterPage'));
+const ResetPasswordPage = lazy(() => import('./features/auth/pages/ResetPasswordPage'));
+const VerifyEmailPage = lazy(() => import('./features/auth/pages/VerifyEmailPage'));
+const DashboardPage = lazy(() => import('./features/dashboard/pages/DashboardPage'));
+const AlertEditPage = lazy(() => import('./features/coins/pages/AlertEditPage'));
+const AlertsPage = lazy(() => import('./features/coins/pages/AlertsPage'));
+const CoinDetailPage = lazy(() => import('./features/coins/pages/CoinDetailPage'));
+const CoinsPage = lazy(() => import('./features/coins/pages/CoinsPage'));
+const KeywordsPage = lazy(() => import('./features/coins/pages/KeywordsPage'));
+const StocksPage = lazy(() => import('./features/stocks/pages/StocksPage'));
+const VideosPage = lazy(() => import('./features/video-automation/pages/VideosPage'));
 
 /**
  * Root SPA router.
@@ -38,6 +44,17 @@ function FacebookRedirectHashCleanup() {
     return null;
 }
 
+function RouteLoadingState() {
+    const { pathname } = useLocation();
+    const isAuthRoute = isAuthRoutePath(pathname);
+
+    useLayoutEffect(() => {
+        return applyAuthRouteDocumentClasses(isAuthRoute, pathname === '/login');
+    }, [isAuthRoute, pathname]);
+
+    return <LoadingState />;
+}
+
 /**
  * Render the top-level SPA providers and route tree.
  */
@@ -47,48 +64,53 @@ export default function App() {
             <FacebookRedirectHashCleanup />
             <LanguageProvider>
                 <AuthProvider>
-                    <Routes>
-                        <Route path="/login" element={<LoginPage />} />
-                        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-                        <Route path="/register" element={<RegisterPage />} />
-                        <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
-                        <Route path="/verify-email" element={<VerifyEmailPage />} />
-                        <Route path="/admin/*" element={<AdminShell />} />
-                        <Route
-                            path="*"
-                            element={
-                                <AppShell>
-                                    <Routes>
-                                        <Route path="/" element={<DashboardPage />} />
-                                        <Route path="/account" element={<AccountSettingsPage />} />
-                                        <Route path="/coins" element={<CoinsPage />} />
-                                        <Route
-                                            path="/coins/show/:symbol"
-                                            element={<CoinDetailPage />}
-                                        />
-                                        <Route
-                                            path="/coins/feed-keywords"
-                                            element={<KeywordsPage />}
-                                        />
-                                        <Route
-                                            path="/coins/price-alert-settings"
-                                            element={<AlertsPage />}
-                                        />
-                                        <Route
-                                            path="/coins/price-alert-settings/:id/edit"
-                                            element={<AlertEditPage />}
-                                        />
-                                        <Route path="/stocks" element={<StocksPage />} />
-                                        <Route
-                                            path="/video-automation/trending"
-                                            element={<VideosPage />}
-                                        />
-                                        <Route path="*" element={<Navigate to="/" replace />} />
-                                    </Routes>
-                                </AppShell>
-                            }
-                        />
-                    </Routes>
+                    <Suspense fallback={<RouteLoadingState />}>
+                        <Routes>
+                            <Route path="/login" element={<LoginPage />} />
+                            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+                            <Route path="/register" element={<RegisterPage />} />
+                            <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
+                            <Route path="/verify-email" element={<VerifyEmailPage />} />
+                            <Route path="/admin/*" element={<AdminShell />} />
+                            <Route
+                                path="*"
+                                element={
+                                    <AppShell>
+                                        <Routes>
+                                            <Route path="/" element={<DashboardPage />} />
+                                            <Route
+                                                path="/account"
+                                                element={<AccountSettingsPage />}
+                                            />
+                                            <Route path="/coins" element={<CoinsPage />} />
+                                            <Route
+                                                path="/coins/show/:symbol"
+                                                element={<CoinDetailPage />}
+                                            />
+                                            <Route
+                                                path="/coins/feed-keywords"
+                                                element={<KeywordsPage />}
+                                            />
+                                            <Route
+                                                path="/coins/price-alert-settings"
+                                                element={<AlertsPage />}
+                                            />
+                                            <Route
+                                                path="/coins/price-alert-settings/:id/edit"
+                                                element={<AlertEditPage />}
+                                            />
+                                            <Route path="/stocks" element={<StocksPage />} />
+                                            <Route
+                                                path="/video-automation/trending"
+                                                element={<VideosPage />}
+                                            />
+                                            <Route path="*" element={<Navigate to="/" replace />} />
+                                        </Routes>
+                                    </AppShell>
+                                }
+                            />
+                        </Routes>
+                    </Suspense>
                 </AuthProvider>
             </LanguageProvider>
         </BrowserRouter>

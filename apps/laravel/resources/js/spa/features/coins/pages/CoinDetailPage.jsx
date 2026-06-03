@@ -1,58 +1,42 @@
-import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import ErrorState from '../../../components/ui/ErrorState';
 import LoadingState from '../../../components/ui/LoadingState';
 import PageHero from '../../../components/ui/PageHero';
-import api from '../../../lib/api';
+import { useLanguage } from '../../i18n/context/LanguageContext';
+import CoinDetailGrid from '../components/CoinDetailGrid';
+import { useCoinDetail } from '../hooks/useCoinDetail';
 
 /**
  * Render the detail view for one monitored coin symbol.
  */
 export default function CoinDetailPage() {
     const { symbol } = useParams();
-    const [coin, setCoin] = useState(null);
-    const [loading, setLoading] = useState(true);
+    const { t } = useLanguage();
+    const { coin, detailRows, loading, error } = useCoinDetail({
+        symbol,
+        loadErrorText: t('coinDetailPage.notFound'),
+        t,
+    });
 
-    useEffect(() => {
-        const load = async () => {
-            setLoading(true);
-            const response = await api.get(`/coins/${symbol}`);
-            setCoin(response.data.data);
-            setLoading(false);
-        };
-
-        void load();
-    }, [symbol]);
-
-    if (loading) return <LoadingState text="Loading coin detail..." />;
-    if (!coin) return <ErrorState text="Coin not found." />;
+    if (loading) return <LoadingState text={t('coinDetailPage.loading')} />;
+    if (error || !coin) return <ErrorState text={error || t('coinDetailPage.notFound')} />;
 
     return (
         <div className="app-shell">
             <PageHero
-                eyebrow="Coin Detail"
+                eyebrow={t('coinDetailPage.hero.eyebrow')}
                 title={coin.symbol}
-                text="Các chỉ số quan trọng được đưa ra thành card để nhìn nhanh thay vì phải đọc từ bảng dài."
+                text={t('coinDetailPage.hero.text')}
             >
-                <span className="app-chip">Price change {coin.priceChangePercent ?? '-'}%</span>
-                <span className="app-chip">Volume {coin.quoteVolume ?? '-'}</span>
+                <span className="app-chip">
+                    {t('coinDetailPage.hero.priceChange')} {coin.priceChangePercent ?? '-'}%
+                </span>
+                <span className="app-chip">
+                    {t('coinDetailPage.hero.volume')} {coin.quoteVolume ?? '-'}
+                </span>
             </PageHero>
 
-            <section className="app-detail-grid">
-                {[
-                    ['Symbol', coin.symbol],
-                    ['Last Price', coin.lastPrice],
-                    ['High', coin.highPrice],
-                    ['Low', coin.lowPrice],
-                    ['Open', coin.openPrice],
-                    ['Change', `${coin.priceChangePercent}%`],
-                ].map(([label, value]) => (
-                    <article className="app-detail-card" key={label}>
-                        <p className="app-detail-card__label">{label}</p>
-                        <p className="app-detail-card__value">{value}</p>
-                    </article>
-                ))}
-            </section>
+            <CoinDetailGrid rows={detailRows} />
         </div>
     );
 }

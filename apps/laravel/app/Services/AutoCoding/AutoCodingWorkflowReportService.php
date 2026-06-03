@@ -336,6 +336,15 @@ class AutoCodingWorkflowReportService
             ];
         }
 
+        if ($status === AutoCodingExecutionStatus::Cancelled) {
+            return [
+                'category' => AutoCodingFailureCategory::None->value,
+                'source' => 'user_cancelled',
+                'retryable' => false,
+                'message' => 'Task was cancelled by operator request.',
+            ];
+        }
+
         if (($preflight['overall_status'] ?? null) === 'blocked') {
             $blockingReason = is_string($preflight['blocking_reason'] ?? null)
                 ? $preflight['blocking_reason']
@@ -413,8 +422,10 @@ class AutoCodingWorkflowReportService
         return match ($failureCategory) {
             AutoCodingFailureCategory::None->value => [
                 'action' => AutoCodingRecommendedAction::TaskComplete->value,
-                'reason' => null,
-                'message' => 'Task completed successfully. No further workflow action is required.',
+                'reason' => is_string($failure['source'] ?? null) ? $failure['source'] : null,
+                'message' => ($failure['source'] ?? null) === 'user_cancelled'
+                    ? 'Task was cancelled by operator request.'
+                    : 'Task completed successfully. No further workflow action is required.',
             ],
             AutoCodingFailureCategory::PreflightBlock->value => [
                 'action' => AutoCodingRecommendedAction::ResumeWithConfirmation->value,
@@ -607,9 +618,9 @@ class AutoCodingWorkflowReportService
      */
     protected function resolveValidationRetryLimit(): int
     {
-        $configuredRetryLimit = config('opas.auto_coding.workflow.validation_retry_limit', 2);
+        $configuredRetryLimit = config('opas.auto_coding.workflow.validation_retry_limit');
 
-        return max(1, is_numeric($configuredRetryLimit) ? (int) $configuredRetryLimit : 2);
+        return max(1, is_numeric($configuredRetryLimit) ? (int) $configuredRetryLimit : 1);
     }
 
     /**

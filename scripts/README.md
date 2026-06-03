@@ -17,8 +17,15 @@ Scripts are separated by platform:
 
 ```text
 scripts/
+├── setup-telegram-webhook.bat    # Windows CMD wrapper: inspect/register/delete Telegram webhook
+├── setup-telegram-webhook.ps1    # Windows PowerShell: inspect/register/delete Telegram webhook
+├── setup-telegram-ngrok.bat      # Windows CMD wrapper: launch ngrok and register Telegram webhook
+├── setup-telegram-ngrok.ps1      # Windows PowerShell: launch ngrok and register Telegram webhook
+├── setup-telegram-ngrok.sh       # macOS/Linux: launch ngrok and register Telegram webhook
+├── setup-telegram-webhook.sh     # macOS/Linux: inspect/register/delete Telegram webhook
 ├── start-local.sh                # macOS/Linux: bootstrap full Docker stack
 ├── start-local-lite.sh           # macOS/Linux: run only Laravel + Vite locally
+├── test-laravel.sh               # macOS/Linux: run Laravel checks separately from startup
 ├── start-local.ps1               # Windows PowerShell: bootstrap full Docker stack
 ├── start-local.bat               # Windows CMD wrapper for start-local.ps1
 ├── git-clean-branches.sh
@@ -45,16 +52,20 @@ What they cover:
 - frontend asset build when required
 - migrations and readiness checks
 - clear follow-up verification commands for PHP and React
+- Telegram remote-control bootstrap for the auto-coding worker
 
 ## 0.1 macOS / Linux - `start-local.sh`
 
-Docker-oriented startup for the full local stack. This is the main script if your `.env` uses
-container hosts like `postgres`.
+Docker-oriented startup for the full local stack. By default it starts PostgreSQL, Laravel,
+nginx, n8n, Ollama, Python services, and LibreTranslate.
+
+Use `--core` only when you intentionally want PostgreSQL, Laravel, and nginx without automation services.
 
 ```bash
 chmod +x scripts/start-local.sh
 scripts/start-local.sh
 scripts/start-local.sh --fresh
+scripts/start-local.sh --core
 ```
 
 ## 0.2 macOS / Linux - `start-local-lite.sh`
@@ -92,6 +103,15 @@ scripts\start-local.bat --fresh
 
 ## 0.5 Quality / CI commands after local boot
 
+Startup scripts only boot services. Use the Laravel test script when you want verification.
+
+```bash
+chmod +x scripts/test-laravel.sh
+scripts/test-laravel.sh
+scripts/test-laravel.sh --with-frontend
+scripts/test-laravel.sh --docker --ci
+```
+
 Run these inside `apps/laravel`:
 
 ```bash
@@ -116,6 +136,171 @@ Behavior:
 - `auto`: default, detects whether Laravel is configured for Docker-style hosts such as `postgres`
 - `--docker`: always runs `php artisan queue:work` inside the `laravel` container
 - `--local`: always runs `php artisan queue:work` on the local machine
+
+## 0.7 macOS / Linux - `setup-telegram-webhook.sh`
+
+Inspect, register, delete, and sync Telegram bot commands for the auto-coding remote-control flow.
+
+Use this after filling the Telegram section in `apps/laravel/.env` and after exposing your local app through a public HTTPS URL such as ngrok or Cloudflare Tunnel.
+
+```bash
+chmod +x scripts/setup-telegram-webhook.sh
+
+# Open interactive menu
+scripts/setup-telegram-webhook.sh
+
+# Inspect current Telegram webhook state
+scripts/setup-telegram-webhook.sh --inspect
+
+# Register a webhook using a public base URL
+scripts/setup-telegram-webhook.sh https://abc123.ngrok-free.app
+
+# Register and tell Telegram to drop queued updates
+scripts/setup-telegram-webhook.sh https://abc123.ngrok-free.app --drop-pending-updates
+
+# Delete the webhook
+scripts/setup-telegram-webhook.sh --delete
+
+# Sync Telegram bot commands only
+scripts/setup-telegram-webhook.sh --sync-commands
+```
+
+Behavior:
+- validates required Telegram env vars before registration or delete
+- clears Laravel config cache by default before calling artisan
+- builds the final webhook route as `/api/telegram/auto-coding/webhook`
+- syncs Telegram bot commands automatically after successful registration
+- when started without arguments, shows an interactive menu for register / inspect / delete / sync
+
+## 0.8 macOS / Linux - `setup-telegram-ngrok.sh`
+
+One-command helper for local Telegram testing with ngrok.
+
+This script:
+- verifies the Docker/Laravel runtime before opening any public tunnel
+- starts an ngrok tunnel for the Laravel app port
+- starts the auto-coding worker; `AUTO_CODING_PROVIDER=codex` runs it on the host so it can use the host Codex CLI
+- waits for a public HTTPS URL
+- calls `setup-telegram-webhook.sh`
+- registers the Telegram webhook automatically
+- syncs Telegram bot commands automatically
+
+```bash
+chmod +x scripts/setup-telegram-ngrok.sh
+
+# Open interactive menu
+scripts/setup-telegram-ngrok.sh
+
+# Start in Vietnamese mode
+scripts/setup-telegram-ngrok.sh start --lang=vi
+
+# Start ngrok for the default Laravel port 8881 and register webhook
+scripts/setup-telegram-ngrok.sh start --port=8881
+
+# Start ngrok for a custom local Laravel port
+scripts/setup-telegram-ngrok.sh start --port=8000
+
+# Start ngrok and drop queued Telegram updates while registering webhook
+scripts/setup-telegram-ngrok.sh start --drop-pending-updates
+
+# Check tunnel status
+scripts/setup-telegram-ngrok.sh status
+
+# Stop the background ngrok tunnel
+scripts/setup-telegram-ngrok.sh stop
+```
+
+Requirements:
+- `ngrok` installed and available in `PATH`
+- ngrok auth already configured on your machine
+- Docker Laravel service running when your app is using the Docker stack
+- Laravel app reachable on the local port you pass
+- Telegram env already configured in `apps/laravel/.env`
+
+Fail-fast behavior:
+- when Docker is required but the `laravel` service is stopped, the script exits before opening ngrok
+- when the Laravel app is not reachable on the selected local port, the script exits before opening ngrok
+
+Language:
+- `--lang=en` keeps Telegram bot copy in English
+- `--lang=vi` switches Telegram bot copy and onboarding help to Vietnamese
+- when started without arguments, the interactive menu asks for `EN` or `VI` and persists the selection to `apps/laravel/.env`
+
+After a successful start:
+- the script shows only loading steps in the terminal and avoids printing sensitive Telegram details
+- the selected Telegram locale is persisted so the bot replies in the same language
+- the `/help` dashboard is intended for new operators and includes:
+  - worker snapshot
+  - activity snapshot
+  - tasks that need attention such as blocked or failed work
+  - quick actions that adapt to blocked, failed, or running tasks
+  - smart home actions such as `Resume Latest Blocked`, `Next Action`, `Follow-up`, `Latest Failed`, or `Latest Running`
+- for a new user, the recommended Telegram flow is:
+  - `/start` to enable direct Codex chat mode
+  - `/queue` to see active tasks
+  - `/changes latest` to review changed files
+  - `/clear` or `/clear_all` when the chat needs cleanup
+  - `/stop` to leave direct Codex chat mode
+
+Current Telegram command set:
+- `/start`
+- `/stop`
+- `/chat_status`
+- `/chat_reset`
+- `/queue [pending|running|blocked|failed|completed]`
+- `/changes [task-id|latest]`
+- `/cancel [task-id|latest:running]`
+- `/cancel_all`
+- `/delete [task-id|latest:pending]`
+- `/delete_all`
+- `/clear [--force]`
+- `/clear_all [--force]`
+
+Telegram menu structure:
+- `Start Chat`: enter direct Codex chat mode
+- `Queue`: inspect and manage queued work
+- `Latest Changes`: inspect changed files
+- `Clear Chat` / `Clear All Chat`: clean tracked bot messages
+
+For more detail, see [docs/auto-coding-telegram-control.md](../docs/auto-coding-telegram-control.md).
+
+Notes:
+- On macOS/Linux, the script now attempts to install `ngrok` automatically using `brew`, `apt-get`, or `snap` when missing.
+- On Windows, the PowerShell script attempts to install `ngrok` automatically using `winget` first, then `choco`.
+- `stop` now stops both the ngrok tunnel and the background auto-coding worker process.
+- when started without arguments, shows an interactive menu for start / status / stop
+
+## 0.9 Windows - `setup-telegram-ngrok.ps1` / `setup-telegram-ngrok.bat`
+
+Windows versions of the one-command Telegram tunnel + webhook setup flow.
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\setup-telegram-ngrok.ps1
+powershell -ExecutionPolicy Bypass -File .\scripts\setup-telegram-ngrok.ps1 status
+powershell -ExecutionPolicy Bypass -File .\scripts\setup-telegram-ngrok.ps1 stop
+```
+
+```bat
+scripts\setup-telegram-ngrok.bat
+scripts\setup-telegram-ngrok.bat status
+scripts\setup-telegram-ngrok.bat stop
+```
+
+## 0.10 Windows - `setup-telegram-webhook.ps1` / `setup-telegram-webhook.bat`
+
+Windows versions of the Telegram webhook management flow.
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\setup-telegram-webhook.ps1
+powershell -ExecutionPolicy Bypass -File .\scripts\setup-telegram-webhook.ps1 --inspect
+powershell -ExecutionPolicy Bypass -File .\scripts\setup-telegram-webhook.ps1 --delete
+```
+
+```bat
+scripts\setup-telegram-webhook.bat
+scripts\setup-telegram-webhook.bat --inspect
+scripts\setup-telegram-webhook.bat --delete
+```
 
 ---
 

@@ -14,7 +14,7 @@ if ($Models.Count -eq 0) {
 }
 
 Write-Host "==> Starting ollama container (if not running)..."
-docker compose up -d ollama | Out-Host
+docker compose --profile automation up -d ollama | Out-Host
 
 Write-Host "==> Waiting for Ollama to be ready..."
 $Ready = $false

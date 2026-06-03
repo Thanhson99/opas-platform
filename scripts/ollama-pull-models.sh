@@ -13,7 +13,7 @@ MODELS=("${@:-${MODELS_DEFAULT[@]}}")
 command -v docker >/dev/null 2>&1 || { echo "❌ docker not found"; exit 1; }
 
 echo "==> Starting ollama container (if not running)..."
-docker compose up -d ollama
+docker compose --profile automation up -d ollama
 
 echo "==> Waiting for Ollama API..."
 READY=0

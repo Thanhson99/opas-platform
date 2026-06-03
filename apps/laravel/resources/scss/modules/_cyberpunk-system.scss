@@ -1,0 +1,5348 @@
+:root {
+    color-scheme: dark;
+    --cyber-bg-base: #0a0a0f;
+    --cyber-bg-deep: #050510;
+    --cyber-bg-panel: rgba(15, 15, 26, 0.84);
+    --cyber-bg-panel-strong: rgba(21, 21, 40, 0.92);
+    --cyber-text: #e5e7eb;
+    --cyber-text-strong: #f8fbff;
+    --cyber-text-muted: #9ca3af;
+    --cyber-border: rgba(255, 255, 255, 0.1);
+    --cyber-border-strong: rgba(255, 255, 255, 0.18);
+    --cyber-cyan: #00f5ff;
+    --cyber-purple: #a855f7;
+    --cyber-pink: #ff2bd6;
+    --cyber-success: #00ff85;
+    --cyber-green: var(--cyber-success);
+    --cyber-warning: #ffb020;
+    --cyber-danger: #ff4d6d;
+    --cyber-glow-cyan: 0 0 14px rgba(0, 245, 255, 0.16);
+    --cyber-glow-purple: 0 0 18px rgba(168, 85, 247, 0.16);
+    --cyber-shadow-card: 0 12px 30px rgba(0, 0, 0, 0.3);
+    --cyber-radius-sm: 8px;
+    --cyber-radius-md: 12px;
+    --cyber-radius-lg: 18px;
+    --opas-text: var(--cyber-text);
+    --opas-text-strong: var(--cyber-text-strong);
+    --opas-text-soft: var(--cyber-text-muted);
+    --opas-line: var(--cyber-border);
+    --opas-card: var(--cyber-bg-panel);
+    --opas-card-strong: var(--cyber-bg-panel-strong);
+    --opas-shadow: var(--cyber-shadow-card);
+    --opas-gradient:
+        radial-gradient(circle at 18% 12%, rgba(168, 85, 247, 0.18), transparent 28%),
+        radial-gradient(circle at 78% 0%, rgba(0, 245, 255, 0.14), transparent 32%),
+        radial-gradient(circle at 55% 100%, rgba(255, 43, 214, 0.1), transparent 36%),
+        linear-gradient(180deg, var(--cyber-bg-deep) 0%, var(--cyber-bg-base) 100%);
+}
+
+html,
+body,
+#root {
+    min-height: 100%;
+    background: var(--opas-gradient);
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
+}
+
+html {
+    min-width: 320px;
+    background-color: var(--cyber-bg-deep);
+}
+
+.opas-body,
+.opas-app,
+.opas-main,
+.admin-console {
+    color: var(--cyber-text);
+    background: var(--opas-gradient);
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
+}
+
+.opas-body {
+    min-height: 100vh;
+    min-width: 320px;
+    overflow-x: hidden;
+}
+
+#root,
+.opas-app,
+.opas-main {
+    min-height: 100vh;
+}
+
+.opas-app,
+.opas-main,
+.opas-header,
+.opas-header__main,
+.opas-header__intro-wrap,
+.opas-header__actions,
+.opas-header__utility,
+.opas-content,
+.opas-content__inner,
+.app-shell {
+    min-width: 0;
+}
+
+.opas-sidebar,
+.admin-console__sidebar,
+.opas-header,
+.admin-console__topbar,
+.opas-nav,
+.opas-brand,
+.opas-sidebar__footer,
+.admin-console__account,
+.app-hero,
+.app-surface,
+.app-metric,
+.app-form-card,
+.app-detail-card,
+.app-module-card,
+.video-panel,
+.app-list-card {
+    border-color: var(--cyber-border);
+    background:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02)),
+        var(--cyber-bg-panel);
+    box-shadow: var(--cyber-shadow-card);
+}
+
+.opas-brand__copy strong,
+.opas-sidebar__account-copy strong,
+.admin-console__brand-copy strong,
+.admin-console__breadcrumbs strong,
+.app-hero__title,
+.app-surface__title,
+.app-detail-card__title,
+.app-detail-card__value,
+.video-panel__title,
+.app-module-card__title,
+.app-hero-card__title,
+.app-metric__value {
+    color: var(--cyber-text-strong);
+}
+
+.opas-brand__copy small,
+.opas-sidebar__account-copy small,
+.admin-console__brand-copy small,
+.opas-nav__label,
+.admin-console__nav-label,
+.app-hero__eyebrow,
+.app-metric__label,
+.app-module-card__eyebrow,
+.app-hero-card__eyebrow,
+.app-hero__text,
+.app-surface__text,
+.app-form-card__text,
+.app-hero-card__text,
+.app-detail-card__label,
+.video-panel__count {
+    color: var(--cyber-text-muted);
+}
+
+.opas-sidebar__account-badge,
+.opas-brand__mark,
+.admin-console__brand-mark,
+.admin-console__account-badge,
+.opas-header__icon-chip {
+    color: #020617;
+    background: linear-gradient(135deg, var(--cyber-cyan), var(--cyber-purple));
+    box-shadow: var(--cyber-glow-cyan);
+}
+
+.opas-sidebar__account-badge,
+.opas-account__avatar,
+.admin-console__account-badge {
+    color: #020617;
+    border: 1px solid rgba(0, 245, 255, 0.36);
+    background:
+        radial-gradient(circle at 28% 20%, rgba(255, 255, 255, 0.48), transparent 28%),
+        linear-gradient(135deg, #25f4ff 0%, #86efac 48%, #8b5cf6 100%);
+    box-shadow:
+        inset 0 0 0 1px rgba(255, 255, 255, 0.18),
+        0 0 22px rgba(0, 245, 255, 0.22);
+}
+
+.opas-brand__mark img {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.opas-nav__link,
+.admin-console__nav-link,
+.admin-console__subnav-link,
+.admin-console__nav-parent {
+    color: var(--cyber-text-muted);
+}
+
+.opas-nav__link .app-icon,
+.admin-console__nav-link .app-icon {
+    color: var(--cyber-cyan);
+}
+
+.opas-nav__link:hover,
+.opas-nav__link.is-active,
+.admin-console__nav-link:hover,
+.admin-console__nav-link:focus-visible,
+.admin-console__nav-link.is-active,
+.admin-console__nav-parent.is-active,
+.admin-console__subnav-link:hover,
+.admin-console__subnav-link:focus-visible,
+.admin-console__subnav-link.is-active {
+    color: var(--cyber-text-strong);
+    border-color: rgba(0, 245, 255, 0.28);
+    background:
+        linear-gradient(90deg, rgba(0, 245, 255, 0.14), rgba(168, 85, 247, 0.1)),
+        rgba(255, 255, 255, 0.05);
+    box-shadow: var(--cyber-glow-cyan);
+}
+
+.opas-header {
+    border-bottom-color: var(--cyber-border);
+}
+
+.admin-console .opas-header,
+.admin-console .opas-header__main,
+.admin-console .opas-header__actions,
+.admin-console .opas-header__utility,
+.admin-console .opas-account__dropdown,
+.admin-console .opas-account__menu {
+    color: var(--cyber-text);
+    background:
+        radial-gradient(circle at 82% 0%, rgba(0, 245, 255, 0.12), transparent 30%),
+        linear-gradient(135deg, rgba(22, 22, 42, 0.96), rgba(10, 10, 23, 0.96));
+}
+
+.admin-console .opas-account__dropdown,
+.admin-console .opas-account__menu {
+    border: 1px solid rgba(0, 245, 255, 0.2);
+    box-shadow:
+        0 20px 38px rgba(0, 0, 0, 0.34),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.035);
+}
+
+.admin-console .opas-account__menu-link {
+    border-color: rgba(0, 245, 255, 0.16);
+    color: var(--cyber-text);
+    background:
+        linear-gradient(135deg, rgba(0, 245, 255, 0.07), rgba(168, 85, 247, 0.045)),
+        rgba(9, 9, 22, 0.82);
+}
+
+.admin-console .opas-account__menu-link:hover,
+.admin-console .opas-account__menu-link:focus-visible {
+    color: var(--cyber-cyan);
+    border-color: rgba(0, 245, 255, 0.28);
+    background:
+        linear-gradient(135deg, rgba(0, 245, 255, 0.16), rgba(168, 85, 247, 0.1)),
+        rgba(9, 9, 22, 0.92);
+}
+
+.opas-header__main {
+    display: grid;
+    grid-template-columns: minmax(0, 320px) minmax(0, 1fr);
+    align-items: center;
+}
+
+.opas-header__intro,
+.opas-header__actions,
+.opas-header__utility {
+    min-width: 0;
+}
+
+.opas-header__toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 54px;
+    height: 54px;
+    flex: 0 0 54px;
+    border: 1px solid rgba(0, 245, 255, 0.44);
+    color: #00f5ff;
+    background:
+        radial-gradient(circle at 30% 20%, rgba(0, 245, 255, 0.28), transparent 42%),
+        linear-gradient(135deg, rgba(0, 245, 255, 0.14), rgba(168, 85, 247, 0.2)), #151528;
+    box-shadow:
+        inset 0 0 0 1px rgba(255, 255, 255, 0.07),
+        var(--cyber-glow-cyan);
+    cursor: pointer;
+}
+
+.opas-header__icon-chip {
+    border: 1px solid rgba(0, 245, 255, 0.44);
+    color: #020617;
+    background: linear-gradient(135deg, #00f5ff 0%, #7c3aed 100%);
+    box-shadow:
+        inset 0 0 0 1px rgba(255, 255, 255, 0.16),
+        0 0 24px rgba(0, 245, 255, 0.24);
+}
+
+.opas-header__toggle .app-icon,
+.opas-header__icon-chip .app-icon {
+    color: currentColor;
+}
+
+.opas-header__toggle:hover,
+.opas-header__toggle:focus-visible,
+.opas-header__icon-chip:hover,
+.opas-header__icon-chip:focus-visible {
+    color: var(--cyber-text-strong);
+    border-color: rgba(0, 245, 255, 0.36);
+    background:
+        linear-gradient(135deg, rgba(0, 245, 255, 0.18), rgba(255, 43, 214, 0.1)),
+        rgba(255, 255, 255, 0.08);
+    box-shadow: var(--cyber-glow-purple);
+}
+
+.opas-header__eyebrow,
+.opas-header__text {
+    color: var(--cyber-text-muted);
+    max-width: 22rem;
+}
+
+.opas-header__title {
+    color: var(--cyber-text-strong);
+    overflow: visible;
+    line-height: 1.12;
+    text-overflow: clip;
+    white-space: normal;
+}
+
+.opas-header__text {
+    display: block;
+    overflow: visible;
+    -webkit-line-clamp: unset;
+    -webkit-box-orient: initial;
+}
+
+.opas-header__search {
+    min-width: min(230px, 100%);
+    max-width: 340px;
+    flex: 1 1 260px;
+}
+
+.opas-header__search .app-icon {
+    z-index: 1;
+    color: #00f5ff;
+    filter: drop-shadow(0 0 8px rgba(0, 245, 255, 0.34));
+}
+
+.opas-header__search-input {
+    border-color: rgba(0, 245, 255, 0.3);
+    color: #f8fbff;
+    background: linear-gradient(135deg, rgba(0, 245, 255, 0.09), rgba(255, 43, 214, 0.07)), #151528;
+    box-shadow:
+        inset 0 0 0 1px rgba(255, 255, 255, 0.045),
+        inset 0 0 18px rgba(0, 245, 255, 0.055);
+}
+
+.opas-header__search-input::placeholder {
+    color: rgba(229, 231, 235, 0.68);
+}
+
+.opas-header__search-input:focus {
+    border-color: rgba(0, 245, 255, 0.4);
+    color: var(--cyber-text-strong);
+    background:
+        linear-gradient(135deg, rgba(0, 245, 255, 0.12), rgba(255, 43, 214, 0.07)),
+        rgba(255, 255, 255, 0.08);
+    box-shadow:
+        0 0 0 3px rgba(0, 245, 255, 0.16),
+        var(--cyber-glow-cyan);
+}
+
+.opas-language,
+.opas-account,
+.opas-account__dropdown,
+.opas-account__menu-link,
+.opas-account__action {
+    border-color: rgba(255, 255, 255, 0.14);
+    color: #e5e7eb;
+    background:
+        radial-gradient(circle at 0% 0%, rgba(0, 245, 255, 0.08), transparent 34%),
+        linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.025)), #151528;
+    box-shadow:
+        inset 0 0 0 1px rgba(255, 255, 255, 0.035),
+        var(--cyber-shadow-card);
+}
+
+.opas-language {
+    width: 128px;
+    flex-basis: 128px;
+    position: relative;
+}
+
+.opas-language__select,
+.opas-account__meta strong,
+.opas-account__menu-link span {
+    color: var(--cyber-text-strong);
+}
+
+.opas-language::after {
+    position: absolute;
+    right: 0.78rem;
+    width: 0.48rem;
+    height: 0.48rem;
+    border-right: 2px solid rgba(229, 231, 235, 0.9);
+    border-bottom: 2px solid rgba(229, 231, 235, 0.9);
+    pointer-events: none;
+    content: '';
+    transform: translateY(-18%) rotate(45deg);
+}
+
+.opas-language__select {
+    width: 100%;
+    min-width: 0;
+    border: 0;
+    color: var(--cyber-text-strong);
+    background: transparent;
+    box-shadow: none;
+    outline: none;
+    appearance: none;
+}
+
+.opas-language__select:focus,
+.opas-language__select:focus-visible {
+    background: transparent;
+    box-shadow: none;
+    outline: none;
+}
+
+.opas-account__meta span,
+.opas-account__chevron {
+    color: var(--cyber-text-muted);
+}
+
+.opas-account__trigger {
+    color: var(--cyber-text);
+}
+
+.opas-account__trigger:hover,
+.opas-account__menu-link:hover,
+.opas-account__menu-link:focus-visible,
+.opas-account__action:hover,
+.opas-account__action:focus-visible {
+    color: var(--cyber-text-strong);
+    border-color: rgba(0, 245, 255, 0.3);
+    background:
+        linear-gradient(135deg, rgba(0, 245, 255, 0.12), rgba(168, 85, 247, 0.08)),
+        rgba(255, 255, 255, 0.06);
+    box-shadow: var(--cyber-glow-cyan);
+}
+
+.opas-account__avatar,
+.opas-account__action--primary {
+    color: #020617;
+    background: linear-gradient(135deg, var(--cyber-cyan), var(--cyber-purple));
+    box-shadow: var(--cyber-glow-cyan);
+}
+
+.opas-account--guest {
+    flex: 0 1 23rem;
+    min-width: 0;
+    padding: 0.8rem;
+}
+
+.opas-account__meta,
+.opas-account__trigger,
+.opas-account__actions {
+    min-width: 0;
+}
+
+.opas-account__actions {
+    gap: 0.55rem;
+    flex-wrap: nowrap;
+}
+
+.opas-account__action {
+    min-width: 104px;
+    padding: 0.85rem 1rem;
+    color: #f8fbff;
+    font-weight: 800;
+}
+
+.opas-account__action--ghost {
+    border-color: rgba(0, 245, 255, 0.2);
+    background:
+        linear-gradient(135deg, rgba(0, 245, 255, 0.055), rgba(255, 43, 214, 0.045)), #111122;
+}
+
+.opas-account__action--primary {
+    border-color: rgba(0, 245, 255, 0.58);
+    color: #020617;
+    background: linear-gradient(135deg, #25f4ff 0%, #55d5ff 48%, #8b5cf6 100%);
+    box-shadow:
+        0 0 26px rgba(0, 245, 255, 0.28),
+        0 10px 24px rgba(139, 92, 246, 0.18);
+}
+
+.opas-account__meta strong,
+.opas-account__meta span {
+    overflow: visible;
+    text-overflow: clip;
+    white-space: normal;
+}
+
+.opas-account__meta strong {
+    font-size: 0.92rem;
+}
+
+.opas-account__meta span {
+    max-width: none;
+    font-size: 0.76rem;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+}
+
+.opas-sidebar__account-copy strong,
+.opas-sidebar__account-copy small,
+.admin-console__account strong,
+.admin-console__account span {
+    overflow: visible;
+    text-overflow: clip;
+    white-space: normal;
+}
+
+.opas-sidebar__account-copy small,
+.admin-console__account span {
+    overflow-wrap: anywhere;
+}
+
+.opas-footer__surface {
+    align-items: flex-start;
+    flex-wrap: wrap;
+    border-color: rgba(0, 245, 255, 0.18);
+    background:
+        radial-gradient(circle at 0% 0%, rgba(0, 245, 255, 0.12), transparent 30%),
+        radial-gradient(circle at 100% 0%, rgba(255, 43, 214, 0.09), transparent 30%),
+        linear-gradient(135deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.025)), #10101f;
+    box-shadow:
+        inset 0 0 0 1px rgba(255, 255, 255, 0.035),
+        var(--cyber-shadow-card);
+}
+
+.opas-footer__brand strong {
+    color: var(--cyber-text-strong);
+}
+
+.opas-footer__brand span {
+    color: #67e8f9;
+    letter-spacing: 0.08em;
+}
+
+.opas-footer p {
+    min-width: min(100%, 18rem);
+    color: var(--cyber-text-muted);
+    text-align: right;
+    overflow-wrap: anywhere;
+}
+
+.opas-footer--admin .opas-footer__surface {
+    border-color: rgba(255, 43, 214, 0.2);
+    background:
+        radial-gradient(circle at 0% 0%, rgba(255, 43, 214, 0.1), transparent 30%),
+        radial-gradient(circle at 100% 0%, rgba(0, 245, 255, 0.11), transparent 30%),
+        linear-gradient(135deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.024)), #10101f;
+}
+
+.app-auth-login-card .app-social-button__label,
+.app-auth-login-card__stat span,
+.app-auth-panel__stack,
+.app-chip,
+.app-inline-badge,
+.app-status-pill,
+.app-quick-link span,
+.app-stack-list__item span,
+.app-detail-card__text,
+.workspace-dashboard__stat-delta span,
+.admin-telegram-bots__summary-card small {
+    overflow: visible;
+    text-overflow: clip;
+    white-space: normal;
+}
+
+.app-auth-login-card__stat span,
+.app-chip,
+.app-inline-badge,
+.app-status-pill,
+.app-quick-link span,
+.app-stack-list__item span,
+.app-detail-card__text,
+.admin-telegram-bots__summary-card small {
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+}
+
+.app-auth-login-card__stat {
+    align-content: center;
+    min-height: 3.05rem;
+}
+
+.app-chip,
+.app-status-pill,
+.app-inline-badge {
+    align-items: center;
+    white-space: normal;
+    word-break: break-word;
+}
+
+.app-detail-card__value,
+.app-metric__value,
+.app-table__value-strong,
+.app-table__value-soft,
+.app-user-admin-table__email,
+.admin-telegram-bots__summary-card small,
+.app-auth-login-card .app-social-button__label,
+.app-auth-card .app-social-button__label,
+.app-auth-panel__stack,
+.app-auth-panel__brand-copy strong,
+.app-auth-panel__brand-copy small,
+.app-auth-visual__console-stat small,
+.app-auth-visual__console-stat strong {
+    max-width: 100%;
+    overflow: visible;
+    overflow-wrap: anywhere;
+    text-overflow: clip;
+    white-space: normal;
+}
+
+.workspace-dashboard__stat-delta {
+    align-items: flex-start;
+    flex-wrap: wrap;
+}
+
+.app-button,
+.cyber-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border: 1px solid transparent;
+    border-radius: var(--cyber-radius-md);
+    cursor: pointer;
+    font-weight: 700;
+    text-decoration: none;
+    transition:
+        transform 0.2s ease,
+        border-color 0.2s ease,
+        background-color 0.2s ease;
+}
+
+.cyber-button--sm {
+    min-height: 36px;
+    padding: 8px 12px;
+    font-size: 0.84rem;
+}
+
+.cyber-button--md {
+    min-height: 44px;
+    padding: 10px 16px;
+    font-size: 0.92rem;
+}
+
+.cyber-button--lg {
+    min-height: 52px;
+    padding: 12px 24px;
+    font-size: 1rem;
+}
+
+.app-button--primary,
+.cyber-button--primary {
+    color: #020617;
+    background: linear-gradient(135deg, var(--cyber-cyan), #67e8f9);
+    box-shadow: var(--cyber-glow-cyan);
+}
+
+.app-button--ghost,
+.cyber-button--secondary,
+.cyber-button--ghost {
+    color: var(--cyber-text);
+    border-color: var(--cyber-border-strong);
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.app-button--danger,
+.cyber-button--danger {
+    color: #ffdbe3;
+    border-color: rgba(255, 77, 109, 0.3);
+    background: rgba(255, 77, 109, 0.12);
+}
+
+.app-chip,
+.app-inline-badge,
+.app-status-pill {
+    max-width: 100%;
+    min-height: 1.9rem;
+    height: auto;
+    padding: 0.38rem 0.68rem;
+    border: 1px solid rgba(0, 245, 255, 0.22);
+    color: #cffafe;
+    background:
+        linear-gradient(135deg, rgba(0, 245, 255, 0.12), rgba(168, 85, 247, 0.08)),
+        rgba(5, 5, 16, 0.74);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.035);
+}
+
+.app-status-pill.is-active,
+.app-status-pill.is-success,
+.app-inline-badge.is-success {
+    border-color: rgba(0, 255, 133, 0.28);
+    color: #bbf7d0;
+    background: rgba(0, 255, 133, 0.1);
+}
+
+.app-status-pill.is-warning,
+.app-inline-badge.is-warning {
+    border-color: rgba(255, 176, 32, 0.32);
+    color: #fde68a;
+    background: rgba(255, 176, 32, 0.1);
+}
+
+.app-status-pill.is-danger,
+.app-inline-badge.is-danger {
+    border-color: rgba(255, 77, 109, 0.32);
+    color: #fecdd3;
+    background: rgba(255, 77, 109, 0.1);
+}
+
+.cyber-button--link {
+    min-height: auto;
+    padding: 0;
+    color: var(--cyber-cyan);
+    background: transparent;
+}
+
+.app-button:hover,
+.cyber-button:hover {
+    transform: translateY(-1px);
+    border-color: rgba(0, 245, 255, 0.36);
+    box-shadow: 0 0 0 3px rgba(0, 245, 255, 0.08);
+}
+
+.app-button:focus-visible,
+.cyber-button:focus-visible,
+.cyber-input:focus,
+.cyber-dropdown__trigger:focus-visible,
+.cyber-dropdown__item:focus-visible {
+    outline: none;
+    box-shadow:
+        0 0 0 3px rgba(0, 245, 255, 0.18),
+        var(--cyber-glow-cyan);
+}
+
+.app-button:disabled,
+.cyber-button:disabled,
+.cyber-dropdown__item:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+    transform: none;
+    box-shadow: none;
+}
+
+.app-button .app-icon {
+    width: 0.95rem;
+    height: 0.95rem;
+    flex: 0 0 0.95rem;
+}
+
+.app-action-row__back-icon {
+    transform: rotate(180deg);
+}
+
+.workspace-dashboard__activity-head button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.workspace-dashboard__activity-head button .app-icon {
+    width: 0.86rem;
+    height: 0.86rem;
+}
+
+.cyber-button__spinner {
+    width: 14px;
+    height: 14px;
+    border: 2px solid currentColor;
+    border-right-color: transparent;
+    border-radius: 999px;
+    animation: cyber-spin 0.8s linear infinite;
+}
+
+.cyber-field {
+    display: grid;
+    gap: 6px;
+}
+
+.cyber-field__label,
+.cyber-field__helper,
+.cyber-field__error {
+    font-size: 0.82rem;
+}
+
+.cyber-field__label {
+    color: var(--cyber-text);
+    font-weight: 700;
+}
+
+.cyber-field__helper {
+    color: var(--cyber-text-muted);
+}
+
+.cyber-field__error {
+    color: var(--cyber-danger);
+}
+
+.app-input,
+.cyber-input,
+.opas-header__search-input,
+.admin-console__search-input {
+    width: 100%;
+    border: 1px solid var(--cyber-border);
+    border-radius: var(--cyber-radius-md);
+    color: var(--cyber-text-strong);
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.app-label {
+    color: var(--cyber-text);
+}
+
+.app-form-card__title,
+.app-alert,
+.app-role-card strong,
+.app-account-settings__subheading,
+.app-account-settings__provider-copy strong {
+    color: var(--cyber-text-strong);
+}
+
+.app-form-card--accent,
+.app-account-settings__section-head,
+.app-account-settings__providers-card,
+.app-account-settings__provider-card,
+.app-account-settings__link-panel,
+.app-account-settings__help-row,
+.app-role-card,
+.app-quick-link,
+.app-stack-list__item,
+.app-feedback,
+.app-empty,
+.app-empty-state,
+.video-card {
+    border-color: var(--cyber-border);
+    background:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.024)),
+        var(--cyber-bg-panel);
+    box-shadow: var(--cyber-shadow-card);
+}
+
+.app-account-settings__provider-copy span,
+.app-form-card__text,
+.app-account-settings__flash,
+.app-quick-link span,
+.app-stack-list__item span {
+    color: var(--cyber-text-muted);
+}
+
+.app-quick-link strong,
+.app-stack-list__item strong {
+    color: var(--cyber-text-strong);
+}
+
+.app-alert {
+    border-color: var(--cyber-border);
+    color: var(--cyber-text);
+    background:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.024)),
+        var(--cyber-bg-panel);
+}
+
+.app-alert--success {
+    border-color: rgba(0, 255, 133, 0.28);
+    background: rgba(0, 255, 133, 0.09);
+}
+
+.app-alert--danger {
+    border-color: rgba(255, 77, 109, 0.3);
+    background: rgba(255, 77, 109, 0.1);
+}
+
+.app-feedback {
+    color: var(--cyber-text);
+}
+
+.app-feedback p,
+.app-empty,
+.app-empty-state p {
+    color: var(--cyber-text-muted);
+}
+
+.app-feedback--error {
+    border-color: rgba(255, 77, 109, 0.28);
+    background:
+        radial-gradient(circle at 100% 0%, rgba(255, 77, 109, 0.12), transparent 30%),
+        linear-gradient(135deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.024)),
+        var(--cyber-bg-panel);
+}
+
+.app-feedback__pulse {
+    background: linear-gradient(135deg, var(--cyber-cyan), var(--cyber-purple));
+    box-shadow: 0 0 0 0 rgba(0, 245, 255, 0.3);
+}
+
+.cyber-input {
+    min-height: 44px;
+    padding: 10px 12px;
+}
+
+.cyber-input::placeholder,
+.app-input::placeholder {
+    color: rgba(156, 163, 175, 0.82);
+}
+
+.cyber-input.is-invalid {
+    border-color: rgba(255, 77, 109, 0.55);
+}
+
+.cyber-dropdown {
+    position: relative;
+    display: inline-flex;
+}
+
+.cyber-dropdown__trigger,
+.cyber-dropdown__item {
+    border: 1px solid var(--cyber-border);
+    color: var(--cyber-text);
+    background: var(--cyber-bg-panel-strong);
+}
+
+.cyber-dropdown__trigger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 40px;
+    min-width: 0;
+    padding: 8px 12px;
+    border-radius: var(--cyber-radius-md);
+    gap: 0.45rem;
+}
+
+.cyber-dropdown__trigger span,
+.cyber-dropdown__item {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.cyber-dropdown__trigger .app-icon {
+    width: 0.9rem;
+    height: 0.9rem;
+    flex: 0 0 0.9rem;
+}
+
+.cyber-dropdown__menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    z-index: 40;
+    display: grid;
+    min-width: 180px;
+    padding: 6px;
+    border: 1px solid var(--cyber-border);
+    border-radius: var(--cyber-radius-md);
+    background:
+        linear-gradient(135deg, rgba(0, 245, 255, 0.08), rgba(168, 85, 247, 0.055)),
+        var(--cyber-bg-panel-strong);
+    background-repeat: no-repeat;
+    box-shadow: var(--cyber-shadow-card);
+}
+
+.cyber-dropdown__item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    min-height: 36px;
+    padding: 8px 10px;
+    border: 0;
+    border-radius: var(--cyber-radius-sm);
+    text-align: left;
+    white-space: normal;
+}
+
+.cyber-dropdown__item:hover {
+    background: rgba(0, 245, 255, 0.1);
+}
+
+.cyber-toast,
+.cyber-modal,
+.cyber-table-wrap {
+    border: 1px solid var(--cyber-border);
+    border-radius: var(--cyber-radius-lg);
+    background: var(--cyber-bg-panel-strong);
+    box-shadow: var(--cyber-shadow-card);
+}
+
+.cyber-toast {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    min-width: 0;
+    padding: 14px 16px;
+}
+
+.cyber-toast__content {
+    min-width: 0;
+}
+
+.cyber-toast strong,
+.cyber-modal h2 {
+    color: var(--cyber-text-strong);
+    overflow-wrap: anywhere;
+}
+
+.cyber-toast p {
+    margin: 4px 0 0;
+    color: var(--cyber-text-muted);
+    overflow-wrap: anywhere;
+}
+
+.cyber-toast--success {
+    border-color: rgba(0, 255, 133, 0.28);
+}
+
+.cyber-toast--warning {
+    border-color: rgba(255, 176, 32, 0.34);
+}
+
+.cyber-toast--danger {
+    border-color: rgba(255, 77, 109, 0.34);
+}
+
+.cyber-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 80;
+    display: grid;
+    place-items: center;
+    padding: 24px;
+    background: rgba(5, 5, 16, 0.76);
+}
+
+.cyber-modal {
+    width: min(100%, 560px);
+    max-height: min(720px, calc(100vh - 48px));
+    overflow: auto;
+    background:
+        radial-gradient(circle at 0% 0%, rgba(0, 245, 255, 0.1), transparent 34%),
+        radial-gradient(circle at 100% 0%, rgba(255, 43, 214, 0.085), transparent 32%),
+        linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03)),
+        var(--cyber-bg-panel-strong);
+    background-repeat: no-repeat;
+}
+
+.cyber-modal__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 18px 20px;
+    border-bottom: 1px solid var(--cyber-border);
+}
+
+.cyber-modal__header h2 {
+    margin: 0;
+    font-size: 1.05rem;
+}
+
+.cyber-modal__header button,
+.cyber-toast button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    flex: 0 0 2rem;
+    border: 0;
+    border-radius: 999px;
+    color: var(--cyber-text-muted);
+    background: transparent;
+    cursor: pointer;
+}
+
+.cyber-modal__header button .app-icon,
+.cyber-toast button .app-icon {
+    width: 0.95rem;
+    height: 0.95rem;
+}
+
+.cyber-modal__header button:hover,
+.cyber-modal__header button:focus-visible,
+.cyber-toast button:hover,
+.cyber-toast button:focus-visible {
+    outline: none;
+    color: var(--cyber-text-strong);
+    background: rgba(0, 245, 255, 0.11);
+    box-shadow: 0 0 0 3px rgba(0, 245, 255, 0.1);
+}
+
+.cyber-modal__body {
+    padding: 20px;
+}
+
+.cyber-table-wrap,
+.app-table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--cyber-border);
+    background: rgba(5, 5, 16, 0.45);
+    box-shadow:
+        inset 0 0 0 1px rgba(255, 255, 255, 0.025),
+        var(--cyber-shadow-card);
+}
+
+.cyber-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.cyber-table th,
+.cyber-table td {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--cyber-border);
+    text-align: left;
+}
+
+.cyber-table th,
+.app-table thead th {
+    border-bottom-color: rgba(0, 245, 255, 0.22);
+    color: var(--cyber-text-muted);
+    background:
+        linear-gradient(135deg, rgba(0, 245, 255, 0.13), rgba(168, 85, 247, 0.07)),
+        rgba(5, 5, 16, 0.78);
+}
+
+.cyber-table td,
+.app-table tbody td {
+    border-top-color: rgba(255, 255, 255, 0.08);
+    color: var(--cyber-text);
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.app-table tbody tr:nth-child(odd) td {
+    background: rgba(255, 255, 255, 0.025);
+}
+
+.app-table tbody tr:hover td {
+    background: rgba(0, 245, 255, 0.08);
+}
+
+.app-table__value-strong {
+    color: var(--cyber-text-strong);
+}
+
+.app-table__value-soft {
+    color: var(--cyber-text-muted);
+}
+
+.app-favorite {
+    border: 1px solid rgba(0, 245, 255, 0.22);
+    color: #bfdbfe;
+    background:
+        linear-gradient(135deg, rgba(0, 245, 255, 0.1), rgba(168, 85, 247, 0.06)),
+        rgba(5, 5, 16, 0.72);
+    box-shadow:
+        inset 0 0 0 1px rgba(255, 255, 255, 0.035),
+        0 12px 24px rgba(0, 0, 0, 0.22);
+}
+
+.app-favorite.is-active {
+    border-color: rgba(255, 43, 214, 0.34);
+    color: #ff5ee8;
+    background: rgba(255, 43, 214, 0.12);
+    box-shadow: 0 0 24px rgba(255, 43, 214, 0.18);
+}
+
+.app-change-pill.is-positive {
+    border: 1px solid rgba(0, 255, 133, 0.26);
+    color: #bbf7d0;
+    background: rgba(0, 255, 133, 0.1);
+}
+
+.app-change-pill.is-negative {
+    border: 1px solid rgba(255, 77, 109, 0.28);
+    color: #fecdd3;
+    background: rgba(255, 77, 109, 0.1);
+}
+
+.cyber-table__feedback {
+    margin: 0;
+    padding: 16px;
+    color: var(--cyber-text-muted);
+}
+
+.cyber-skeleton {
+    display: grid;
+    gap: 10px;
+}
+
+.cyber-skeleton__row {
+    display: block;
+    min-height: 16px;
+    border-radius: var(--cyber-radius-sm);
+    background:
+        linear-gradient(90deg, transparent, rgba(0, 245, 255, 0.14), transparent),
+        rgba(255, 255, 255, 0.07);
+    background-size: 240% 100%;
+}
+
+.cyber-skeleton--card .cyber-skeleton__row {
+    min-height: 58px;
+}
+
+.cyber-skeleton--table .cyber-skeleton__row {
+    min-height: 42px;
+}
+
+@keyframes cyber-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes cyber-shimmer {
+    to {
+        background-position: -240% 0;
+    }
+}
+
+@media (max-width: 768px) {
+    .cyber-modal-backdrop {
+        align-items: end;
+        padding: 12px;
+    }
+
+    .cyber-modal {
+        max-height: calc(100vh - 24px);
+    }
+}
+
+@media (max-width: 1279.98px) and (min-width: 992px) {
+    .opas-header__main {
+        grid-template-columns: 1fr;
+    }
+
+    .opas-header__actions {
+        align-items: stretch;
+        justify-content: stretch;
+        flex-wrap: wrap;
+    }
+
+    .opas-header__utility,
+    .opas-account--guest {
+        flex: 1 1 auto;
+    }
+
+    .opas-header__utility {
+        justify-content: flex-start;
+    }
+}
+
+@media (max-width: 1499.98px) and (min-width: 1280px) {
+    .opas-header__main {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .opas-header__text {
+        max-width: 100%;
+    }
+
+    .opas-header__actions {
+        align-items: stretch;
+        justify-content: stretch;
+        flex-wrap: wrap;
+    }
+
+    .opas-header__utility,
+    .opas-account--guest {
+        flex: 1 1 auto;
+    }
+
+    .opas-header__utility {
+        justify-content: flex-start;
+    }
+}
+
+@media (max-width: 1199.98px) {
+    .opas-app {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .opas-sidebar {
+        position: fixed;
+        left: 0;
+        width: min(280px, calc(100vw - 24px));
+        transform: translateX(-100%);
+        transition: transform 0.22s ease;
+    }
+
+    .opas-app.is-sidebar-open .opas-sidebar {
+        transform: translateX(0);
+    }
+
+    .opas-header__main {
+        width: 100%;
+    }
+}
+
+@media (max-width: 991.98px) {
+    .opas-header__main {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .opas-header__intro-wrap {
+        gap: 0.8rem;
+    }
+
+    .opas-header__toggle {
+        width: 46px;
+        height: 46px;
+        flex-basis: 46px;
+    }
+
+    .opas-header__title {
+        white-space: normal;
+    }
+
+    .opas-content,
+    .opas-footer {
+        padding-right: 0.85rem;
+        padding-left: 0.85rem;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .opas-header {
+        padding: 0.85rem 0.75rem;
+    }
+
+    .opas-header__intro-wrap {
+        align-items: flex-start;
+    }
+
+    .opas-header__title {
+        font-size: 1.35rem;
+    }
+
+    .opas-content {
+        overflow-x: hidden;
+        padding-right: 0.6rem;
+        padding-left: 0.6rem;
+    }
+
+    .opas-footer {
+        overflow-x: hidden;
+        padding-right: 0.6rem;
+        padding-left: 0.6rem;
+    }
+
+    .opas-footer__surface {
+        box-sizing: border-box;
+        align-items: flex-start;
+        flex-direction: column;
+        width: min(calc(100vw - 1.2rem), 19rem);
+        max-width: min(calc(100vw - 1.2rem), 19rem);
+        margin-right: auto;
+        margin-left: 0;
+        padding: 0.9rem;
+    }
+
+    .opas-footer p {
+        min-width: 0;
+        text-align: left;
+    }
+
+    .opas-content__inner,
+    .app-shell,
+    .app-hero,
+    .app-surface,
+    .app-form-card,
+    .app-detail-card,
+    .app-module-card,
+    .video-panel,
+    .app-list-card {
+        box-sizing: border-box;
+        width: min(calc(100vw - 1.2rem), 19rem);
+        max-width: min(calc(100vw - 1.2rem), 19rem);
+        min-width: 0;
+    }
+
+    .opas-content__inner,
+    .app-shell {
+        margin-right: auto;
+        margin-left: 0;
+    }
+
+    .app-shell {
+        overflow-x: hidden;
+        gap: 0.9rem;
+    }
+
+    .app-metrics-grid,
+    .app-column-grid,
+    .app-form-grid,
+    .app-detail-grid {
+        grid-template-columns: minmax(0, 1fr);
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+    }
+
+    .app-hero {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 0.75rem;
+        overflow: hidden;
+        padding: 0.9rem;
+        border-radius: 18px;
+    }
+
+    .app-hero__main,
+    .app-hero__aside,
+    .app-hero-card {
+        max-width: 100%;
+        min-width: 0;
+    }
+
+    .app-hero__title {
+        font-size: clamp(1.25rem, 7vw, 1.55rem);
+        line-height: 1.18;
+        overflow-wrap: anywhere;
+        white-space: normal;
+    }
+
+    .app-hero__text,
+    .app-surface__text,
+    .app-form-card__text,
+    .app-hero-card__text {
+        font-size: 0.86rem;
+        overflow-wrap: anywhere;
+        white-space: normal;
+    }
+
+    .app-hero__meta,
+    .app-chip-row,
+    .app-action-row,
+    .app-inline-stats,
+    .app-hero__actions {
+        align-items: stretch;
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .app-chip,
+    .app-inline-badge,
+    .app-status-pill {
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        font-size: 0.76rem;
+        line-height: 1.28;
+        text-align: center;
+    }
+
+    .app-hero-card {
+        min-height: auto;
+        padding: 1rem;
+        border-radius: 16px;
+    }
+
+    .app-table-wrap {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+    }
+
+    .app-table--coins {
+        min-width: 42rem;
+    }
+}
+
+.opas-header {
+    padding: 0.6rem 1rem;
+}
+
+.opas-header__main {
+    display: grid;
+    align-items: center;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.9rem;
+}
+
+.opas-header__intro-wrap {
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.opas-header__toggle,
+.opas-header__icon-chip {
+    display: inline-grid;
+    place-items: center;
+    width: 42px;
+    height: 42px;
+    flex-basis: 42px;
+    flex-shrink: 0;
+    padding: 0;
+    border-radius: 12px;
+    line-height: 1;
+    vertical-align: middle;
+}
+
+.opas-header__toggle .app-icon,
+.opas-header__icon-chip .app-icon {
+    display: inline-grid;
+    place-items: center;
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    line-height: 1;
+}
+
+.opas-header__toggle .app-icon svg,
+.opas-header__icon-chip .app-icon svg,
+.opas-header__search .app-icon svg {
+    display: block;
+}
+
+.opas-header__eyebrow {
+    margin-bottom: 0.08rem;
+    font-size: 0.66rem;
+    letter-spacing: 0.1em;
+}
+
+.opas-header__title {
+    font-size: clamp(1.25rem, 1.45vw, 1.55rem);
+    line-height: 1.08;
+}
+
+.opas-header__text {
+    display: none;
+}
+
+.opas-header__actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: nowrap;
+    gap: 0.55rem;
+    width: auto;
+}
+
+.opas-header__utility {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex: 0 1 auto;
+    gap: 0.55rem;
+}
+
+.opas-header__search {
+    min-width: 13rem;
+    max-width: 20rem;
+    flex: 0 1 20rem;
+}
+
+.opas-header__search .app-icon {
+    top: 50%;
+    left: 0.85rem;
+    display: inline-grid;
+    place-items: center;
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    line-height: 1;
+    transform: translateY(-50%);
+}
+
+.opas-header__search-input {
+    height: 42px;
+    padding-left: 2.55rem;
+    border-radius: 12px;
+    font-size: 0.88rem;
+}
+
+.opas-language {
+    display: inline-grid;
+    place-items: center;
+    width: 112px;
+    height: 42px;
+    min-height: 42px;
+    flex: 0 0 112px;
+    padding: 0.55rem 0.7rem;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.opas-language__select {
+    height: 100%;
+    line-height: 1;
+    padding: 0 1.15rem 0 0.05rem;
+    font-weight: 800;
+}
+
+.opas-account--guest {
+    min-height: 0;
+    flex: 0 0 auto;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+}
+
+.opas-account__actions {
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.opas-account__action {
+    min-width: 5.6rem;
+    min-height: 42px;
+    padding: 0.55rem 0.8rem;
+    border-radius: 12px;
+    font-size: 0.86rem;
+}
+
+.opas-account:not(.opas-account--guest) {
+    min-height: 42px;
+    padding: 0.45rem 0.55rem;
+    border-radius: 14px;
+}
+
+.opas-account__trigger {
+    min-height: 42px;
+    padding: 0.45rem 0.55rem;
+    border-radius: 14px;
+}
+
+/* Keep the cyber theme lightweight enough for sticky layouts and dense lists. */
+.opas-sidebar,
+.admin-console__sidebar,
+.opas-header,
+.admin-console__topbar,
+.opas-nav,
+.opas-brand,
+.opas-sidebar__footer,
+.admin-console__account,
+.app-hero,
+.app-surface,
+.app-metric,
+.app-form-card,
+.app-detail-card,
+.app-module-card,
+.video-panel,
+.app-list-card,
+.cyber-toast,
+.cyber-modal,
+.cyber-table-wrap,
+.cyber-modal-backdrop,
+.opas-account__menu,
+.admin-telegram-bots__drawer-backdrop,
+.confirm-modal__backdrop,
+.app-modal-backdrop {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+}
+
+.opas-sidebar,
+.admin-console__sidebar,
+.opas-header,
+.app-hero,
+.app-surface,
+.app-metric,
+.app-form-card,
+.app-detail-card,
+.app-module-card,
+.video-panel,
+.app-list-card,
+.cyber-table-wrap {
+    contain: paint;
+    box-shadow: 0 10px 26px rgba(0, 0, 0, 0.28);
+}
+
+.opas-nav,
+.opas-brand,
+.opas-sidebar__footer,
+.admin-console__account,
+.cyber-toast,
+.cyber-modal,
+.opas-account__menu {
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.24);
+}
+
+.opas-header,
+.opas-sidebar,
+.admin-console__sidebar,
+.admin-console__topbar,
+.app-hero,
+.app-surface,
+.app-metric,
+.app-form-card,
+.app-detail-card,
+.app-module-card,
+.video-panel,
+.app-list-card {
+    transition:
+        color 0.12s ease,
+        background-color 0.12s ease,
+        border-color 0.12s ease;
+}
+
+.cyber-skeleton__row {
+    animation: none;
+    background-position: 0 0;
+}
+
+.app-feedback__pulse {
+    animation: none;
+    box-shadow: 0 0 0 4px rgba(0, 245, 255, 0.12);
+}
+
+.opas-header {
+    overflow: visible;
+    contain: none;
+    padding: 0.45rem 0.85rem;
+}
+
+.opas-header__main {
+    grid-template-columns: minmax(0, 330px) minmax(0, 1fr);
+    gap: 0.75rem;
+}
+
+.opas-header__toggle,
+.opas-header__icon-chip,
+.opas-language,
+.opas-header__search-input {
+    height: 40px;
+    min-height: 40px;
+}
+
+.opas-header__toggle,
+.opas-header__icon-chip {
+    width: 40px;
+    flex-basis: 40px;
+}
+
+.opas-header__title {
+    font-size: clamp(1.2rem, 1.35vw, 1.5rem);
+}
+
+.opas-header__search {
+    max-width: 18rem;
+    flex-basis: 18rem;
+}
+
+.opas-account.opas-account--menu {
+    display: flex;
+    align-items: stretch;
+    overflow: visible;
+    flex: 0 0 clamp(12.5rem, 19vw, 15rem);
+    width: clamp(12.5rem, 19vw, 15rem);
+    min-width: 12.5rem;
+    max-width: 15rem;
+    height: 46px;
+    min-height: 0;
+    padding: 0;
+    border-radius: 16px;
+    background: linear-gradient(135deg, rgba(0, 245, 255, 0.1), rgba(255, 43, 214, 0.055)), #151528;
+    box-shadow:
+        inset 0 0 0 1px rgba(255, 255, 255, 0.05),
+        0 8px 22px rgba(0, 0, 0, 0.26);
+}
+
+.opas-account__trigger {
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    padding: 0 0.7rem 0 0.65rem;
+    gap: 0.6rem;
+    border-radius: 16px;
+}
+
+.opas-account__avatar {
+    width: 28px;
+    height: 28px;
+    flex: 0 0 28px;
+    font-size: 0.68rem;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    line-height: 1;
+    letter-spacing: 0;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.opas-account__meta {
+    overflow: hidden;
+    display: grid;
+    flex: 1 1 auto;
+    gap: 0.1rem;
+    min-width: 0;
+    text-align: left;
+}
+
+.opas-account__meta strong {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.opas-account__meta strong {
+    font-size: 0.82rem;
+    line-height: 1.05;
+}
+
+.opas-account__meta span {
+    display: block;
+    overflow: hidden;
+    color: var(--cyber-text-muted);
+    font-size: 0.7rem;
+    font-weight: 800;
+    line-height: 1.05;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.opas-account__chevron {
+    width: 0.9rem;
+    height: 0.9rem;
+    flex: 0 0 0.9rem;
+}
+
+.opas-account__dropdown {
+    top: calc(100% + 0.45rem);
+    right: 0;
+    left: auto;
+    z-index: 80;
+    min-width: 12.5rem;
+    width: clamp(12.5rem, 19vw, 15rem);
+    gap: 0.55rem;
+    padding: 0.75rem;
+    border-radius: 18px;
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.035)), #161629;
+    box-shadow:
+        inset 0 0 0 1px rgba(255, 255, 255, 0.06),
+        0 18px 34px rgba(0, 0, 0, 0.38);
+}
+
+.opas-account__menu-link {
+    min-height: 42px;
+    justify-content: flex-start;
+    padding: 0.65rem 0.75rem;
+    border-color: rgba(255, 255, 255, 0.12);
+    border-radius: 13px;
+    background:
+        linear-gradient(135deg, rgba(0, 245, 255, 0.055), rgba(168, 85, 247, 0.045)),
+        rgba(255, 255, 255, 0.035);
+    font-size: 0.86rem;
+}
+
+.opas-account__menu-link .app-icon {
+    width: 1rem;
+    height: 1rem;
+    color: rgba(248, 250, 252, 0.92);
+}
+
+.admin-console {
+    color: var(--cyber-text);
+    background: var(--opas-gradient);
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
+}
+
+.admin-console__content {
+    isolation: isolate;
+    background:
+        linear-gradient(rgba(0, 245, 255, 0.024) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 245, 255, 0.02) 1px, transparent 1px),
+        radial-gradient(circle at 16% 10%, rgba(168, 85, 247, 0.1), transparent 34rem),
+        radial-gradient(circle at 86% 0%, rgba(0, 245, 255, 0.085), transparent 36rem),
+        radial-gradient(circle at 54% 100%, rgba(255, 43, 214, 0.055), transparent 38rem),
+        linear-gradient(180deg, var(--cyber-bg-deep) 0%, var(--cyber-bg-base) 100%);
+    background-repeat: repeat, repeat, no-repeat, no-repeat, no-repeat, no-repeat;
+    background-position:
+        center top,
+        center top,
+        center top,
+        center top,
+        center bottom,
+        center;
+    background-size:
+        96px 96px,
+        96px 96px,
+        100% 100%,
+        100% 100%,
+        100% 100%,
+        100% 100%;
+}
+
+.admin-console__sidebar,
+.admin-console__topbar,
+.admin-console__account,
+.app-provider-switcher,
+.app-provider-dashboard-card,
+.app-provider-section,
+.app-provider-note,
+.app-provider-docs,
+.app-provider-docs__section,
+.app-provider-validation,
+.app-provider-lock,
+.admin-telegram-bots__summary-card,
+.admin-telegram-bots__panel,
+.admin-telegram-bots__card,
+.admin-telegram-bots__runtime-card,
+.admin-telegram-bots__drawer,
+.admin-telegram-bots__field,
+.admin-telegram-bots__checkbox-card,
+.admin-telegram-bots__secret-card,
+.admin-telegram-bots__audit-card,
+.admin-telegram-bots__empty,
+.admin-telegram-bots__bot-card,
+.admin-telegram-bots__detail-card {
+    border-color: var(--cyber-border);
+    color: var(--cyber-text);
+    background:
+        radial-gradient(circle at 0% 0%, rgba(0, 245, 255, 0.08), transparent 34%),
+        linear-gradient(135deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.025)),
+        var(--cyber-bg-panel);
+    background-repeat: no-repeat;
+    box-shadow: var(--cyber-shadow-card);
+}
+
+.admin-console .app-provider-switcher,
+.admin-console .app-provider-section,
+.admin-console .app-provider-section--footer,
+.admin-console .app-provider-dashboard-card,
+.admin-console .app-provider-note {
+    border: 1px solid var(--cyber-border);
+    color: var(--cyber-text);
+    background:
+        radial-gradient(circle at 0% 0%, rgba(0, 245, 255, 0.08), transparent 34%),
+        linear-gradient(135deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.025)),
+        var(--cyber-bg-panel);
+    box-shadow: var(--cyber-shadow-card);
+}
+
+.admin-console .app-provider-tab,
+.admin-console .app-provider-inline-tab {
+    border: 1px solid rgba(0, 245, 255, 0.2);
+    color: var(--cyber-text-strong);
+    background:
+        linear-gradient(135deg, rgba(0, 245, 255, 0.07), rgba(168, 85, 247, 0.045)),
+        rgba(9, 9, 22, 0.82);
+}
+
+.admin-console .app-provider-tab:hover,
+.admin-console .app-provider-tab:focus-visible,
+.admin-console .app-provider-tab.is-active,
+.admin-console .app-provider-inline-tab:hover,
+.admin-console .app-provider-inline-tab:focus-visible,
+.admin-console .app-provider-inline-tab.is-active {
+    color: #e0f2fe;
+    background:
+        linear-gradient(135deg, rgba(0, 245, 255, 0.16), rgba(168, 85, 247, 0.1)),
+        rgba(9, 9, 22, 0.92);
+}
+
+.app-provider-dashboard-card,
+.app-provider-section,
+.app-provider-docs,
+.app-provider-validation,
+.admin-telegram-bots__summary-card,
+.admin-telegram-bots__panel,
+.admin-telegram-bots__card,
+.admin-telegram-bots__runtime-card,
+.admin-telegram-bots__drawer,
+.admin-telegram-bots__checkbox-card,
+.admin-telegram-bots__secret-card,
+.admin-telegram-bots__audit-card,
+.admin-telegram-bots__empty {
+    contain: paint;
+}
+
+.admin-console__search-input,
+.admin-console__icon-button,
+.app-provider-inline-tab,
+.app-provider-tab,
+.app-provider-docs__link,
+.admin-telegram-bots__input,
+.admin-telegram-bots__select,
+.admin-telegram-bots__textarea,
+.admin-telegram-bots__filter,
+.admin-telegram-bots__tab,
+.admin-telegram-bots__action,
+.admin-telegram-bots__tag,
+.admin-telegram-bots__secret-value {
+    border-color: rgba(0, 245, 255, 0.2);
+    color: var(--cyber-text-strong);
+    background:
+        linear-gradient(135deg, rgba(0, 245, 255, 0.07), rgba(168, 85, 247, 0.045)), #111122;
+    background-repeat: no-repeat;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.035);
+}
+
+.admin-console__search-input::placeholder,
+.admin-telegram-bots__input::placeholder,
+.admin-telegram-bots__textarea::placeholder {
+    color: rgba(229, 231, 235, 0.58);
+}
+
+.admin-console__topbar-subtitle,
+.admin-console__breadcrumbs,
+.admin-console__account span,
+.app-provider-page__text,
+.app-provider-dashboard-card span,
+.app-provider-card__intro,
+.app-provider-note,
+.app-provider-docs__content,
+.admin-telegram-bots__helper,
+.admin-telegram-bots__meta,
+.admin-telegram-bots__card p,
+.admin-telegram-bots__panel p {
+    color: var(--cyber-text-muted);
+}
+
+.admin-console__breadcrumbs strong,
+.admin-console__account strong,
+.app-provider-page__title,
+.app-provider-dashboard-card strong,
+.app-provider-section__head h2,
+.app-provider-docs__section-title,
+.admin-telegram-bots__page-copy h1,
+.admin-telegram-bots__section-title,
+.admin-telegram-bots__card h2,
+.admin-telegram-bots__card h3,
+.admin-telegram-bots__panel h2,
+.admin-telegram-bots__panel h3 {
+    color: var(--cyber-text-strong);
+}
+
+.app-provider-page__icon,
+.app-provider-dashboard-card__icon,
+.admin-telegram-bots__summary-icon,
+.admin-telegram-bots__bot-avatar,
+.admin-telegram-bots__status-icon {
+    color: #020617;
+    background: linear-gradient(135deg, var(--cyber-cyan), var(--cyber-purple));
+    box-shadow: var(--cyber-glow-cyan);
+}
+
+.app-provider-inline-tab:hover,
+.app-provider-inline-tab.is-active,
+.app-provider-dashboard-card[aria-current='page'],
+.app-provider-tab:hover,
+.app-provider-tab.is-active,
+.app-provider-dashboard-card:hover,
+.admin-telegram-bots__tab:hover,
+.admin-telegram-bots__tab.is-active,
+.admin-telegram-bots__bot-card:hover,
+.admin-telegram-bots__bot-card.is-active {
+    color: var(--cyber-text-strong);
+    border-color: rgba(0, 245, 255, 0.32);
+    background:
+        linear-gradient(135deg, rgba(0, 245, 255, 0.14), rgba(255, 43, 214, 0.08)),
+        rgba(255, 255, 255, 0.055);
+    box-shadow: var(--cyber-glow-cyan);
+}
+
+.admin-console__sidebar {
+    border-right-color: var(--cyber-border);
+    background:
+        radial-gradient(circle at 0% 0%, rgba(0, 245, 255, 0.11), transparent 28%),
+        linear-gradient(180deg, rgba(18, 18, 36, 0.98), rgba(8, 8, 20, 0.98));
+}
+
+.admin-console__brand {
+    min-width: 0;
+    color: var(--cyber-text);
+    border: 1px solid rgba(0, 245, 255, 0.16);
+    border-radius: 18px;
+    background:
+        linear-gradient(135deg, rgba(0, 245, 255, 0.08), rgba(168, 85, 247, 0.05)),
+        rgba(255, 255, 255, 0.035);
+}
+
+.admin-console__brand-mark,
+.admin-console__account-badge {
+    color: #031018;
+    background: linear-gradient(135deg, var(--cyber-cyan), var(--cyber-purple));
+    box-shadow: var(--cyber-glow-cyan);
+}
+
+.admin-console__brand-copy strong {
+    display: block;
+    overflow: hidden;
+    color: var(--cyber-text-strong);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.admin-console__brand-copy small,
+.admin-console__nav-label {
+    color: var(--cyber-text-muted);
+}
+
+.admin-console__brand-copy small,
+.admin-console__nav-link span,
+.admin-console__subnav-link span {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.admin-console__nav-link,
+.admin-console__subnav-link,
+.admin-console__nav-parent,
+.admin-console__nav-toggle {
+    color: var(--cyber-text-muted);
+}
+
+.admin-console__nav-link,
+.admin-console__subnav-link,
+.admin-console__nav-parent {
+    min-width: 0;
+    border: 1px solid transparent;
+}
+
+.admin-console__subnav-link {
+    background:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.018)),
+        rgba(8, 8, 20, 0.72);
+}
+
+.admin-console__nav-link:hover,
+.admin-console__nav-link:focus-visible,
+.admin-console__nav-parent:hover,
+.admin-console__nav-parent.is-open,
+.admin-console__subnav-link:hover,
+.admin-console__subnav-link:focus-visible,
+.admin-console__subnav-link.is-active {
+    color: var(--cyber-text-strong);
+    border-color: rgba(0, 245, 255, 0.2);
+    background:
+        linear-gradient(135deg, rgba(0, 245, 255, 0.1), rgba(168, 85, 247, 0.07)),
+        rgba(255, 255, 255, 0.045);
+}
+
+.admin-console__nav-link.is-active,
+.admin-console__nav-parent.is-active,
+.admin-console__nav-parent.is-active:hover,
+.admin-console__nav-parent.is-active.is-open {
+    color: #031018;
+    border-color: rgba(0, 245, 255, 0.48);
+    background: linear-gradient(135deg, var(--cyber-cyan), #7dd3fc 48%, #a78bfa);
+    box-shadow: var(--cyber-glow-cyan);
+}
+
+.admin-console__nav-parent.is-active .admin-console__nav-link,
+.admin-console__nav-parent.is-active .admin-console__nav-toggle {
+    color: #031018;
+}
+
+.admin-console__topbar {
+    border-bottom-color: var(--cyber-border);
+    background:
+        radial-gradient(circle at 82% 0%, rgba(0, 245, 255, 0.12), transparent 30%),
+        linear-gradient(135deg, rgba(22, 22, 42, 0.96), rgba(10, 10, 23, 0.96));
+    box-shadow: 0 18px 36px rgba(0, 0, 0, 0.22);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+}
+
+.admin-console__account {
+    border-color: rgba(0, 245, 255, 0.2);
+    color: var(--cyber-text);
+    background:
+        linear-gradient(135deg, rgba(0, 245, 255, 0.075), rgba(168, 85, 247, 0.05)),
+        rgba(255, 255, 255, 0.04);
+}
+
+.admin-console__search .app-icon,
+.admin-console__icon-button .app-icon {
+    color: var(--cyber-cyan);
+}
+
+.admin-console__search {
+    isolation: isolate;
+}
+
+.admin-console__search > .app-icon {
+    z-index: 2;
+    pointer-events: none;
+}
+
+.admin-console__search-menu {
+    position: absolute;
+    top: calc(100% + 0.45rem);
+    left: 0;
+    z-index: 20;
+    display: grid;
+    gap: 0.35rem;
+    width: min(22rem, calc(100vw - 2rem));
+    padding: 0.45rem;
+    border: 1px solid rgba(0, 245, 255, 0.2);
+    border-radius: 16px;
+    background:
+        radial-gradient(circle at 0% 0%, rgba(0, 245, 255, 0.1), transparent 34%),
+        linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03)),
+        rgba(10, 10, 23, 0.98);
+    box-shadow:
+        0 20px 38px rgba(0, 0, 0, 0.34),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.035);
+}
+
+.admin-console__search-option {
+    display: grid;
+    grid-template-columns: 1rem minmax(0, 1fr);
+    align-items: center;
+    gap: 0.65rem;
+    min-height: 3rem;
+    padding: 0.55rem 0.65rem;
+    border: 1px solid transparent;
+    border-radius: 12px;
+    color: var(--cyber-text);
+    text-align: left;
+    background: transparent;
+}
+
+.admin-console__search-empty {
+    min-height: 2.7rem;
+    display: grid;
+    place-items: center;
+    padding: 0.55rem 0.7rem;
+    border: 1px dashed rgba(0, 245, 255, 0.18);
+    border-radius: 12px;
+    color: var(--cyber-text-muted);
+    background: rgba(255, 255, 255, 0.035);
+    font-size: 0.78rem;
+    text-align: center;
+}
+
+.admin-console__search-option:hover,
+.admin-console__search-option:focus-visible {
+    outline: none;
+    border-color: rgba(0, 245, 255, 0.28);
+    color: var(--cyber-text-strong);
+    background:
+        linear-gradient(135deg, rgba(0, 245, 255, 0.12), rgba(168, 85, 247, 0.08)),
+        rgba(255, 255, 255, 0.05);
+    box-shadow: var(--cyber-glow-cyan);
+}
+
+.admin-console__search-option .app-icon {
+    color: var(--cyber-cyan);
+}
+
+.admin-console__search-option span {
+    display: grid;
+    gap: 0.1rem;
+    min-width: 0;
+}
+
+.admin-console__search-option strong,
+.admin-console__search-option small {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.admin-console__search-option strong {
+    color: inherit;
+    font-size: 0.82rem;
+}
+
+.admin-console__search-option small {
+    color: var(--cyber-text-muted);
+    font-size: 0.68rem;
+}
+
+.admin-console .app-button,
+.admin-telegram-bots__page-actions .app-button,
+.admin-telegram-bots__head-actions .app-button,
+.admin-telegram-bots__drawer-actions .app-button {
+    min-width: 0;
+    min-height: 40px;
+    padding: 0.62rem 0.95rem;
+    border-color: rgba(0, 245, 255, 0.22);
+    border-radius: 14px;
+    color: var(--cyber-text-strong);
+    font-size: 0.86rem;
+    line-height: 1.15;
+    text-align: center;
+    background:
+        linear-gradient(135deg, rgba(0, 245, 255, 0.1), rgba(168, 85, 247, 0.07)),
+        rgba(12, 12, 26, 0.9);
+    background-repeat: no-repeat;
+    box-shadow:
+        inset 0 0 0 1px rgba(255, 255, 255, 0.035),
+        0 12px 24px rgba(0, 0, 0, 0.2);
+}
+
+.admin-console .app-button:hover:not(:disabled),
+.admin-console .app-button:focus-visible:not(:disabled),
+.admin-telegram-bots__page-actions .app-button:hover:not(:disabled),
+.admin-telegram-bots__page-actions .app-button:focus-visible:not(:disabled),
+.admin-telegram-bots__head-actions .app-button:hover:not(:disabled),
+.admin-telegram-bots__head-actions .app-button:focus-visible:not(:disabled),
+.admin-telegram-bots__drawer-actions .app-button:hover:not(:disabled),
+.admin-telegram-bots__drawer-actions .app-button:focus-visible:not(:disabled) {
+    outline: none;
+    border-color: rgba(0, 245, 255, 0.42);
+    color: var(--cyber-text-strong);
+    background:
+        linear-gradient(135deg, rgba(0, 245, 255, 0.16), rgba(168, 85, 247, 0.11)),
+        rgba(255, 255, 255, 0.055);
+    box-shadow:
+        0 0 0 3px rgba(0, 245, 255, 0.09),
+        var(--cyber-glow-cyan);
+    transform: translateY(-1px);
+}
+
+.admin-console .app-button--primary,
+.admin-telegram-bots__page-actions .app-button--primary,
+.admin-telegram-bots__head-actions .app-button--primary,
+.admin-telegram-bots__drawer-actions .app-button--primary {
+    border-color: rgba(0, 245, 255, 0.48);
+    color: #031018;
+    background: linear-gradient(135deg, var(--cyber-cyan), #7dd3fc 48%, #a78bfa);
+    box-shadow:
+        0 0 0 1px rgba(0, 245, 255, 0.2),
+        0 14px 28px rgba(0, 245, 255, 0.18);
+}
+
+.admin-console .app-button--primary:hover:not(:disabled),
+.admin-console .app-button--primary:focus-visible:not(:disabled),
+.admin-telegram-bots__page-actions .app-button--primary:hover:not(:disabled),
+.admin-telegram-bots__page-actions .app-button--primary:focus-visible:not(:disabled),
+.admin-telegram-bots__head-actions .app-button--primary:hover:not(:disabled),
+.admin-telegram-bots__head-actions .app-button--primary:focus-visible:not(:disabled),
+.admin-telegram-bots__drawer-actions .app-button--primary:hover:not(:disabled),
+.admin-telegram-bots__drawer-actions .app-button--primary:focus-visible:not(:disabled) {
+    color: #031018;
+    background: linear-gradient(135deg, #6ffbff, #9be7ff 46%, #c4b5fd);
+}
+
+.admin-console .app-button--ghost,
+.admin-telegram-bots__page-actions .app-button--ghost,
+.admin-telegram-bots__head-actions .app-button--ghost,
+.admin-telegram-bots__drawer-actions .app-button--ghost {
+    color: #dbeafe;
+    background:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.025)),
+        rgba(14, 14, 29, 0.88);
+}
+
+.admin-console .app-button--danger,
+.admin-telegram-bots__page-actions .app-button--danger,
+.admin-telegram-bots__head-actions .app-button--danger,
+.admin-telegram-bots__drawer-actions .app-button--danger {
+    border-color: rgba(255, 77, 109, 0.38);
+    color: #ffe4ea;
+    background:
+        linear-gradient(135deg, rgba(255, 77, 109, 0.18), rgba(255, 43, 214, 0.08)),
+        rgba(22, 9, 20, 0.9);
+}
+
+.admin-console .app-button--danger:hover:not(:disabled),
+.admin-console .app-button--danger:focus-visible:not(:disabled),
+.admin-telegram-bots__page-actions .app-button--danger:hover:not(:disabled),
+.admin-telegram-bots__page-actions .app-button--danger:focus-visible:not(:disabled),
+.admin-telegram-bots__head-actions .app-button--danger:hover:not(:disabled),
+.admin-telegram-bots__head-actions .app-button--danger:focus-visible:not(:disabled),
+.admin-telegram-bots__drawer-actions .app-button--danger:hover:not(:disabled),
+.admin-telegram-bots__drawer-actions .app-button--danger:focus-visible:not(:disabled) {
+    border-color: rgba(255, 77, 109, 0.52);
+    color: #fff1f4;
+    background:
+        linear-gradient(135deg, rgba(255, 77, 109, 0.24), rgba(255, 43, 214, 0.13)),
+        rgba(30, 8, 24, 0.92);
+    box-shadow:
+        0 0 0 3px rgba(255, 77, 109, 0.09),
+        0 0 18px rgba(255, 43, 214, 0.15);
+}
+
+.admin-console .app-input,
+.admin-console select,
+.admin-console textarea,
+.admin-telegram-bots__filter-select select,
+.admin-telegram-bots__search .app-input,
+.admin-telegram-bots__tag-input,
+.app-user-edit-modal .app-input,
+.app-user-edit-modal select {
+    border-color: rgba(0, 245, 255, 0.22);
+    color: var(--cyber-text-strong);
+    background:
+        linear-gradient(135deg, rgba(0, 245, 255, 0.06), rgba(168, 85, 247, 0.04)),
+        rgba(7, 7, 18, 0.9);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.035);
+}
+
+.admin-console .app-input:focus,
+.admin-console select:focus,
+.admin-console textarea:focus,
+.admin-telegram-bots__filter-select select:focus,
+.admin-telegram-bots__search .app-input:focus,
+.admin-telegram-bots__tag-input:focus {
+    outline: none;
+    border-color: rgba(0, 245, 255, 0.45);
+    box-shadow:
+        0 0 0 3px rgba(0, 245, 255, 0.12),
+        var(--cyber-glow-cyan);
+}
+
+.admin-console .app-table-wrap,
+.admin-telegram-bots__table-card {
+    border-color: var(--cyber-border);
+    border-radius: 20px;
+    background:
+        radial-gradient(circle at 0% 0%, rgba(0, 245, 255, 0.08), transparent 28%),
+        rgba(6, 6, 18, 0.72);
+    box-shadow: var(--cyber-shadow-card);
+}
+
+.admin-console .app-table {
+    color: var(--cyber-text);
+}
+
+.admin-telegram-bots__filter-row,
+.admin-telegram-bots__chip-toolbar,
+.admin-telegram-bots__pagination,
+.admin-telegram-bots__pagination-actions,
+.admin-telegram-bots__badge-row,
+.admin-telegram-bots__tag-list {
+    min-width: 0;
+}
+
+.admin-telegram-bots__chip-toolbar .app-button {
+    min-height: 34px;
+    padding: 0.48rem 0.7rem;
+    border-radius: 11px;
+    font-size: 0.78rem;
+}
+
+.admin-console .app-table thead th,
+.admin-telegram-bots__table-head {
+    border-color: rgba(0, 245, 255, 0.22);
+    color: #9ca3af;
+    background:
+        linear-gradient(135deg, rgba(0, 245, 255, 0.13), rgba(168, 85, 247, 0.07)),
+        rgba(6, 6, 18, 0.88);
+}
+
+.admin-telegram-bots__table-head span,
+.admin-telegram-bots__row > span,
+.admin-telegram-bots__row-copy,
+.admin-telegram-bots__metadata-row,
+.admin-telegram-bots__metadata-row dd,
+.admin-telegram-bots__metadata-row dt {
+    min-width: 0;
+}
+
+.admin-telegram-bots__row-copy strong,
+.admin-telegram-bots__row-copy small,
+.admin-telegram-bots__metadata-row dd,
+.admin-telegram-bots__json,
+.admin-telegram-bots__secret-row code {
+    overflow-wrap: anywhere;
+}
+
+.admin-console .app-table tbody td,
+.admin-telegram-bots__row {
+    border-color: rgba(255, 255, 255, 0.08);
+    color: var(--cyber-text);
+    background: rgba(255, 255, 255, 0.035);
+}
+
+.admin-console .app-table tbody tr:hover td,
+.admin-telegram-bots__row:hover,
+.admin-telegram-bots__row:focus-visible {
+    outline: none;
+    color: var(--cyber-text-strong);
+    background:
+        linear-gradient(135deg, rgba(0, 245, 255, 0.11), rgba(168, 85, 247, 0.075)),
+        rgba(255, 255, 255, 0.052);
+}
+
+.app-user-admin-table__role-badge,
+.app-user-admin-table__provider-icon,
+.app-user-edit-modal__provider-chip,
+.admin-telegram-bots__badge,
+.admin-telegram-bots__chip,
+.admin-telegram-bots__tag,
+.admin-telegram-bots__secret-row button {
+    border-color: rgba(0, 245, 255, 0.22);
+    color: #cffafe;
+    background:
+        linear-gradient(135deg, rgba(0, 245, 255, 0.11), rgba(168, 85, 247, 0.07)),
+        rgba(9, 9, 22, 0.82);
+}
+
+.admin-telegram-bots__badge--danger,
+.admin-telegram-bots__menu-list button.is-danger {
+    color: #fecdd3;
+}
+
+.app-user-edit-modal__hero,
+.app-user-edit-modal__panel,
+.app-user-edit-modal__meta-card,
+.app-user-edit-modal__provider-empty,
+.admin-telegram-bots__modal,
+.admin-telegram-bots__menu-list,
+.admin-telegram-bots__runtime-list > div,
+.admin-telegram-bots__json,
+.admin-telegram-bots__details,
+.admin-telegram-bots__secret-row {
+    border-color: var(--cyber-border);
+    color: var(--cyber-text);
+    background:
+        radial-gradient(circle at 0% 0%, rgba(0, 245, 255, 0.08), transparent 30%),
+        linear-gradient(135deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.028)),
+        rgba(12, 12, 28, 0.94);
+    box-shadow:
+        inset 0 0 0 1px rgba(255, 255, 255, 0.035),
+        0 18px 36px rgba(0, 0, 0, 0.26);
+}
+
+.admin-telegram-bots__audit-timeline,
+.admin-telegram-bots__metadata-list {
+    color: var(--cyber-text);
+}
+
+.admin-telegram-bots__metadata-list {
+    border-color: rgba(0, 245, 255, 0.16);
+    border-radius: 14px;
+    background:
+        linear-gradient(135deg, rgba(0, 245, 255, 0.07), rgba(168, 85, 247, 0.045)),
+        rgba(6, 6, 18, 0.74);
+}
+
+.admin-telegram-bots__metadata-row + .admin-telegram-bots__metadata-row {
+    border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.app-user-edit-modal__meta-label,
+.app-user-edit-modal__provider-empty,
+.admin-telegram-bots__secret-row > span,
+.admin-telegram-bots__details summary,
+.admin-telegram-bots__section-eyebrow {
+    color: var(--cyber-text-muted);
+}
+
+.app-user-edit-modal__value,
+.admin-telegram-bots__secret-row strong,
+.admin-telegram-bots__json,
+.admin-telegram-bots__details strong {
+    color: var(--cyber-text-strong);
+}
+
+.admin-telegram-bots__drawer-backdrop,
+.app-modal-backdrop {
+    background:
+        radial-gradient(circle at 50% 0%, rgba(0, 245, 255, 0.12), transparent 38%),
+        rgba(3, 3, 12, 0.72);
+    background-repeat: no-repeat;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+}
+
+.admin-telegram-bots__drawer-backdrop {
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
+.app-modal {
+    border: 1px solid var(--cyber-border);
+    color: var(--cyber-text);
+    background:
+        radial-gradient(circle at 0% 0%, rgba(0, 245, 255, 0.14), transparent 34%),
+        radial-gradient(circle at 100% 0%, rgba(255, 43, 214, 0.1), transparent 32%),
+        linear-gradient(135deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.035)), #101020;
+    background-repeat: no-repeat;
+    box-shadow:
+        0 0 0 1px rgba(255, 255, 255, 0.045),
+        0 28px 64px rgba(0, 0, 0, 0.46);
+}
+
+.app-modal__body {
+    min-width: 0;
+    color: var(--cyber-text);
+}
+
+.app-modal__eyebrow {
+    color: var(--cyber-cyan);
+}
+
+.app-modal__title {
+    color: var(--cyber-text-strong);
+}
+
+.app-modal__text {
+    color: var(--cyber-text-muted);
+}
+
+.app-modal__eyebrow,
+.app-modal__title,
+.app-modal__text,
+.admin-telegram-bots__drawer-head h3,
+.admin-telegram-bots__drawer-head p,
+.admin-telegram-bots__modal .admin-telegram-bots__field,
+.admin-telegram-bots__modal .app-input {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+}
+
+.admin-telegram-bots__menu-list {
+    z-index: 35;
+    width: min(17rem, calc(100vw - 2rem));
+    min-width: 13rem;
+    padding: 0.45rem;
+    border-radius: 16px;
+}
+
+.admin-telegram-bots__menu-list button {
+    min-height: 40px;
+    width: 100%;
+    color: var(--cyber-text);
+    border-radius: 12px;
+}
+
+.admin-telegram-bots__menu-list button:hover,
+.admin-telegram-bots__menu-list button:focus-visible,
+.admin-telegram-bots__chip:hover,
+.admin-telegram-bots__chip:focus-visible,
+.admin-telegram-bots__chip.is-selected,
+.admin-telegram-bots__secret-row button:hover,
+.admin-telegram-bots__secret-row button:focus-visible,
+.admin-telegram-bots__details summary:hover,
+.admin-telegram-bots__details summary:focus-visible {
+    outline: none;
+    color: var(--cyber-text-strong);
+    background:
+        linear-gradient(135deg, rgba(0, 245, 255, 0.14), rgba(255, 43, 214, 0.08)),
+        rgba(255, 255, 255, 0.055);
+    box-shadow: var(--cyber-glow-cyan);
+}
+
+.admin-telegram-bots__details summary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.42rem;
+    min-height: 2rem;
+    padding: 0.3rem 0.55rem;
+    border: 1px solid rgba(0, 245, 255, 0.18);
+    border-radius: 999px;
+    white-space: normal;
+}
+
+.admin-telegram-bots__details summary .app-icon {
+    width: 0.86rem;
+    height: 0.86rem;
+    flex: 0 0 0.86rem;
+}
+
+.admin-telegram-bots__metadata-list {
+    min-width: 0;
+}
+
+.admin-telegram-bots__metadata-row {
+    padding: 0.55rem 0.65rem;
+    border: 1px solid rgba(0, 245, 255, 0.14);
+    border-radius: 0.75rem;
+    background: rgba(255, 255, 255, 0.035);
+}
+
+.admin-telegram-bots__metadata-row dd,
+.admin-telegram-bots__json,
+.admin-telegram-bots code {
+    overflow-wrap: anywhere;
+}
+
+.admin-telegram-bots__json {
+    max-height: 22rem;
+    border: 1px solid rgba(0, 245, 255, 0.16);
+    scrollbar-color: rgba(0, 245, 255, 0.42) rgba(255, 255, 255, 0.06);
+}
+
+.admin-telegram-bots__icon-button,
+.admin-telegram-bots__page-button,
+.admin-telegram-bots__menu summary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    min-width: 0;
+    border-color: rgba(0, 245, 255, 0.22);
+    color: var(--cyber-text-strong);
+    background:
+        linear-gradient(135deg, rgba(0, 245, 255, 0.09), rgba(168, 85, 247, 0.06)),
+        rgba(10, 10, 23, 0.9);
+}
+
+.admin-telegram-bots__menu[open] summary {
+    border-color: rgba(0, 245, 255, 0.38);
+    background:
+        linear-gradient(135deg, rgba(0, 245, 255, 0.14), rgba(168, 85, 247, 0.1)),
+        rgba(255, 255, 255, 0.055);
+    box-shadow: var(--cyber-glow-cyan);
+}
+
+.admin-telegram-bots__menu[open] summary .app-icon {
+    transform: rotate(180deg);
+}
+
+.admin-telegram-bots__menu summary {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+}
+
+.admin-telegram-bots__menu summary::marker,
+.admin-telegram-bots__menu summary::-webkit-details-marker {
+    display: none;
+    content: '';
+}
+
+.admin-telegram-bots__icon-button:hover,
+.admin-telegram-bots__icon-button:focus-visible,
+.admin-telegram-bots__page-button:hover,
+.admin-telegram-bots__page-button:focus-visible,
+.admin-telegram-bots__page-button.is-active,
+.admin-telegram-bots__menu summary:hover,
+.admin-telegram-bots__menu summary:focus-visible {
+    border-color: rgba(0, 245, 255, 0.38);
+    color: var(--cyber-text-strong);
+    background:
+        linear-gradient(135deg, rgba(0, 245, 255, 0.14), rgba(168, 85, 247, 0.1)),
+        rgba(255, 255, 255, 0.055);
+    box-shadow: var(--cyber-glow-cyan);
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__tabs {
+    border-bottom-color: rgba(0, 245, 255, 0.18);
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__tab {
+    color: var(--cyber-text-muted);
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__tab[aria-selected='true'] {
+    color: var(--cyber-cyan);
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__tab:hover,
+.admin-telegram-bots--dashboard .admin-telegram-bots__tab:focus-visible,
+.admin-telegram-bots--dashboard .admin-telegram-bots__tab.is-active {
+    color: var(--cyber-cyan);
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__tab.is-active::after {
+    background: linear-gradient(90deg, var(--cyber-cyan), var(--cyber-purple));
+    box-shadow: var(--cyber-glow-cyan);
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__info-row,
+.admin-telegram-bots--dashboard .admin-telegram-bots__secret-row {
+    border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__info-row span,
+.admin-telegram-bots__runtime-list > div span,
+.admin-telegram-bots__metadata-row dt,
+.admin-telegram-bots__audit-header span,
+.admin-telegram-bots__audit-header time,
+.admin-telegram-bots__field small {
+    color: var(--cyber-text-muted);
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__info-row strong,
+.admin-telegram-bots__runtime-list > div strong,
+.admin-telegram-bots__metadata-row dd,
+.admin-telegram-bots__audit-header strong,
+.admin-telegram-bots__drawer-head h3,
+.admin-telegram-bots__field {
+    color: var(--cyber-text-strong);
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__metric,
+.admin-telegram-bots--dashboard .admin-telegram-bots__webhook-box,
+.admin-telegram-bots--dashboard
+    .admin-telegram-bots__webhook-box
+    .admin-telegram-bots__info-row:first-child
+    strong,
+.admin-telegram-bots--dashboard .admin-telegram-bots__operations-grid button,
+.admin-telegram-bots__tag-input,
+.admin-telegram-bots__tag-remove {
+    border-color: rgba(0, 245, 255, 0.18);
+    color: var(--cyber-text);
+    background:
+        linear-gradient(135deg, rgba(0, 245, 255, 0.08), rgba(168, 85, 247, 0.05)),
+        rgba(8, 8, 20, 0.78);
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__metric-label {
+    color: var(--cyber-text-muted);
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__metric-value,
+.admin-telegram-bots--dashboard .admin-telegram-bots__runtime-card > div:first-child strong {
+    color: var(--cyber-text-strong);
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__operations-grid button .app-icon,
+.admin-telegram-bots__tag-remove,
+.admin-telegram-bots__details summary {
+    color: var(--cyber-cyan);
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__operations-grid button:hover,
+.admin-telegram-bots--dashboard .admin-telegram-bots__operations-grid button:focus-visible,
+.admin-telegram-bots__tag-remove:hover,
+.admin-telegram-bots__tag-remove:focus-visible,
+.admin-telegram-bots__checkbox-card:focus-within {
+    outline: none;
+    border-color: rgba(0, 245, 255, 0.38);
+    color: var(--cyber-text-strong);
+    background:
+        linear-gradient(135deg, rgba(0, 245, 255, 0.14), rgba(168, 85, 247, 0.1)),
+        rgba(255, 255, 255, 0.055);
+    box-shadow: var(--cyber-glow-cyan);
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__operations-grid button.is-danger,
+.admin-telegram-bots--dashboard .admin-telegram-bots__operations-grid button.is-danger .app-icon,
+.admin-telegram-bots__secret-error {
+    color: #fecdd3;
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__operations-grid button.is-danger {
+    border-color: rgba(255, 77, 109, 0.34);
+    background:
+        linear-gradient(135deg, rgba(255, 77, 109, 0.16), rgba(255, 43, 214, 0.07)),
+        rgba(20, 8, 18, 0.88);
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__operations-grid button:disabled,
+.admin-telegram-bots--dashboard .admin-telegram-bots__operations-grid button:disabled:hover {
+    color: rgba(229, 231, 235, 0.48);
+    border-color: rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.035);
+    box-shadow: none;
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__operations-grid button:disabled .app-icon {
+    color: rgba(229, 231, 235, 0.42);
+}
+
+.admin-telegram-bots__page-button:disabled,
+.admin-telegram-bots__page-button:disabled:hover,
+.admin-telegram-bots__inline-action:disabled,
+.admin-telegram-bots__inline-action:disabled:hover,
+.admin-telegram-bots__menu-list button:disabled,
+.admin-telegram-bots__menu-list button:disabled:hover,
+.admin-console .app-button:disabled,
+.admin-console .app-button:disabled:hover {
+    cursor: not-allowed;
+    opacity: 0.52;
+    transform: none;
+    box-shadow: none;
+}
+
+.admin-telegram-bots__page-button .app-icon {
+    width: 0.88rem;
+    height: 0.88rem;
+}
+
+.admin-telegram-bots__pagination-actions
+    .admin-telegram-bots__page-button:not(.admin-telegram-bots__page-button--next)
+    .app-icon {
+    transform: rotate(90deg);
+}
+
+.admin-telegram-bots__page-button--next .app-icon {
+    transform: rotate(-90deg);
+}
+
+.admin-telegram-bots__page-button:disabled {
+    pointer-events: none;
+}
+
+.admin-console .app-alert,
+.admin-telegram-bots .app-alert {
+    border-color: var(--cyber-border);
+    color: var(--cyber-text);
+    background:
+        radial-gradient(circle at 0% 0%, rgba(0, 245, 255, 0.08), transparent 30%),
+        linear-gradient(135deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.028)),
+        rgba(12, 12, 28, 0.94);
+    box-shadow: var(--cyber-shadow-card);
+}
+
+.admin-console .app-alert--success,
+.admin-telegram-bots .app-alert--success,
+.admin-console .app-provider-note--success {
+    border-color: rgba(0, 255, 133, 0.28);
+    color: #bbf7d0;
+    background:
+        linear-gradient(135deg, rgba(0, 255, 133, 0.13), rgba(0, 245, 255, 0.055)),
+        rgba(7, 18, 14, 0.9);
+}
+
+.admin-console .app-alert--danger,
+.admin-telegram-bots .app-alert--danger,
+.admin-console .app-provider-note--error {
+    border-color: rgba(255, 77, 109, 0.34);
+    color: #fecdd3;
+    background:
+        linear-gradient(135deg, rgba(255, 77, 109, 0.16), rgba(255, 43, 214, 0.07)),
+        rgba(22, 8, 18, 0.9);
+}
+
+.admin-console .app-provider-note--warning {
+    border-color: rgba(255, 176, 32, 0.32);
+    color: #fde68a;
+    background:
+        linear-gradient(135deg, rgba(255, 176, 32, 0.14), rgba(255, 43, 214, 0.055)),
+        rgba(21, 15, 6, 0.9);
+}
+
+.admin-console .app-provider-note--info {
+    border-color: rgba(0, 245, 255, 0.28);
+    color: #cffafe;
+    background:
+        linear-gradient(135deg, rgba(0, 245, 255, 0.13), rgba(168, 85, 247, 0.07)),
+        rgba(8, 12, 24, 0.9);
+}
+
+.admin-console .app-provider-note {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.admin-console .app-field__label,
+.admin-console .app-label,
+.admin-console .app-provider-note strong,
+.admin-console .app-provider-card__eyebrow,
+.admin-console .app-form-card__title {
+    color: var(--cyber-text-strong);
+}
+
+.admin-console .app-field,
+.admin-console .app-label,
+.admin-console .app-field__label,
+.admin-console .app-field__help,
+.admin-console .app-field__hint,
+.admin-console .app-field__error {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.admin-console .app-field__help,
+.admin-console .app-field__hint,
+.admin-console .app-form-card__text,
+.admin-console .app-user-admin-toolbar__summary,
+.admin-console .app-user-admin-table__meta,
+.admin-console .app-user-admin-table__empty,
+.admin-console .app-user-admin-table__provider-empty,
+.admin-console .app-user-edit-modal__provider-empty,
+.admin-console .app-provider-lock__text,
+.admin-console .app-provider-docs__list,
+.admin-console .app-provider-docs__content {
+    color: var(--cyber-text-muted);
+}
+
+.admin-console .app-field__error {
+    color: #fecdd3;
+}
+
+.admin-console .app-field__badge,
+.admin-console .app-secret-field__masked-label {
+    display: inline-flex;
+    align-items: center;
+    max-width: 100%;
+    border: 1px solid rgba(0, 255, 133, 0.24);
+    color: #bbf7d0;
+    background: rgba(0, 255, 133, 0.1);
+    overflow-wrap: anywhere;
+}
+
+.admin-console .app-input--invalid,
+.admin-console .app-input[aria-invalid='true'] {
+    border-color: rgba(255, 77, 109, 0.5);
+    box-shadow:
+        inset 0 0 0 1px rgba(255, 77, 109, 0.16),
+        0 0 0 3px rgba(255, 77, 109, 0.1);
+}
+
+.admin-console .app-sensitive-input__toggle,
+.admin-console .app-secret-field__button,
+.admin-console .app-user-admin-pagination__page {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    min-width: 0;
+    border-color: rgba(0, 245, 255, 0.22);
+    color: var(--cyber-text-strong);
+    background:
+        linear-gradient(135deg, rgba(0, 245, 255, 0.09), rgba(168, 85, 247, 0.06)),
+        rgba(10, 10, 23, 0.9);
+    box-shadow:
+        inset 0 0 0 1px rgba(255, 255, 255, 0.035),
+        0 10px 20px rgba(0, 0, 0, 0.16);
+}
+
+.admin-console .app-secret-field,
+.admin-console .app-secret-field__actions,
+.admin-console .app-sensitive-input,
+.admin-console .app-sensitive-input__control,
+.admin-console .app-secret-field__masked {
+    min-width: 0;
+}
+
+.admin-console .app-sensitive-input {
+    max-width: 100%;
+}
+
+.admin-console .app-sensitive-input__control {
+    padding-right: 3rem;
+}
+
+.admin-console .app-secret-field__button {
+    max-width: 100%;
+    white-space: normal;
+}
+
+.admin-console .app-sensitive-input__toggle:hover:not(:disabled),
+.admin-console .app-sensitive-input__toggle:focus-visible,
+.admin-console .app-secret-field__button:hover,
+.admin-console .app-secret-field__button:focus-visible,
+.admin-console .app-user-admin-pagination__page:hover,
+.admin-console .app-user-admin-pagination__page:focus-visible,
+.admin-console .app-user-admin-pagination__page.is-active {
+    outline: none;
+    border-color: rgba(0, 245, 255, 0.4);
+    color: var(--cyber-text-strong);
+    background:
+        linear-gradient(135deg, rgba(0, 245, 255, 0.15), rgba(168, 85, 247, 0.1)),
+        rgba(255, 255, 255, 0.055);
+    box-shadow: var(--cyber-glow-cyan);
+}
+
+.admin-console .app-sensitive-input__toggle:disabled,
+.admin-console .app-secret-field__button:disabled,
+.admin-console .app-user-admin-pagination__page:disabled {
+    cursor: not-allowed;
+    opacity: 0.52;
+    transform: none;
+    box-shadow: none;
+}
+
+.admin-console .app-secret-field__masked,
+.admin-console .app-input-preview-row,
+.admin-console .app-user-admin-table__provider-empty,
+.admin-console .app-user-edit-modal__provider-empty {
+    min-width: 0;
+    border-color: rgba(0, 245, 255, 0.2);
+    color: var(--cyber-text);
+    background:
+        linear-gradient(135deg, rgba(0, 245, 255, 0.07), rgba(168, 85, 247, 0.045)),
+        rgba(8, 8, 20, 0.78);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.035);
+}
+
+.admin-console .app-input-preview-row--compact {
+    align-items: stretch;
+}
+
+.admin-console .app-icon-preview {
+    min-width: 4.5rem;
+    overflow: hidden;
+}
+
+.admin-console .app-icon-preview span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.admin-console .app-secret-field__masked-value {
+    color: var(--cyber-text-strong);
+    overflow-wrap: anywhere;
+}
+
+.admin-console .app-user-admin-table__no,
+.admin-console .app-user-admin-table__count,
+.admin-console .app-user-admin-table__self-note {
+    color: var(--cyber-text-muted);
+}
+
+.admin-console .app-status-pill--success {
+    border-color: rgba(0, 255, 133, 0.28);
+    color: #bbf7d0;
+    background: rgba(0, 255, 133, 0.1);
+}
+
+.admin-console .app-status-pill--warning {
+    border-color: rgba(255, 176, 32, 0.32);
+    color: #fde68a;
+    background: rgba(255, 176, 32, 0.1);
+}
+
+.admin-console .app-status-pill--muted {
+    border-color: rgba(148, 163, 184, 0.22);
+    color: var(--cyber-text-muted);
+    background: rgba(255, 255, 255, 0.055);
+}
+
+.admin-console .app-provider-lock__badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.42rem;
+    color: #031018;
+    background: linear-gradient(135deg, var(--cyber-cyan), var(--cyber-purple));
+    box-shadow: var(--cyber-glow-cyan);
+}
+
+.admin-telegram-bots--dashboard {
+    color: var(--cyber-text);
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__page-copy h1,
+.admin-telegram-bots--dashboard .admin-telegram-bots__panel-head h3,
+.admin-telegram-bots--dashboard .admin-telegram-bots__detail-head h3,
+.admin-telegram-bots--dashboard .admin-telegram-bots__card-head h4,
+.admin-telegram-bots--dashboard .admin-telegram-bots__card h4,
+.admin-telegram-bots--dashboard .admin-telegram-bots__identity-copy h3,
+.admin-telegram-bots__empty strong {
+    color: var(--cyber-text-strong);
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__page-copy p,
+.admin-telegram-bots--dashboard .admin-telegram-bots__panel-head h3 span,
+.admin-telegram-bots--dashboard .admin-telegram-bots__identity-copy p,
+.admin-telegram-bots--dashboard .admin-telegram-bots__pagination,
+.admin-telegram-bots--dashboard .admin-telegram-bots__row-copy small,
+.admin-telegram-bots__empty {
+    color: var(--cyber-text-muted);
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__panel-head,
+.admin-telegram-bots--dashboard .admin-telegram-bots__filters,
+.admin-telegram-bots--dashboard .admin-telegram-bots__pagination,
+.admin-telegram-bots--dashboard .admin-telegram-bots__row {
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__panel--detail {
+    background: transparent;
+    box-shadow: none;
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__detail-head {
+    border-color: var(--cyber-border);
+    color: var(--cyber-text);
+    background:
+        radial-gradient(circle at 0% 0%, rgba(0, 245, 255, 0.1), transparent 30%),
+        linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03)),
+        rgba(12, 12, 28, 0.94);
+    box-shadow: var(--cyber-shadow-card);
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__page-actions .app-button--primary,
+.admin-telegram-bots__inline-action,
+.admin-telegram-bots--dashboard .admin-telegram-bots__head-actions .app-button--primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    min-height: 38px;
+    padding: 0.55rem 0.85rem;
+    border: 1px solid rgba(0, 245, 255, 0.28);
+    border-radius: 13px;
+    color: #031018;
+    background: linear-gradient(135deg, var(--cyber-cyan), #7dd3fc 48%, #a78bfa);
+    font-size: 0.82rem;
+    font-weight: 800;
+    line-height: 1.1;
+    box-shadow:
+        0 0 0 1px rgba(0, 245, 255, 0.18),
+        0 12px 24px rgba(0, 245, 255, 0.16);
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__page-actions .app-button--primary:hover,
+.admin-telegram-bots--dashboard
+    .admin-telegram-bots__page-actions
+    .app-button--primary:focus-visible,
+.admin-telegram-bots__inline-action:hover,
+.admin-telegram-bots__inline-action:focus-visible,
+.admin-telegram-bots--dashboard .admin-telegram-bots__head-actions .app-button--primary:hover,
+.admin-telegram-bots--dashboard
+    .admin-telegram-bots__head-actions
+    .app-button--primary:focus-visible {
+    outline: none;
+    color: #031018;
+    border-color: rgba(0, 245, 255, 0.48);
+    transform: translateY(-1px);
+    box-shadow:
+        0 0 0 3px rgba(0, 245, 255, 0.12),
+        var(--cyber-glow-cyan);
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__row {
+    color: var(--cyber-text);
+    background:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.018)),
+        rgba(7, 7, 18, 0.72);
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__row:hover,
+.admin-telegram-bots--dashboard .admin-telegram-bots__row:focus-visible,
+.admin-telegram-bots--dashboard .admin-telegram-bots__row.is-active {
+    background:
+        linear-gradient(135deg, rgba(0, 245, 255, 0.12), rgba(168, 85, 247, 0.08)),
+        rgba(255, 255, 255, 0.055);
+    box-shadow: inset 2px 0 0 rgba(0, 245, 255, 0.88);
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__row.is-active::before {
+    background: linear-gradient(180deg, var(--cyber-cyan), var(--cyber-purple));
+    box-shadow: var(--cyber-glow-cyan);
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__row-copy strong {
+    color: var(--cyber-text-strong);
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__row-default,
+.admin-telegram-bots--dashboard .admin-telegram-bots__filter-select .app-icon,
+.admin-telegram-bots--dashboard .admin-telegram-bots__search .app-icon {
+    color: var(--cyber-cyan);
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__filter-row {
+    align-items: stretch;
+    gap: 0.55rem;
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__filter-select {
+    min-width: 0;
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__filter-select select {
+    width: 100%;
+    min-width: 0;
+    padding-right: 2.2rem;
+    appearance: none;
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__filter-select .app-icon {
+    pointer-events: none;
+}
+
+.admin-telegram-bots__table-head span,
+.admin-telegram-bots__row > span,
+.admin-telegram-bots__row-copy {
+    min-width: 0;
+}
+
+.admin-telegram-bots__table-head span,
+.admin-telegram-bots__row-copy strong,
+.admin-telegram-bots__row-copy small {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__row-default {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    justify-self: end;
+    border: 1px solid rgba(0, 245, 255, 0.2);
+    border-radius: 999px;
+    background: rgba(0, 245, 255, 0.08);
+}
+
+.admin-telegram-bots__pagination {
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.admin-telegram-bots__pagination-actions {
+    align-items: center;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+}
+
+.admin-telegram-bots__page-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.2rem;
+    min-height: 2.2rem;
+}
+
+.admin-telegram-bots__page-button:first-child .app-icon {
+    transform: rotate(90deg);
+}
+
+.admin-telegram-bots__page-button--next .app-icon {
+    transform: rotate(-90deg);
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__avatar,
+.admin-telegram-bots--dashboard .admin-telegram-bots__avatar--primary {
+    border-color: rgba(0, 245, 255, 0.24);
+    color: #031018;
+    background: linear-gradient(135deg, var(--cyber-cyan), var(--cyber-purple));
+    box-shadow: var(--cyber-glow-cyan);
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__badge--prod,
+.admin-telegram-bots--dashboard .admin-telegram-bots__badge--staging,
+.admin-telegram-bots--dashboard .admin-telegram-bots__badge--purpose {
+    border-color: rgba(0, 245, 255, 0.24);
+    color: #cffafe;
+    background: rgba(0, 245, 255, 0.1);
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__badge--dev,
+.admin-telegram-bots--dashboard .admin-telegram-bots__badge--warning {
+    border-color: rgba(255, 176, 32, 0.32);
+    color: #fde68a;
+    background: rgba(255, 176, 32, 0.1);
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__badge--success,
+.admin-telegram-bots--dashboard .admin-telegram-bots__badge--soft-success {
+    border-color: rgba(0, 255, 133, 0.28);
+    color: #bbf7d0;
+    background: rgba(0, 255, 133, 0.1);
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__badge--danger {
+    border-color: rgba(255, 77, 109, 0.34);
+    color: #fecdd3;
+    background: rgba(255, 77, 109, 0.12);
+}
+
+.admin-telegram-bots__badge-dot,
+.admin-telegram-bots__status-dot {
+    background: var(--cyber-green);
+    box-shadow:
+        0 0 0 4px rgba(0, 255, 133, 0.12),
+        0 0 18px rgba(0, 255, 133, 0.28);
+}
+
+.admin-telegram-bots--dashboard
+    .admin-telegram-bots__summary-card
+    span:not(.admin-telegram-bots__summary-icon),
+.admin-telegram-bots--dashboard .admin-telegram-bots__summary-card small {
+    color: var(--cyber-text-muted);
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__summary-card strong {
+    color: var(--cyber-text-strong);
+}
+
+.admin-telegram-bots__empty {
+    border-color: rgba(0, 245, 255, 0.18);
+    background:
+        radial-gradient(circle at 50% 0%, rgba(0, 245, 255, 0.08), transparent 32%),
+        rgba(8, 8, 20, 0.7);
+}
+
+.admin-console .app-hero,
+.admin-console .app-provider-page__head,
+.admin-console .app-provider-docs__head {
+    border: 1px solid var(--cyber-border);
+    border-radius: 22px;
+    color: var(--cyber-text);
+    background:
+        radial-gradient(circle at 0% 0%, rgba(0, 245, 255, 0.11), transparent 32%),
+        radial-gradient(circle at 100% 0%, rgba(255, 43, 214, 0.07), transparent 30%),
+        linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03)),
+        rgba(12, 12, 28, 0.92);
+    box-shadow: var(--cyber-shadow-card);
+}
+
+.admin-console .app-provider-page__head,
+.admin-console .app-provider-docs,
+.admin-console .app-provider-docs__head,
+.admin-console .app-provider-docs__section,
+.admin-console .app-provider-docs__link,
+.admin-console .app-provider-docs__link > span,
+.admin-console .app-provider-docs__list li {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.admin-console .app-hero {
+    padding: 1.1rem 1.15rem;
+}
+
+.admin-console .app-hero__eyebrow,
+.admin-console .app-provider-card__eyebrow {
+    color: var(--cyber-cyan);
+}
+
+.admin-console .app-hero__title,
+.admin-console .app-provider-page__title {
+    color: var(--cyber-text-strong);
+}
+
+.admin-console .app-hero__text,
+.admin-console .app-provider-page__text {
+    color: var(--cyber-text-muted);
+}
+
+.admin-console .app-provider-card,
+.admin-console .app-provider-page,
+.admin-console .app-form,
+.admin-console .app-provider-actions,
+.admin-console .app-provider-switcher__tabs {
+    min-width: 0;
+}
+
+.admin-console .app-provider-inline-tabs {
+    align-items: center;
+    gap: 0.55rem;
+    flex-wrap: wrap;
+}
+
+.admin-console .app-provider-inline-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    min-height: 2.35rem;
+    border-color: rgba(0, 245, 255, 0.18);
+    color: var(--cyber-text-muted);
+    background:
+        linear-gradient(135deg, rgba(0, 245, 255, 0.055), rgba(168, 85, 247, 0.04)),
+        rgba(8, 8, 20, 0.68);
+}
+
+.admin-console .app-provider-dashboard-card:hover,
+.admin-console .app-provider-dashboard-card:focus-visible,
+.admin-console .app-provider-tab:hover,
+.admin-console .app-provider-tab:focus-visible,
+.admin-console .app-provider-inline-tab:hover,
+.admin-console .app-provider-inline-tab:focus-visible,
+.admin-console .app-provider-inline-tab.is-active,
+.admin-console .app-provider-inline-tab[aria-selected='true'] {
+    outline: none;
+    color: var(--cyber-text-strong);
+    transform: translateY(-1px);
+}
+
+.admin-console .app-provider-dashboard-card strong,
+.admin-console .app-provider-dashboard-card span,
+.admin-console .app-provider-tab span,
+.admin-console .app-provider-inline-tab span {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.admin-console .app-provider-inline-tab .app-icon {
+    width: 0.95rem;
+    height: 0.95rem;
+    color: var(--cyber-cyan);
+}
+
+.admin-console .app-provider-dashboard-card[aria-current='page'] {
+    transform: translateY(-1px);
+}
+
+.admin-console .app-provider-dashboard-card__icon .app-icon {
+    width: 1.3rem;
+    height: 1.3rem;
+}
+
+.admin-console .app-provider-grid,
+.admin-console .app-provider-dashboard-grid,
+.admin-console .app-provider-docs__links,
+.admin-console .app-provider-docs__content {
+    min-width: 0;
+}
+
+.admin-console .app-provider-docs code,
+.admin-console .app-input-preview-row,
+.admin-console .app-secret-field__masked-value {
+    overflow-wrap: anywhere;
+}
+
+.admin-console .app-provider-docs,
+.admin-console .app-provider-docs__content,
+.admin-console .app-provider-docs__section,
+.admin-console .app-provider-docs__list,
+.admin-console .app-provider-docs__list li {
+    min-width: 0;
+}
+
+.admin-console .app-provider-docs__content,
+.admin-console .app-provider-docs__list {
+    color: var(--cyber-text);
+}
+
+.admin-console .app-provider-docs__list {
+    padding-left: 1.15rem;
+}
+
+.admin-console .app-provider-docs__list li {
+    line-height: 1.55;
+}
+
+.admin-console .app-provider-docs__content code {
+    display: inline-block;
+    max-width: 100%;
+    vertical-align: baseline;
+    word-break: break-word;
+}
+
+.admin-console .app-field__badge {
+    margin-left: 0.35rem;
+    border: 1px solid rgba(0, 255, 133, 0.26);
+    color: #bbf7d0;
+    background: rgba(0, 255, 133, 0.1);
+}
+
+.admin-console .app-provider-note strong,
+.admin-console .app-provider-docs__list strong,
+.admin-console .app-provider-docs__content code {
+    color: var(--cyber-text-strong);
+}
+
+.admin-console .app-provider-docs__content code {
+    padding: 0.08rem 0.32rem;
+    border: 1px solid rgba(0, 245, 255, 0.18);
+    border-radius: 0.38rem;
+    background: rgba(0, 245, 255, 0.075);
+}
+
+.admin-console .app-provider-section--footer {
+    background:
+        radial-gradient(circle at 100% 0%, rgba(0, 245, 255, 0.1), transparent 30%),
+        linear-gradient(135deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.028)),
+        rgba(12, 12, 28, 0.94);
+}
+
+.admin-console .app-provider-validation {
+    border: 1px solid rgba(255, 77, 109, 0.34);
+    color: #fecdd3;
+    background:
+        linear-gradient(135deg, rgba(255, 77, 109, 0.15), rgba(255, 43, 214, 0.07)),
+        rgba(22, 8, 18, 0.9);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.035);
+}
+
+.admin-console .app-provider-docs__link {
+    align-items: center;
+    gap: 0.75rem;
+    border: 1px solid rgba(0, 245, 255, 0.2);
+    color: var(--cyber-text-strong);
+    background:
+        linear-gradient(135deg, rgba(0, 245, 255, 0.08), rgba(168, 85, 247, 0.05)),
+        rgba(8, 8, 20, 0.78);
+    box-shadow:
+        inset 0 0 0 1px rgba(255, 255, 255, 0.035),
+        0 12px 24px rgba(0, 0, 0, 0.16);
+}
+
+.admin-console .app-provider-docs__link:hover,
+.admin-console .app-provider-docs__link:focus-visible {
+    outline: none;
+    border-color: rgba(0, 245, 255, 0.38);
+    color: var(--cyber-text-strong);
+    background:
+        linear-gradient(135deg, rgba(0, 245, 255, 0.14), rgba(168, 85, 247, 0.1)),
+        rgba(255, 255, 255, 0.055);
+    box-shadow: var(--cyber-glow-cyan);
+}
+
+.admin-console .app-provider-docs__link-arrow {
+    display: inline-flex;
+    align-items: center;
+    flex: 0 0 auto;
+    gap: 0.36rem;
+    color: var(--cyber-cyan);
+    white-space: nowrap;
+}
+
+.admin-console .app-provider-docs__section {
+    border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+.admin-console .app-switch {
+    color: var(--cyber-text);
+}
+
+.admin-console .app-switch__track {
+    border: 1px solid rgba(0, 245, 255, 0.22);
+    background:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.025)),
+        rgba(8, 8, 20, 0.88);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.035);
+}
+
+.admin-console .app-switch__thumb {
+    background: var(--cyber-text-muted);
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.28);
+}
+
+.admin-console .app-switch input:checked + .app-switch__track {
+    border-color: rgba(0, 255, 133, 0.34);
+    background: linear-gradient(135deg, var(--cyber-green), var(--cyber-cyan));
+    box-shadow: 0 0 22px rgba(0, 255, 133, 0.2);
+}
+
+.admin-console .app-switch input:checked + .app-switch__track .app-switch__thumb {
+    background: #031018;
+}
+
+.admin-console .app-switch:focus-within .app-switch__track {
+    box-shadow:
+        0 0 0 3px rgba(0, 245, 255, 0.14),
+        var(--cyber-glow-cyan);
+}
+
+.admin-console .app-switch__text {
+    color: var(--cyber-text-strong);
+}
+
+.admin-console .app-list-card {
+    border: 1px solid var(--cyber-border);
+    color: var(--cyber-text);
+    background:
+        radial-gradient(circle at 0% 0%, rgba(0, 245, 255, 0.08), transparent 30%),
+        linear-gradient(135deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.028)),
+        rgba(12, 12, 28, 0.92);
+    box-shadow: var(--cyber-shadow-card);
+}
+
+.admin-console .app-user-admin-toolbar {
+    align-items: stretch;
+    min-width: 0;
+}
+
+.admin-console .app-user-admin-toolbar__search {
+    position: relative;
+    min-width: min(100%, 16rem);
+}
+
+.admin-console .app-user-admin-toolbar__search .app-icon {
+    position: absolute;
+    top: 50%;
+    left: 0.85rem;
+    width: 0.95rem;
+    height: 0.95rem;
+    color: var(--cyber-cyan);
+    transform: translateY(-50%);
+    pointer-events: none;
+}
+
+.admin-console .app-user-admin-toolbar__search .app-input {
+    padding-left: 2.45rem;
+}
+
+.admin-console .app-user-admin-toolbar .app-button,
+.admin-console .app-user-admin-table__actions .app-button,
+.app-user-edit-modal__actions .app-button,
+.app-modal__actions .app-button {
+    min-height: 40px;
+    padding: 0.58rem 0.82rem;
+    border-radius: 13px;
+    font-size: 0.82rem;
+    line-height: 1.15;
+    white-space: normal;
+}
+
+.admin-console .app-user-admin-toolbar__summary {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.admin-console .app-user-admin-table__actions {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.42rem;
+    min-width: 0;
+}
+
+.admin-console .app-user-admin-table__action-button {
+    width: 2.35rem;
+    min-width: 2.35rem;
+    height: 2.35rem;
+    min-height: 2.35rem;
+    padding: 0;
+    border-radius: 999px;
+    white-space: nowrap;
+}
+
+.admin-console .app-table-wrap--wide {
+    border-radius: 20px;
+}
+
+.admin-console .app-user-admin-table {
+    table-layout: fixed;
+}
+
+.admin-console .app-user-admin-table__col-no {
+    width: 4.4rem;
+}
+
+.admin-console .app-user-admin-table thead th {
+    white-space: normal;
+}
+
+.admin-console .app-user-admin-table tbody tr {
+    transition:
+        background-color 0.18s ease,
+        box-shadow 0.18s ease;
+}
+
+.admin-console .app-user-admin-table tbody tr:hover td {
+    background: rgba(0, 245, 255, 0.075);
+}
+
+.admin-console .app-user-admin-table__email {
+    color: var(--cyber-text-muted);
+}
+
+.admin-console .app-user-admin-table td,
+.admin-console .app-user-admin-table th {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.admin-console .app-user-admin-table th:last-child,
+.admin-console .app-user-admin-table td:last-child {
+    width: 6.2rem;
+    text-align: right;
+    white-space: nowrap;
+}
+
+.admin-console .app-user-admin-table__role-badge {
+    border: 1px solid rgba(0, 245, 255, 0.22);
+    color: #cffafe;
+    background:
+        linear-gradient(135deg, rgba(0, 245, 255, 0.11), rgba(168, 85, 247, 0.07)),
+        rgba(9, 9, 22, 0.82);
+}
+
+.admin-console .app-user-admin-table__provider-icon {
+    color: #031018;
+    background: linear-gradient(135deg, var(--cyber-cyan), var(--cyber-purple));
+    box-shadow: var(--cyber-glow-cyan);
+}
+
+.admin-console .app-user-admin-table__provider-icon .app-icon {
+    width: 0.9rem;
+    height: 0.9rem;
+}
+
+.app-modal--wide {
+    width: min(760px, calc(100vw - 2rem));
+}
+
+.app-user-edit-modal__actions {
+    align-items: center;
+    gap: 0.55rem;
+    border-top-color: rgba(255, 255, 255, 0.1);
+}
+
+.app-user-edit-modal__actions .app-button--danger {
+    margin-right: 0;
+}
+
+.app-user-edit-modal .app-field {
+    min-width: 0;
+}
+
+.app-user-edit-modal,
+.app-user-edit-modal__grid,
+.app-user-edit-modal__meta-grid,
+.app-user-edit-modal__providers,
+.app-user-admin-toolbar,
+.app-user-admin-pagination,
+.app-user-admin-pagination__pages {
+    min-width: 0;
+}
+
+.app-user-edit-modal__meta-grid {
+    gap: 0.75rem;
+}
+
+.app-user-edit-modal__meta-card {
+    min-width: 0;
+}
+
+.app-user-edit-modal__provider-chip,
+.app-user-edit-modal__provider-empty,
+.app-user-admin-table__provider-empty {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+}
+
+.app-user-edit-modal__value,
+.app-user-edit-modal__provider-chip span,
+.admin-console .app-user-admin-table__value-block,
+.app-user-admin-table__email,
+.app-table__value-strong,
+.app-table__value-soft {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.admin-console .app-user-admin-table__actions .app-button,
+.app-user-edit-modal__actions .app-button {
+    min-width: 0;
+    white-space: normal;
+}
+
+.admin-console .app-user-admin-pagination {
+    align-items: center;
+    gap: 0.65rem;
+    flex-wrap: wrap;
+}
+
+.admin-console .app-user-admin-pagination__pages {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    flex-wrap: wrap;
+}
+
+.app-user-edit-modal .app-input:disabled,
+.admin-console .app-input:disabled,
+.admin-console select:disabled,
+.admin-console textarea:disabled {
+    cursor: not-allowed;
+    opacity: 0.7;
+    color: rgba(229, 231, 235, 0.6);
+    border-color: rgba(255, 255, 255, 0.1);
+    background:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.016)),
+        rgba(7, 7, 18, 0.74);
+}
+
+.app-user-edit-modal__provider-chip .app-icon,
+.app-user-admin-table__provider-empty .app-icon,
+.app-user-edit-modal__provider-empty .app-icon {
+    width: 0.9rem;
+    height: 0.9rem;
+    color: var(--cyber-cyan);
+}
+
+.admin-console .app-user-admin-pagination > .app-button {
+    flex: 0 0 auto;
+}
+
+.admin-console .app-user-admin-toolbar .app-button .app-icon,
+.admin-console .app-user-admin-table__actions .app-button .app-icon,
+.admin-console .app-user-admin-table__action-button .app-icon,
+.app-user-edit-modal__actions .app-button .app-icon,
+.admin-console .app-user-admin-pagination > .app-button .app-icon,
+.admin-console .app-provider-actions .app-button .app-icon,
+.admin-console__account .app-button .app-icon,
+.admin-console .app-sensitive-input__toggle .app-icon,
+.admin-console .app-secret-field__button .app-icon,
+.admin-console .app-provider-lock__badge .app-icon,
+.admin-console .app-provider-docs__link-arrow .app-icon {
+    width: 0.92rem;
+    height: 0.92rem;
+    flex: 0 0 0.92rem;
+}
+
+.admin-telegram-bots .app-button .app-icon,
+.admin-telegram-bots__menu-list button .app-icon,
+.admin-telegram-bots__inline-action .app-icon {
+    width: 0.92rem;
+    height: 0.92rem;
+    flex: 0 0 0.92rem;
+}
+
+.admin-telegram-bots__menu-list button {
+    justify-content: flex-start;
+    min-width: 0;
+    white-space: normal;
+    text-align: left;
+}
+
+.admin-telegram-bots__menu-list button span,
+.admin-telegram-bots__inline-action,
+.admin-telegram-bots__secret-row button,
+.admin-telegram-bots__operations-grid button {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.app-user-admin-pagination__prev-icon {
+    transform: rotate(90deg);
+}
+
+.app-user-admin-pagination__next-icon {
+    transform: rotate(-90deg);
+}
+
+.admin-console__actions {
+    min-width: 0;
+}
+
+.admin-console__actions > .opas-language {
+    width: auto;
+    min-width: 7.4rem;
+    height: 2.35rem;
+    flex: 0 0 auto;
+    padding: 0 0.7rem;
+    border-radius: 13px;
+}
+
+.admin-console__actions .opas-language__select {
+    height: 100%;
+    font-size: 0.78rem;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+}
+
+.admin-console .opas-language__select,
+.admin-console .opas-language__select:focus,
+.admin-console .opas-language__select:focus-visible {
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+}
+
+.opas-language__select option {
+    color: #e5e7eb;
+    background: #111124;
+}
+
+.admin-console__account {
+    min-height: 2.35rem;
+    max-width: min(24rem, 34vw);
+}
+
+.admin-console__account > div {
+    min-width: 0;
+}
+
+.admin-console__account strong,
+.admin-console__account span {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.admin-console__account .app-button {
+    min-height: 2rem;
+    padding: 0.38rem 0.62rem;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    white-space: nowrap;
+}
+
+.admin-console__icon-button {
+    flex: 0 0 2.35rem;
+}
+
+.admin-console__icon-button:hover,
+.admin-console__icon-button:focus-visible {
+    outline: none;
+    border-color: rgba(0, 245, 255, 0.38);
+    background:
+        linear-gradient(135deg, rgba(0, 245, 255, 0.14), rgba(168, 85, 247, 0.1)),
+        rgba(255, 255, 255, 0.055);
+    box-shadow: var(--cyber-glow-cyan);
+}
+
+.app-modal__actions {
+    align-items: center;
+    gap: 0.65rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    padding-top: 0.95rem;
+}
+
+.app-modal__actions .app-button {
+    min-width: 7rem;
+}
+
+.app-modal--danger {
+    border-color: rgba(255, 77, 109, 0.38);
+    background:
+        radial-gradient(circle at 0% 0%, rgba(255, 77, 109, 0.16), transparent 34%),
+        radial-gradient(circle at 100% 0%, rgba(255, 43, 214, 0.11), transparent 32%),
+        linear-gradient(135deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.035)), #101020;
+}
+
+.app-modal--danger .app-modal__eyebrow {
+    color: #fecdd3;
+}
+
+.app-modal--danger .app-modal__confirm {
+    box-shadow:
+        0 0 0 1px rgba(255, 77, 109, 0.18),
+        0 14px 28px rgba(255, 77, 109, 0.14);
+}
+
+.app-modal__confirm .app-icon {
+    width: 0.95rem;
+    height: 0.95rem;
+}
+
+@media (max-width: 1180px) {
+    .admin-console__topbar {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .admin-console__actions {
+        width: 100%;
+        flex-wrap: wrap;
+    }
+
+    .admin-console__search {
+        flex: 1 1 14rem;
+        min-width: min(100%, 14rem);
+    }
+
+    .admin-console__account {
+        max-width: 100%;
+    }
+}
+
+@media (max-width: 640px) {
+    .admin-console__actions > .opas-language,
+    .admin-console__account,
+    .admin-console__search {
+        width: 100%;
+        flex: 1 1 100%;
+    }
+
+    .admin-console__account {
+        justify-content: flex-start;
+    }
+
+    .app-modal {
+        width: min(100%, calc(100vw - 1.4rem));
+    }
+
+    .app-modal__actions {
+        align-items: stretch;
+        flex-direction: column-reverse;
+    }
+
+    .app-modal__actions .app-button {
+        width: 100%;
+    }
+}
+
+.admin-console .app-feedback,
+.admin-console .app-empty,
+.admin-console .app-empty-state {
+    min-width: 0;
+    border: 1px solid var(--cyber-border);
+    border-radius: 18px;
+    color: var(--cyber-text);
+    background:
+        radial-gradient(circle at 50% 0%, rgba(0, 245, 255, 0.09), transparent 36%),
+        linear-gradient(135deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.028)),
+        rgba(12, 12, 28, 0.92);
+    box-shadow: var(--cyber-shadow-card);
+}
+
+.admin-console .app-feedback p,
+.admin-console .app-empty p,
+.admin-console .app-empty-state p {
+    color: var(--cyber-text-muted);
+    overflow-wrap: anywhere;
+}
+
+.admin-console .app-feedback--error {
+    border-color: rgba(255, 77, 109, 0.34);
+    background:
+        linear-gradient(135deg, rgba(255, 77, 109, 0.14), rgba(255, 43, 214, 0.07)),
+        rgba(22, 8, 18, 0.9);
+}
+
+.admin-console .app-feedback--error p {
+    color: #fecdd3;
+}
+
+.admin-console .app-feedback__pulse {
+    background: linear-gradient(135deg, var(--cyber-cyan), var(--cyber-purple));
+    box-shadow:
+        0 0 0 4px rgba(0, 245, 255, 0.1),
+        var(--cyber-glow-cyan);
+}
+
+.admin-console .opas-footer--admin {
+    padding-top: 1rem;
+}
+
+.admin-console .opas-footer--admin .opas-footer__surface {
+    border-color: var(--cyber-border);
+    background:
+        radial-gradient(circle at 100% 0%, rgba(0, 245, 255, 0.08), transparent 30%),
+        linear-gradient(135deg, rgba(255, 255, 255, 0.065), rgba(255, 255, 255, 0.025)),
+        rgba(12, 12, 28, 0.88);
+    box-shadow: var(--cyber-shadow-card);
+}
+
+.admin-console .opas-footer--admin .opas-footer__brand strong {
+    color: var(--cyber-text-strong);
+}
+
+.admin-console .opas-footer--admin .opas-footer__brand span,
+.admin-console .opas-footer--admin p {
+    color: var(--cyber-text-muted);
+}
+
+.admin-console .app-user-admin-table__providers {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    min-width: 0;
+}
+
+.admin-console .app-user-admin-table__provider-icon {
+    display: inline-grid;
+    place-items: center;
+    width: 1.72rem;
+    min-width: 1.72rem;
+    height: 1.72rem;
+    min-height: 1.72rem;
+    padding: 0;
+    line-height: 0;
+}
+
+.admin-console .app-user-admin-table__provider-icon .app-icon {
+    display: block;
+    margin: 0;
+}
+
+.app-account-settings__provider-icon {
+    display: inline-grid;
+    place-items: center;
+    line-height: 0;
+}
+
+.app-account-settings__provider-icon .app-icon {
+    display: block;
+    margin: 0;
+}
+
+.admin-telegram-bots--dashboard {
+    color: var(--cyber-text);
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__page-head,
+.admin-telegram-bots--dashboard .admin-telegram-bots__panel,
+.admin-telegram-bots--dashboard .admin-telegram-bots__card,
+.admin-telegram-bots--dashboard .admin-telegram-bots__detail-head,
+.admin-telegram-bots--dashboard .admin-telegram-bots__summary-card,
+.admin-telegram-bots--dashboard .admin-telegram-bots__filters,
+.admin-telegram-bots--dashboard .admin-telegram-bots__pagination,
+.admin-telegram-bots--dashboard .admin-telegram-bots__table-card {
+    border-color: var(--cyber-border);
+    color: var(--cyber-text);
+    background:
+        radial-gradient(circle at 0% 0%, rgba(0, 245, 255, 0.08), transparent 30%),
+        linear-gradient(135deg, rgba(255, 255, 255, 0.072), rgba(255, 255, 255, 0.026)),
+        rgba(10, 10, 24, 0.92);
+    box-shadow: var(--cyber-shadow-card);
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__page-head {
+    padding: 1rem;
+    border: 1px solid var(--cyber-border);
+    border-radius: 18px;
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__panel,
+.admin-telegram-bots--dashboard .admin-telegram-bots__card {
+    border-radius: 18px;
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__summary-card,
+.admin-telegram-bots--dashboard .admin-telegram-bots__card,
+.admin-telegram-bots--dashboard .admin-telegram-bots__audit-card {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 9rem;
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__panel--detail {
+    max-height: none;
+    overflow: visible;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__layout {
+    grid-template-columns: minmax(21rem, 0.95fr) minmax(0, 1.45fr);
+    align-items: start;
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__panel--list {
+    overflow: hidden;
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__table-card {
+    min-width: 0;
+    overflow: auto;
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__page-copy h1,
+.admin-telegram-bots--dashboard .admin-telegram-bots__panel-head h3,
+.admin-telegram-bots--dashboard .admin-telegram-bots__detail-head h3,
+.admin-telegram-bots--dashboard .admin-telegram-bots__card-head h4,
+.admin-telegram-bots--dashboard .admin-telegram-bots__card h4,
+.admin-telegram-bots--dashboard .admin-telegram-bots__identity-copy h3,
+.admin-telegram-bots--dashboard .admin-telegram-bots__summary-card strong,
+.admin-telegram-bots--dashboard .admin-telegram-bots__row-copy strong,
+.admin-telegram-bots--dashboard .admin-telegram-bots__info-row strong,
+.admin-telegram-bots--dashboard .admin-telegram-bots__runtime-card strong,
+.admin-telegram-bots--dashboard .admin-telegram-bots__metric-value {
+    color: var(--cyber-text-strong);
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__page-copy p,
+.admin-telegram-bots--dashboard .admin-telegram-bots__panel-head h3 span,
+.admin-telegram-bots--dashboard .admin-telegram-bots__identity-copy p,
+.admin-telegram-bots--dashboard .admin-telegram-bots__row-copy small,
+.admin-telegram-bots--dashboard .admin-telegram-bots__summary-card small,
+.admin-telegram-bots--dashboard
+    .admin-telegram-bots__summary-card
+    span:not(.admin-telegram-bots__summary-icon),
+.admin-telegram-bots--dashboard .admin-telegram-bots__info-row span,
+.admin-telegram-bots--dashboard .admin-telegram-bots__metric-label,
+.admin-telegram-bots--dashboard .admin-telegram-bots__helper,
+.admin-telegram-bots--dashboard .admin-telegram-bots__field small,
+.admin-telegram-bots--dashboard .admin-telegram-bots__card-head p,
+.admin-telegram-bots--dashboard .admin-telegram-bots__pagination {
+    color: var(--cyber-text-muted);
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__summary-icon,
+.admin-telegram-bots--dashboard .admin-telegram-bots__avatar,
+.admin-telegram-bots--dashboard .admin-telegram-bots__avatar--primary,
+.admin-telegram-bots--dashboard .admin-telegram-bots__icon-button,
+.admin-telegram-bots--dashboard .admin-telegram-bots__page-button,
+.admin-telegram-bots--dashboard .admin-telegram-bots__row-default,
+.admin-telegram-bots--dashboard .admin-telegram-bots__tag-remove {
+    display: inline-grid;
+    place-items: center;
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__summary-icon .app-icon,
+.admin-telegram-bots--dashboard .admin-telegram-bots__avatar .app-icon,
+.admin-telegram-bots--dashboard .admin-telegram-bots__icon-button .app-icon,
+.admin-telegram-bots--dashboard .admin-telegram-bots__page-button .app-icon,
+.admin-telegram-bots--dashboard .admin-telegram-bots__row-default .app-icon,
+.admin-telegram-bots--dashboard .admin-telegram-bots__tag-remove .app-icon {
+    display: block;
+    margin: 0;
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__summary-icon,
+.admin-telegram-bots--dashboard .admin-telegram-bots__avatar,
+.admin-telegram-bots--dashboard .admin-telegram-bots__avatar--primary {
+    border: 1px solid rgba(0, 245, 255, 0.26);
+    color: #031018;
+    background: linear-gradient(135deg, var(--cyber-cyan), var(--cyber-purple));
+    box-shadow: var(--cyber-glow-cyan);
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__search .app-input,
+.admin-telegram-bots--dashboard .admin-telegram-bots__filter-select select,
+.admin-telegram-bots--dashboard .admin-telegram-bots__field .app-input,
+.admin-telegram-bots--dashboard .admin-telegram-bots__field select,
+.admin-telegram-bots--dashboard .admin-telegram-bots__field textarea,
+.admin-telegram-bots--dashboard .admin-telegram-bots__tag-input {
+    border-color: rgba(0, 245, 255, 0.2);
+    color: var(--cyber-text-strong);
+    background:
+        linear-gradient(135deg, rgba(0, 245, 255, 0.055), rgba(168, 85, 247, 0.035)),
+        rgba(5, 5, 16, 0.82);
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__search .app-input::placeholder,
+.admin-telegram-bots--dashboard .admin-telegram-bots__field .app-input::placeholder,
+.admin-telegram-bots--dashboard .admin-telegram-bots__field textarea::placeholder {
+    color: rgba(156, 163, 175, 0.74);
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__filters,
+.admin-telegram-bots--dashboard .admin-telegram-bots__filter-row {
+    min-width: 0;
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__filters {
+    display: grid;
+    gap: 0.72rem;
+    padding: 0.95rem 1rem;
+    background:
+        linear-gradient(135deg, rgba(0, 245, 255, 0.055), rgba(168, 85, 247, 0.035)),
+        rgba(6, 6, 18, 0.82);
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__search,
+.admin-telegram-bots--dashboard .admin-telegram-bots__filter-select {
+    min-width: 0;
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__search {
+    position: relative;
+    display: block;
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__search .app-input,
+.admin-telegram-bots--dashboard .admin-telegram-bots__filter-select select {
+    width: 100%;
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__search .app-input {
+    min-height: 2.75rem;
+    padding: 0.68rem 0.9rem 0.68rem 2.55rem;
+    border-radius: 0.78rem;
+    font-size: 0.9rem;
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__filter-select .app-icon,
+.admin-telegram-bots--dashboard .admin-telegram-bots__search .app-icon,
+.admin-telegram-bots--dashboard .admin-telegram-bots__menu summary .app-icon,
+.admin-telegram-bots--dashboard .admin-telegram-bots__tab .app-icon {
+    color: var(--cyber-cyan);
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__search .app-icon {
+    position: absolute;
+    top: 50%;
+    left: 0.95rem;
+    width: 1rem;
+    height: 1rem;
+    transform: translateY(-50%);
+    pointer-events: none;
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__filter-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__filter-select {
+    position: relative;
+    flex: 0 1 10.5rem;
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__filter-select select {
+    min-height: 2.35rem;
+    padding: 0.55rem 2.1rem 0.55rem 0.75rem;
+    border-radius: 0.72rem;
+    font-size: 0.82rem;
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__filter-select .app-icon {
+    position: absolute;
+    top: 50%;
+    right: 0.7rem;
+    width: 0.82rem;
+    height: 0.82rem;
+    transform: translateY(-50%);
+    pointer-events: none;
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__filter-clear {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    flex: 0 0 auto;
+    min-height: 2.35rem;
+    padding: 0.55rem 0.78rem;
+    border: 1px solid rgba(0, 245, 255, 0.22);
+    border-radius: 0.72rem;
+    color: var(--cyber-text-strong);
+    background:
+        linear-gradient(135deg, rgba(0, 245, 255, 0.075), rgba(168, 85, 247, 0.045)),
+        rgba(8, 8, 20, 0.82);
+    font-size: 0.82rem;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__filter-clear .app-icon {
+    width: 0.85rem;
+    height: 0.85rem;
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__filter-clear:hover,
+.admin-telegram-bots--dashboard .admin-telegram-bots__filter-clear:focus-visible {
+    outline: none;
+    border-color: rgba(0, 245, 255, 0.42);
+    color: var(--cyber-text-strong);
+    background:
+        linear-gradient(135deg, rgba(0, 245, 255, 0.14), rgba(168, 85, 247, 0.09)),
+        rgba(255, 255, 255, 0.055);
+    box-shadow: var(--cyber-glow-cyan);
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__table-head {
+    color: var(--cyber-text-muted);
+    background:
+        linear-gradient(135deg, rgba(0, 245, 255, 0.08), rgba(168, 85, 247, 0.045)),
+        rgba(7, 7, 18, 0.94);
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__table-head,
+.admin-telegram-bots--dashboard .admin-telegram-bots__row {
+    min-width: 38rem;
+    grid-template-columns:
+        minmax(12rem, 1fr) minmax(5rem, 0.55fr) minmax(6rem, 0.7fr) minmax(5.5rem, 0.62fr)
+        minmax(6rem, 0.45fr);
+}
+
+.admin-console
+    .admin-telegram-bots--dashboard
+    .admin-telegram-bots__table-actions
+    .app-user-admin-table__action-button {
+    width: 2rem;
+    min-width: 0;
+    height: 2rem;
+    min-height: 2rem;
+    flex: 0 0 2rem;
+    gap: 0;
+    padding: 0;
+    border-radius: 0.72rem;
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__row {
+    border-bottom-color: rgba(255, 255, 255, 0.075);
+    color: var(--cyber-text);
+    background: rgba(255, 255, 255, 0.028);
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__row-main,
+.admin-telegram-bots--dashboard .admin-telegram-bots__identity,
+.admin-telegram-bots--dashboard .admin-telegram-bots__row-copy,
+.admin-telegram-bots--dashboard .admin-telegram-bots__table-head span,
+.admin-telegram-bots--dashboard .admin-telegram-bots__row > span {
+    min-width: 0;
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__row-copy strong,
+.admin-telegram-bots--dashboard .admin-telegram-bots__row-copy small,
+.admin-telegram-bots--dashboard .admin-telegram-bots__table-head span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__row:hover,
+.admin-telegram-bots--dashboard .admin-telegram-bots__row:focus-visible,
+.admin-telegram-bots--dashboard .admin-telegram-bots__row.is-active {
+    color: var(--cyber-text-strong);
+    background:
+        linear-gradient(135deg, rgba(0, 245, 255, 0.13), rgba(168, 85, 247, 0.085)),
+        rgba(255, 255, 255, 0.052);
+    box-shadow: inset 2px 0 0 rgba(0, 245, 255, 0.82);
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__badge,
+.admin-telegram-bots--dashboard .admin-telegram-bots__chip,
+.admin-telegram-bots--dashboard .admin-telegram-bots__tag {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 0;
+    max-width: 100%;
+    border: 1px solid rgba(0, 245, 255, 0.22);
+    color: #cffafe;
+    background: rgba(0, 245, 255, 0.1);
+    overflow-wrap: anywhere;
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__badge--success,
+.admin-telegram-bots--dashboard .admin-telegram-bots__badge--soft-success {
+    border-color: rgba(0, 255, 133, 0.28);
+    color: #bbf7d0;
+    background: rgba(0, 255, 133, 0.1);
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__badge--danger,
+.admin-telegram-bots--dashboard .is-danger {
+    border-color: rgba(255, 77, 109, 0.34);
+    color: #fecdd3;
+    background: rgba(255, 77, 109, 0.12);
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__chip.is-danger {
+    border-color: rgba(255, 77, 109, 0.38);
+    color: #fecdd3;
+    background:
+        linear-gradient(135deg, rgba(255, 77, 109, 0.16), rgba(255, 43, 214, 0.055)),
+        rgba(24, 8, 20, 0.84);
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__chip.is-danger.is-selected {
+    border-color: rgba(255, 77, 109, 0.54);
+    color: #fff1f4;
+    background:
+        linear-gradient(135deg, rgba(255, 77, 109, 0.24), rgba(255, 43, 214, 0.1)),
+        rgba(38, 8, 26, 0.9);
+    box-shadow: 0 0 0 3px rgba(255, 77, 109, 0.08);
+}
+
+.admin-telegram-bots--dashboard .app-button,
+.admin-telegram-bots--dashboard .admin-telegram-bots__menu summary,
+.admin-telegram-bots--dashboard .admin-telegram-bots__menu-list button,
+.admin-telegram-bots--dashboard .admin-telegram-bots__icon-button,
+.admin-telegram-bots--dashboard .admin-telegram-bots__page-button,
+.admin-telegram-bots--dashboard .admin-telegram-bots__operations-grid button,
+.admin-telegram-bots--dashboard .admin-telegram-bots__secret-row button {
+    border-color: rgba(0, 245, 255, 0.22);
+    color: var(--cyber-text-strong);
+    background:
+        linear-gradient(135deg, rgba(0, 245, 255, 0.09), rgba(168, 85, 247, 0.06)),
+        rgba(9, 9, 22, 0.88);
+    box-shadow:
+        inset 0 0 0 1px rgba(255, 255, 255, 0.035),
+        0 10px 20px rgba(0, 0, 0, 0.16);
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__head-actions {
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.65rem;
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__head-actions .app-button,
+.admin-telegram-bots--dashboard .admin-telegram-bots__menu,
+.admin-telegram-bots--dashboard .admin-telegram-bots__menu summary {
+    flex: 0 0 auto;
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__head-actions .app-button,
+.admin-telegram-bots--dashboard .admin-telegram-bots__menu summary {
+    min-height: 2.55rem;
+    border-radius: 0.82rem;
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__menu summary {
+    gap: 0.45rem;
+    min-width: 8.25rem;
+    padding: 0.62rem 0.86rem;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__menu-list {
+    right: 0;
+    width: min(18rem, calc(100vw - 2rem));
+    min-width: 15rem;
+    padding: 0.45rem;
+    border-radius: 0.9rem;
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__menu-list button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.55rem;
+    min-height: 2.45rem;
+    padding: 0.62rem 0.72rem;
+    border-radius: 0.68rem;
+    line-height: 1.2;
+    white-space: nowrap;
+}
+
+.admin-telegram-bots--dashboard .app-button--primary,
+.admin-telegram-bots--dashboard .admin-telegram-bots__page-actions .app-button--primary,
+.admin-telegram-bots--dashboard .admin-telegram-bots__head-actions .app-button--primary {
+    border-color: rgba(0, 245, 255, 0.5);
+    color: #031018;
+    background: linear-gradient(135deg, var(--cyber-cyan), #7dd3fc 48%, #a78bfa);
+    box-shadow: var(--cyber-glow-cyan);
+}
+
+.admin-telegram-bots--dashboard .app-button--danger,
+.admin-telegram-bots--dashboard .admin-telegram-bots__operations-grid button.is-danger {
+    border-color: rgba(255, 77, 109, 0.38);
+    color: #ffe4ea;
+    background:
+        linear-gradient(135deg, rgba(255, 77, 109, 0.18), rgba(255, 43, 214, 0.08)),
+        rgba(22, 9, 20, 0.9);
+}
+
+.admin-telegram-bots--dashboard .app-button:hover:not(:disabled),
+.admin-telegram-bots--dashboard .app-button:focus-visible:not(:disabled),
+.admin-telegram-bots--dashboard .admin-telegram-bots__menu summary:hover,
+.admin-telegram-bots--dashboard .admin-telegram-bots__menu summary:focus-visible,
+.admin-telegram-bots--dashboard .admin-telegram-bots__menu-list button:hover,
+.admin-telegram-bots--dashboard .admin-telegram-bots__menu-list button:focus-visible,
+.admin-telegram-bots--dashboard .admin-telegram-bots__icon-button:hover,
+.admin-telegram-bots--dashboard .admin-telegram-bots__icon-button:focus-visible,
+.admin-telegram-bots--dashboard .admin-telegram-bots__page-button:hover,
+.admin-telegram-bots--dashboard .admin-telegram-bots__page-button:focus-visible,
+.admin-telegram-bots--dashboard .admin-telegram-bots__operations-grid button:hover,
+.admin-telegram-bots--dashboard .admin-telegram-bots__operations-grid button:focus-visible,
+.admin-telegram-bots--dashboard .admin-telegram-bots__secret-row button:hover,
+.admin-telegram-bots--dashboard .admin-telegram-bots__secret-row button:focus-visible {
+    outline: none;
+    border-color: rgba(0, 245, 255, 0.42);
+    color: var(--cyber-text-strong);
+    background:
+        linear-gradient(135deg, rgba(0, 245, 255, 0.15), rgba(168, 85, 247, 0.1)),
+        rgba(255, 255, 255, 0.055);
+    box-shadow: var(--cyber-glow-cyan);
+}
+
+.admin-telegram-bots--dashboard .app-button--primary:hover:not(:disabled),
+.admin-telegram-bots--dashboard .app-button--primary:focus-visible:not(:disabled),
+.admin-telegram-bots--dashboard .admin-telegram-bots__page-actions .app-button--primary:hover,
+.admin-telegram-bots--dashboard
+    .admin-telegram-bots__page-actions
+    .app-button--primary:focus-visible,
+.admin-telegram-bots--dashboard .admin-telegram-bots__head-actions .app-button--primary:hover,
+.admin-telegram-bots--dashboard
+    .admin-telegram-bots__head-actions
+    .app-button--primary:focus-visible {
+    color: #031018;
+    background: linear-gradient(135deg, #6ffbff, #9be7ff 46%, #c4b5fd);
+}
+
+.admin-telegram-bots--dashboard .app-button--danger:hover:not(:disabled),
+.admin-telegram-bots--dashboard .app-button--danger:focus-visible:not(:disabled),
+.admin-telegram-bots--dashboard .admin-telegram-bots__operations-grid button.is-danger:hover,
+.admin-telegram-bots--dashboard
+    .admin-telegram-bots__operations-grid
+    button.is-danger:focus-visible {
+    border-color: rgba(255, 77, 109, 0.52);
+    color: #fff1f4;
+    background:
+        linear-gradient(135deg, rgba(255, 77, 109, 0.24), rgba(255, 43, 214, 0.13)),
+        rgba(30, 8, 24, 0.92);
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__operations-grid button,
+.admin-telegram-bots--dashboard .admin-telegram-bots__secret-row button,
+.admin-telegram-bots--dashboard .admin-telegram-bots__menu-list button {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__tab {
+    flex: 0 0 auto;
+    min-width: 0;
+    line-height: 1;
+    white-space: nowrap;
+    overflow-wrap: normal;
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__operations-grid button .app-icon,
+.admin-telegram-bots--dashboard .admin-telegram-bots__secret-row button .app-icon,
+.admin-telegram-bots--dashboard .admin-telegram-bots__menu-list button .app-icon,
+.admin-telegram-bots--dashboard .admin-telegram-bots__head-actions .app-button .app-icon,
+.admin-telegram-bots--dashboard .admin-telegram-bots__menu summary .app-icon,
+.admin-telegram-bots--dashboard .admin-telegram-bots__tab .app-icon {
+    width: 0.95rem;
+    height: 0.95rem;
+    flex: 0 0 0.95rem;
+    color: currentColor;
+    line-height: 1;
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__detail-head,
+.admin-telegram-bots--dashboard .admin-telegram-bots__card-head,
+.admin-telegram-bots--dashboard .admin-telegram-bots__head-actions,
+.admin-telegram-bots--dashboard .admin-telegram-bots__badge-row {
+    min-width: 0;
+    flex-wrap: wrap;
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__identity-copy,
+.admin-telegram-bots--dashboard .admin-telegram-bots__card,
+.admin-telegram-bots--dashboard .admin-telegram-bots__tab-panel,
+.admin-telegram-bots--dashboard .admin-telegram-bots__stack,
+.admin-telegram-bots--dashboard .admin-telegram-bots__webhook-box,
+.admin-telegram-bots--dashboard .admin-telegram-bots__runtime-card,
+.admin-telegram-bots--dashboard .admin-telegram-bots__secret-row {
+    min-width: 0;
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__head-actions {
+    flex-wrap: nowrap;
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__info-row,
+.admin-telegram-bots--dashboard .admin-telegram-bots__runtime-list > div {
+    display: grid;
+    grid-template-columns: minmax(8rem, 0.42fr) minmax(0, 1fr);
+    align-items: start;
+    gap: 0.75rem;
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__info-row strong,
+.admin-telegram-bots--dashboard .admin-telegram-bots__runtime-list > div strong,
+.admin-telegram-bots--dashboard .admin-telegram-bots__webhook-box code,
+.admin-telegram-bots--dashboard .admin-telegram-bots__secret-row code,
+.admin-telegram-bots--dashboard .admin-telegram-bots__json {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__operations-grid {
+    grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr));
+    align-items: stretch;
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__operations-grid button {
+    min-height: 4.15rem;
+    gap: 0.38rem;
+    line-height: 1.2;
+}
+
+.admin-telegram-bots__drawer,
+.admin-telegram-bots__modal {
+    border-color: var(--cyber-border);
+    color: var(--cyber-text);
+    background:
+        radial-gradient(circle at 0% 0%, rgba(0, 245, 255, 0.1), transparent 30%),
+        radial-gradient(circle at 100% 0%, rgba(168, 85, 247, 0.1), transparent 28%),
+        linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.028)),
+        rgba(10, 10, 24, 0.98);
+    box-shadow:
+        inset 0 0 0 1px rgba(255, 255, 255, 0.035),
+        0 28px 70px rgba(0, 0, 0, 0.42);
+}
+
+.admin-telegram-bots__drawer {
+    max-width: min(61rem, calc(100vw - 1.5rem));
+    overflow-y: auto;
+    scrollbar-color: rgba(0, 245, 255, 0.42) rgba(255, 255, 255, 0.06);
+}
+
+.admin-telegram-bots__drawer-head {
+    min-width: 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.admin-telegram-bots__drawer-head h3,
+.admin-telegram-bots__modal .app-modal__title {
+    color: var(--cyber-text-strong);
+}
+
+.admin-telegram-bots__drawer-head p,
+.admin-telegram-bots__modal .app-modal__text {
+    color: var(--cyber-text-muted);
+}
+
+.admin-telegram-bots__drawer-form,
+.admin-telegram-bots__drawer-actions,
+.admin-telegram-bots__detail-grid,
+.admin-telegram-bots__toggle-grid,
+.admin-telegram-bots__chip-grid,
+.admin-telegram-bots__tag-list,
+.admin-telegram-bots__metadata-list,
+.admin-telegram-bots__runtime-list,
+.admin-telegram-bots__audit-timeline {
+    min-width: 0;
+}
+
+.admin-telegram-bots__drawer-actions {
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.6rem;
+    padding-top: 0.85rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.admin-telegram-bots__drawer[aria-busy='true'],
+.admin-telegram-bots__modal[aria-busy='true'] {
+    cursor: progress;
+}
+
+.admin-telegram-bots__drawer[aria-busy='true'] .app-button:disabled,
+.admin-telegram-bots__modal[aria-busy='true'] .app-button:disabled {
+    opacity: 0.66;
+}
+
+.admin-telegram-bots__drawer .admin-telegram-bots__field,
+.admin-telegram-bots__modal .admin-telegram-bots__field {
+    min-width: 0;
+    color: var(--cyber-text-strong);
+}
+
+.admin-telegram-bots__drawer .admin-telegram-bots__field > span,
+.admin-telegram-bots__modal .admin-telegram-bots__field > span {
+    color: var(--cyber-text-strong);
+}
+
+.admin-telegram-bots__drawer .app-input,
+.admin-telegram-bots__drawer select,
+.admin-telegram-bots__drawer textarea,
+.admin-telegram-bots__modal .app-input,
+.admin-telegram-bots__modal select,
+.admin-telegram-bots__modal textarea {
+    min-width: 0;
+    border-color: rgba(0, 245, 255, 0.22);
+    color: var(--cyber-text-strong);
+    background:
+        linear-gradient(135deg, rgba(0, 245, 255, 0.06), rgba(168, 85, 247, 0.04)),
+        rgba(5, 5, 16, 0.86);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.035);
+}
+
+.admin-telegram-bots__drawer .app-input::placeholder,
+.admin-telegram-bots__drawer textarea::placeholder,
+.admin-telegram-bots__modal .app-input::placeholder,
+.admin-telegram-bots__modal textarea::placeholder {
+    color: rgba(156, 163, 175, 0.74);
+}
+
+.admin-telegram-bots__drawer select option,
+.admin-telegram-bots__modal select option {
+    color: #e5e7eb;
+    background: #111124;
+}
+
+.admin-telegram-bots__drawer .app-input:focus,
+.admin-telegram-bots__drawer select:focus,
+.admin-telegram-bots__drawer textarea:focus,
+.admin-telegram-bots__modal .app-input:focus,
+.admin-telegram-bots__modal select:focus,
+.admin-telegram-bots__modal textarea:focus {
+    outline: none;
+    border-color: rgba(0, 245, 255, 0.42);
+    box-shadow:
+        0 0 0 3px rgba(0, 245, 255, 0.12),
+        var(--cyber-glow-cyan);
+}
+
+.admin-telegram-bots__drawer .admin-telegram-bots__drawer-form .app-input:focus,
+.admin-telegram-bots__drawer .admin-telegram-bots__drawer-form select:focus,
+.admin-telegram-bots__drawer .admin-telegram-bots__drawer-form textarea:focus,
+.admin-telegram-bots__drawer
+    .admin-telegram-bots__drawer-form
+    .app-sensitive-input__control:focus {
+    box-shadow: 0 0 0 3px rgba(0, 245, 255, 0.12);
+    transform: none;
+}
+
+.admin-telegram-bots__drawer .admin-telegram-bots__checkbox-card {
+    min-width: 0;
+    border-color: rgba(0, 245, 255, 0.2);
+    color: var(--cyber-text-strong);
+    background:
+        linear-gradient(135deg, rgba(0, 245, 255, 0.065), rgba(168, 85, 247, 0.045)),
+        rgba(6, 6, 18, 0.78);
+}
+
+.admin-telegram-bots__drawer .admin-telegram-bots__checkbox-card input {
+    accent-color: var(--cyber-cyan);
+}
+
+.admin-telegram-bots__drawer .admin-telegram-bots__checkbox-card:has(input:disabled) {
+    cursor: not-allowed;
+    opacity: 0.66;
+    border-color: rgba(255, 255, 255, 0.1);
+    background:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.016)),
+        rgba(7, 7, 18, 0.72);
+    box-shadow: none;
+}
+
+.admin-telegram-bots__drawer .admin-telegram-bots__checkbox-card span {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.admin-telegram-bots__modal .app-sensitive-input {
+    min-width: 0;
+    max-width: 100%;
+}
+
+.admin-telegram-bots__modal .app-sensitive-input__control {
+    padding-right: 3rem;
+}
+
+.admin-telegram-bots__modal .app-sensitive-input__toggle {
+    display: inline-grid;
+    place-items: center;
+    border-color: rgba(0, 245, 255, 0.22);
+    color: var(--cyber-text-strong);
+    background:
+        linear-gradient(135deg, rgba(0, 245, 255, 0.09), rgba(168, 85, 247, 0.06)),
+        rgba(9, 9, 22, 0.88);
+}
+
+.admin-telegram-bots__modal .app-sensitive-input__toggle .app-icon {
+    display: block;
+    width: 0.95rem;
+    height: 0.95rem;
+}
+
+.admin-telegram-bots__modal .admin-telegram-bots__secret-error {
+    padding: 0.6rem 0.75rem;
+    border: 1px solid rgba(255, 77, 109, 0.34);
+    border-radius: 12px;
+    color: #fecdd3;
+    background: rgba(255, 77, 109, 0.12);
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__metric,
+.admin-telegram-bots--dashboard .admin-telegram-bots__webhook-box,
+.admin-telegram-bots--dashboard .admin-telegram-bots__checkbox-card,
+.admin-telegram-bots--dashboard .admin-telegram-bots__runtime-list > div,
+.admin-telegram-bots--dashboard .admin-telegram-bots__audit-card,
+.admin-telegram-bots--dashboard .admin-telegram-bots__details,
+.admin-telegram-bots--dashboard .admin-telegram-bots__metadata-list,
+.admin-telegram-bots--dashboard .admin-telegram-bots__metadata-row,
+.admin-telegram-bots--dashboard .admin-telegram-bots__json,
+.admin-telegram-bots--dashboard .admin-telegram-bots__secret-row,
+.admin-telegram-bots--dashboard .admin-telegram-bots__tag-input {
+    border-color: rgba(0, 245, 255, 0.18);
+    color: var(--cyber-text);
+    background:
+        linear-gradient(135deg, rgba(0, 245, 255, 0.065), rgba(168, 85, 247, 0.045)),
+        rgba(6, 6, 18, 0.78);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.025);
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__metric {
+    align-content: center;
+    min-height: 4.4rem;
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__webhook-box {
+    overflow: hidden;
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__checkbox-card {
+    min-width: 0;
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__checkbox-card span {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__checkbox-card input {
+    accent-color: var(--cyber-cyan);
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__checkbox-card:hover,
+.admin-telegram-bots--dashboard .admin-telegram-bots__checkbox-card:focus-within {
+    border-color: rgba(0, 245, 255, 0.4);
+    background:
+        linear-gradient(135deg, rgba(0, 245, 255, 0.12), rgba(168, 85, 247, 0.08)),
+        rgba(255, 255, 255, 0.052);
+    box-shadow: var(--cyber-glow-cyan);
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__chip-toolbar {
+    flex-wrap: wrap;
+    gap: 0.55rem;
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__chip-toolbar .app-button {
+    width: auto;
+    min-height: 2.25rem;
+    padding: 0.45rem 0.7rem;
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__chip-grid {
+    grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
+    gap: 0.5rem;
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__chip {
+    min-height: 2.15rem;
+    padding: 0.42rem 0.62rem;
+    text-align: center;
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__chip.is-selected {
+    border-color: rgba(0, 245, 255, 0.44);
+    color: var(--cyber-text-strong);
+    background:
+        linear-gradient(135deg, rgba(0, 245, 255, 0.16), rgba(168, 85, 247, 0.1)),
+        rgba(255, 255, 255, 0.06);
+    box-shadow: var(--cyber-glow-cyan);
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__tag-input {
+    padding: 0.55rem;
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__tag-list {
+    gap: 0.42rem;
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__tag {
+    max-width: 100%;
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__tag > span {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__tag-compose .app-input {
+    min-height: 2.2rem;
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__details summary {
+    width: fit-content;
+    max-width: 100%;
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__json {
+    max-height: 18rem;
+    overflow: auto;
+    color: #d8f8ff;
+    scrollbar-color: rgba(0, 245, 255, 0.42) rgba(255, 255, 255, 0.06);
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__audit-header {
+    min-width: 0;
+    gap: 0.75rem;
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__audit-header > div,
+.admin-telegram-bots--dashboard .admin-telegram-bots__audit-header strong,
+.admin-telegram-bots--dashboard .admin-telegram-bots__audit-header span,
+.admin-telegram-bots--dashboard .admin-telegram-bots__audit-header time {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__secret-row > div {
+    min-width: 0;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__field--secret {
+    max-width: none;
+    justify-self: stretch;
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__tabs {
+    flex-wrap: wrap;
+    gap: 0.45rem 0.8rem;
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__tab {
+    min-height: 2.25rem;
+    padding: 0.35rem 0.5rem;
+    border-radius: 999px;
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__tab.is-active {
+    color: var(--cyber-text-strong);
+    background: rgba(0, 245, 255, 0.1);
+}
+
+.admin-telegram-bots--dashboard .admin-telegram-bots__tab.is-active::after {
+    display: none;
+}
+
+@media (max-width: 1180px) {
+    .admin-telegram-bots--dashboard .admin-telegram-bots__layout,
+    .admin-telegram-bots--dashboard .admin-telegram-bots__tab-layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 640px) {
+    .admin-telegram-bots__drawer {
+        width: 100%;
+        max-width: 100%;
+        border-radius: 0;
+    }
+
+    .admin-telegram-bots__drawer-actions {
+        align-items: stretch;
+        grid-template-columns: 1fr;
+    }
+
+    .admin-telegram-bots__drawer-actions .app-button {
+        width: 100%;
+    }
+
+    .admin-telegram-bots--dashboard .admin-telegram-bots__page-head,
+    .admin-telegram-bots--dashboard .admin-telegram-bots__detail-head {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .admin-telegram-bots--dashboard .admin-telegram-bots__page-actions .app-button,
+    .admin-telegram-bots--dashboard .admin-telegram-bots__head-actions,
+    .admin-telegram-bots--dashboard .admin-telegram-bots__head-actions .app-button,
+    .admin-telegram-bots--dashboard .admin-telegram-bots__menu,
+    .admin-telegram-bots--dashboard .admin-telegram-bots__menu summary {
+        width: 100%;
+    }
+
+    .admin-telegram-bots--dashboard .admin-telegram-bots__head-actions {
+        flex-wrap: wrap;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: 0.001ms !important;
+    }
+}
+
+@media (max-width: 1279.98px) and (min-width: 992px) {
+    .opas-header__main {
+        grid-template-columns: minmax(0, 1fr) auto;
+    }
+
+    .opas-header__actions,
+    .opas-header__utility {
+        align-items: center;
+        justify-content: flex-end;
+        flex-wrap: nowrap;
+    }
+
+    .opas-header__search {
+        min-width: 11.5rem;
+        max-width: 16rem;
+        flex-basis: 16rem;
+    }
+}
+
+@media (max-width: 991.98px) {
+    .opas-header__actions {
+        display: none;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .opas-header {
+        padding: 0.65rem 0.75rem;
+    }
+
+    .opas-header__intro-wrap {
+        align-items: center;
+    }
+
+    .opas-header__title {
+        font-size: 1.25rem;
+    }
+}
+
+.app-auth-card .app-social-button:focus,
+.app-auth-card .app-social-button:focus-visible,
+.app-auth-login-card .app-social-button:focus,
+.app-auth-login-card .app-social-button:focus-visible {
+    outline: none !important;
+    border-color: rgba(103, 232, 249, 0.52) !important;
+    box-shadow:
+        0 0 0 2px rgba(103, 232, 249, 0.12),
+        0 0 18px rgba(103, 232, 249, 0.14) !important;
+}
+
+.app-auth-card .app-social-button,
+.app-auth-login-card .app-social-button {
+    box-shadow:
+        inset 0 0 0 1px rgba(103, 232, 249, 0.08),
+        inset 0 0 16px rgba(103, 232, 249, 0.035) !important;
+}
+
+.admin-console .app-inline-badge,
+.admin-console .app-role-card,
+.admin-console .app-list-card,
+.admin-console .app-detail-card,
+.admin-console .app-secret-field__masked,
+.admin-console .app-feedback,
+.admin-console .app-empty,
+.admin-console .app-empty-state,
+.admin-console .video-panel,
+.admin-console .video-card,
+.admin-telegram-bots .app-inline-badge,
+.admin-telegram-bots .app-role-card,
+.admin-telegram-bots .app-list-card,
+.admin-telegram-bots .app-detail-card,
+.admin-telegram-bots .app-secret-field__masked,
+.admin-telegram-bots .app-feedback,
+.admin-telegram-bots .app-empty,
+.admin-telegram-bots .app-empty-state,
+.admin-telegram-bots .video-panel,
+.admin-telegram-bots .video-card {
+    border: 1px solid rgba(0, 245, 255, 0.16);
+    color: var(--cyber-text);
+    background:
+        radial-gradient(circle at 0% 0%, rgba(0, 245, 255, 0.08), transparent 34%),
+        linear-gradient(135deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.025)),
+        rgba(9, 9, 22, 0.86);
+    box-shadow:
+        inset 0 0 0 1px rgba(255, 255, 255, 0.035),
+        0 12px 26px rgba(0, 0, 0, 0.22);
+}
+
+.admin-console .app-table-wrap,
+.admin-telegram-bots .app-table-wrap {
+    border: 1px solid rgba(0, 245, 255, 0.16);
+    background: rgba(7, 7, 18, 0.82);
+    box-shadow:
+        inset 0 0 0 1px rgba(255, 255, 255, 0.035),
+        0 16px 34px rgba(0, 0, 0, 0.24);
+}
+
+.admin-console .app-table thead th,
+.admin-telegram-bots .app-table thead th {
+    border-bottom-color: rgba(0, 245, 255, 0.16);
+    color: var(--cyber-cyan);
+    background:
+        linear-gradient(135deg, rgba(0, 245, 255, 0.1), rgba(168, 85, 247, 0.07)),
+        rgba(9, 9, 22, 0.92);
+}
+
+.admin-console .app-table tbody td,
+.admin-telegram-bots .app-table tbody td {
+    border-top-color: rgba(255, 255, 255, 0.08);
+    color: var(--cyber-text);
+    background: rgba(255, 255, 255, 0.032);
+}
+
+.admin-console .app-table tbody tr:nth-child(odd) td,
+.admin-telegram-bots .app-table tbody tr:nth-child(odd) td {
+    background: rgba(255, 255, 255, 0.022);
+}
+
+.admin-console .app-table tbody tr:hover td,
+.admin-telegram-bots .app-table tbody tr:hover td {
+    background: rgba(0, 245, 255, 0.075);
+}
+
+.admin-console .app-table__value-strong,
+.admin-console .app-detail-card__value,
+.admin-console .app-list-card__title,
+.admin-console .app-role-card strong,
+.admin-console .app-secret-field__masked-value,
+.admin-console .app-feedback strong,
+.admin-telegram-bots .app-table__value-strong,
+.admin-telegram-bots .app-detail-card__value,
+.admin-telegram-bots .app-list-card__title,
+.admin-telegram-bots .app-role-card strong,
+.admin-telegram-bots .app-secret-field__masked-value,
+.admin-telegram-bots .app-feedback strong {
+    color: var(--cyber-text-strong);
+}
+
+.admin-console .app-table__value-soft,
+.admin-console .app-detail-card__label,
+.admin-console .app-role-card span,
+.admin-console .app-feedback p,
+.admin-console .app-empty,
+.admin-console .app-empty-state p,
+.admin-telegram-bots .app-table__value-soft,
+.admin-telegram-bots .app-detail-card__label,
+.admin-telegram-bots .app-role-card span,
+.admin-telegram-bots .app-feedback p,
+.admin-telegram-bots .app-empty,
+.admin-telegram-bots .app-empty-state p {
+    color: var(--cyber-text-muted);
+}
+
+.admin-console .app-favorite,
+.admin-console .app-secret-field__button,
+.admin-telegram-bots .app-favorite,
+.admin-telegram-bots .app-secret-field__button {
+    border: 1px solid rgba(0, 245, 255, 0.18);
+    color: var(--cyber-text-strong);
+    background:
+        linear-gradient(135deg, rgba(0, 245, 255, 0.08), rgba(168, 85, 247, 0.055)),
+        rgba(9, 9, 22, 0.88);
+    box-shadow:
+        inset 0 0 0 1px rgba(255, 255, 255, 0.035),
+        0 10px 20px rgba(0, 0, 0, 0.18);
+}
+
+.admin-console .app-favorite:hover,
+.admin-console .app-secret-field__button:hover,
+.admin-console .app-secret-field__button:focus-visible,
+.admin-telegram-bots .app-favorite:hover,
+.admin-telegram-bots .app-secret-field__button:hover,
+.admin-telegram-bots .app-secret-field__button:focus-visible {
+    color: var(--cyber-cyan);
+    border-color: rgba(0, 245, 255, 0.34);
+    background:
+        linear-gradient(135deg, rgba(0, 245, 255, 0.15), rgba(168, 85, 247, 0.1)),
+        rgba(9, 9, 22, 0.94);
+    transform: none;
+}
+
+.admin-console .app-status-pill--success,
+.admin-telegram-bots .app-status-pill--success {
+    color: #bbf7d0;
+    background: rgba(0, 255, 133, 0.1);
+}
+
+.admin-console .app-status-pill--warning,
+.admin-telegram-bots .app-status-pill--warning {
+    color: #fde68a;
+    background: rgba(255, 176, 32, 0.1);
+}
+
+.admin-console .app-status-pill--muted,
+.admin-telegram-bots .app-status-pill--muted {
+    color: var(--cyber-text-muted);
+    background: rgba(255, 255, 255, 0.055);
+}
+
+.admin-console .app-feedback--error,
+.admin-telegram-bots .app-feedback--error {
+    border-color: rgba(255, 77, 109, 0.24);
+    background:
+        radial-gradient(circle at 100% 0%, rgba(255, 77, 109, 0.12), transparent 28%),
+        rgba(22, 8, 18, 0.86);
+}
+
+.admin-console .app-modal-backdrop,
+.admin-telegram-bots .app-modal-backdrop {
+    background:
+        radial-gradient(circle at 50% 0%, rgba(0, 245, 255, 0.12), transparent 38%),
+        rgba(3, 3, 12, 0.72);
+}
+
+.admin-console .app-modal,
+.admin-telegram-bots .app-modal {
+    border: 1px solid var(--cyber-border);
+    color: var(--cyber-text);
+    background:
+        radial-gradient(circle at 0% 0%, rgba(0, 245, 255, 0.14), transparent 34%),
+        radial-gradient(circle at 100% 0%, rgba(255, 43, 214, 0.1), transparent 32%),
+        linear-gradient(135deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.035)),
+        #101020;
+    box-shadow:
+        0 0 0 1px rgba(255, 255, 255, 0.045),
+        0 28px 64px rgba(0, 0, 0, 0.46);
+}

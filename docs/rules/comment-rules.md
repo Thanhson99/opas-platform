@@ -29,6 +29,9 @@ Comments should make code easier to maintain, not compensate for weak naming or 
 - If a comment describes a system safety rule, phrase it as a rule, not as a guess.
 - Prefer one strong comment above a block over multiple inline comments that narrate each line.
 - Do not use comments as a substitute for extracting a method with a clear name.
+- Keep comment lines short enough to scan quickly (target <= 120 characters).
+- Use comments to declare invariants and safety constraints, not temporary debugging context.
+- Remove or rewrite comments immediately when behavior changes; stale comments fail review.
 
 ## Preferred Comment Targets
 
@@ -42,6 +45,10 @@ Comments should make code easier to maintain, not compensate for weak naming or 
 
 - First improve naming and structure.
 - Then add the smallest comment that explains the remaining non-obvious part.
+- For strict clean-code review, every new comment should pass this check:
+- cannot be replaced by better naming
+- documents a real business/safety constraint
+- remains true across expected refactors
 
 ## Frontend Comment Rules
 
@@ -51,3 +58,12 @@ Comments should make code easier to maintain, not compensate for weak naming or 
 - When frontend logic mirrors a backend safety rule, say that explicitly in one short comment instead of narrating the branch line by line.
 - For formatting helpers, fallback label builders, and payload normalizers, add a short comment only if the function name and JSDoc still leave an important constraint implicit.
 - When a frontend contract is reused across helpers or contexts, prefer one local `@typedef` plus focused JSDoc over repeating vague inline comments on every consumer.
+
+## Route File Comment Rules
+
+- In `routes/api.php`, `routes/web.php`, and `routes/console.php`, organize related definitions into clearly named sections with one short comment above each section.
+- Route-file section comments should explain the feature area, audience, or operational boundary, not narrate individual route lines.
+- Prefer section comments such as auth lifecycle, admin control plane, machine-facing endpoints, SPA entrypoints, reporting commands, or maintenance commands.
+- When a route group introduces a non-obvious middleware or trust boundary, say that in the section comment once instead of repeating comments inside the group.
+- In `routes/console.php`, use section comments to separate command families, and rely on each command's `purpose()` text for the command-level description.
+- Do not add one comment above every single route or command when a grouped section comment makes the file clearer with less noise.

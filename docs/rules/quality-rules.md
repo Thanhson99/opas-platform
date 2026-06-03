@@ -17,6 +17,16 @@ Use these rules to keep PHP and Laravel code readable, typed, maintainable, and 
 - If a method has more than 3 decision branches, look for named private method extraction.
 - If a method needs section comments for multiple unrelated phases, split the phases into named methods.
 
+## Strict Profile (Default For New Code)
+
+- Enforce these targets for all new or heavily edited application methods:
+- `max logical lines`: 40 for private/protected methods, 55 for public orchestration methods.
+- `max branch points`: 3 per method (`if`, `match`, `foreach` with branch-heavy blocks).
+- `max nesting depth`: 2.
+- `max parameters`: 4 for public methods, 3 for private methods unless using typed payload arrays with explicit shape docs.
+- Any method above these limits must be split before merge unless there is a documented technical constraint.
+- If a method is intentionally above threshold, add one short docblock note that explains why extraction would reduce clarity.
+
 ## Parameter And Return Rules
 
 - Prefer up to 4 parameters for public methods.
@@ -99,3 +109,6 @@ Use these rules to keep PHP and Laravel code readable, typed, maintainable, and 
 - Controllers stay thin.
 - Comments are sparse and meaningful.
 - Docblocks match real behavior and real types.
+- Long methods are split or have a documented, justified exception.
+- Branch-heavy logic is extracted into named rule methods.
+- Repeated condition handling is centralized through helper methods.

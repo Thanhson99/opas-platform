@@ -132,12 +132,13 @@ You can later switch to any paid provider (OpenAI/Gemini/...) without redesignin
 - 🧾 Content ingestion (RSS/news → enrichment → publish)
 - 🌍 Translation pipelines (LibreTranslate)
 - 🧠 Local AI writing/review pipelines (Ollama)
-- 🔔 Notifications (Telegram/Email/etc. planned)
+- 🤖 Remote auto-coding control (Telegram today, more operator channels later)
+- 🔔 Notifications (Email/Zalo/etc. planned)
 - 🔑 OAuth integrations
 
 ### **Tooling**
 - 🧹 **Scripts for macOS + Windows (Git, Puppeteer, Browser Automation)**
-- 📦 Local translation model support (Vietnamese)
+- 📦 Local translation model support (Argos packages, multilingual)
 - 🧪 GitHub Actions CI/CD
 
 ---
@@ -180,6 +181,7 @@ LARAVEL-N8N-AUTOMATION/
 - **Folder Organization**: `docs/folder-organization.md`
 - **Integration Flow**: `docs/integration-flow.md`
 - **Local AI Runbook**: `docs/local-ai-runbook.md`
+- **Telegram Remote Control**: `docs/auto-coding-telegram-control.md`
 - **AI Prompt Pack**: `ai-local/README.md`
 
 ---
@@ -222,6 +224,14 @@ LARAVEL-N8N-AUTOMATION/
 - Cross-review + improvements (critic model)
 - SEO structuring (headings, excerpt, metadata)
 - Safe fallback mode if AI is disabled
+
+#### 🤖 Remote Auto-Coding Control
+- Telegram bot as a remote control layer for the local auto-coding worker
+- Remote task creation for coding, review, and validation
+- Worker, webhook, queue, summary, validation, and changed-file reporting
+- Blocked-task follow-up and resume workflows
+- Smart `/start` dashboard with worker snapshot, activity summary, and attention-driven shortcuts
+- Cross-platform helper scripts for ngrok + webhook bootstrap on macOS and Windows
 
 #### 🐍 Python Automation Layer
 - Custom microservices called by n8n or Laravel
@@ -318,7 +328,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\start-local.ps1 --fresh
 What the startup script does:
 - copies missing `.env` files from `.env.example`
 - creates the shared Docker network if needed
-- starts containers using existing Docker cache by default
+- starts the full Docker stack by default: PostgreSQL, Laravel, nginx, n8n, Ollama, Python services, and LibreTranslate
 - installs Laravel PHP dependencies only when needed
 - builds Laravel frontend assets only when needed
 - generates `APP_KEY` only when missing
@@ -327,6 +337,25 @@ What the startup script does:
 
 The script prints only high-level loading steps. It does not echo secret values to the terminal.
 For day-to-day use, it behaves closer to `docker compose up -d` than `docker compose up -d --build`.
+
+Use the core Docker stack only when you intentionally want to skip automation services:
+
+```bash
+./scripts/start-local.sh --core
+```
+
+Direct Docker Compose still requires the automation profile for n8n, Ollama, Python services, and LibreTranslate:
+
+```bash
+docker compose --profile automation up -d
+docker compose up -d postgres laravel nginx
+```
+
+Windows:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\start-local.ps1 --core
+```
 
 ### 4. Accessing services
 - [Laravel App](http://localhost:8881)
@@ -346,16 +375,28 @@ The Laravel app now runs as a `Laravel REST API + React SPA` project inside `app
 
 macOS / Linux:
 ```bash
-chmod +x scripts/start-local.sh
-scripts/start-local.sh
+chmod +x scripts/start-local-lite.sh
+scripts/start-local-lite.sh
 ```
 
 Windows:
-```bat
-scripts\start-local.bat
+```powershell
+cd apps\laravel
+composer install
+npm install
+php artisan serve --host=127.0.0.1 --port=8881
+npm run dev
 ```
 
-After booting, use these quality gates inside `apps/laravel`:
+After booting, use the dedicated Laravel test script:
+
+```bash
+chmod +x scripts/test-laravel.sh
+scripts/test-laravel.sh
+scripts/test-laravel.sh --with-frontend
+```
+
+Or run these quality gates inside `apps/laravel`:
 
 ```bash
 composer check   # php artisan test + pint --test + phpstan
@@ -376,6 +417,7 @@ Located in `/scripts` — fully portable.
 - Windows CMD: `scripts\start-local.bat`
 
 These scripts bootstrap the local environment and open the Laravel web app automatically when ready.
+They start the full Docker stack by default. Use `--core` for only PostgreSQL, Laravel, and nginx.
 
 ### 🧹 Git Branch Cleanup Scripts
 - `git-clean-branches.sh` (macOS/Linux)

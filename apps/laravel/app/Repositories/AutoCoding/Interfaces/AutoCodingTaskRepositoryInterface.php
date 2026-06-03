@@ -51,4 +51,12 @@ interface AutoCodingTaskRepositoryInterface
      * @return AutoCodingTask|null
      */
     public function findLatestDetailed(): ?AutoCodingTask;
+
+    /**
+     * Find the latest detailed local auto-coding task for one branch name.
+     *
+     * @param  string  $branchName
+     * @return AutoCodingTask|null
+     */
+    public function findLatestDetailedByBranchName(string $branchName): ?AutoCodingTask;
 }

@@ -2,6 +2,11 @@
 
 set -euo pipefail
 
+# -----------------------------------------------------------------------------
+# Local stack bootstrap
+# - ROOT_DIR: repository root for docker/artisan/npm commands.
+# - LOG_DIR: stores per-step logs surfaced only when a step fails.
+# -----------------------------------------------------------------------------
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 
@@ -9,23 +14,38 @@ LOG_DIR="$ROOT_DIR/.codex-tmp"
 mkdir -p "$LOG_DIR"
 
 FORCE_REBUILD=0
+FULL_STACK=1
+CORE_SERVICES=(postgres laravel nginx)
+OPTIONAL_SERVICES=(python-services n8n ollama libretranslate)
 
+# Parse optional bootstrap flags.
 for arg in "$@"; do
   case "$arg" in
     --fresh|--build)
       FORCE_REBUILD=1
       ;;
+    --full)
+      FULL_STACK=1
+      ;;
+    --core)
+      FULL_STACK=0
+      ;;
     *)
       echo "Unknown argument: $arg"
-      echo "Usage: ./scripts/start-local.sh [--fresh]"
+      echo "Usage: ./scripts/start-local.sh [--fresh] [--core]"
       exit 1
       ;;
   esac
 done
 
 step_index=0
-step_total=9
+if [[ $FULL_STACK -eq 1 ]]; then
+  step_total=9
+else
+  step_total=10
+fi
 
+# Render one spinner while a background step process is running.
 show_spinner() {
   local pid="$1"
   local message="$2"
@@ -47,6 +67,7 @@ show_spinner() {
   printf '\r[%d/%d] %s done\n' "$step_index" "$step_total" "$message"
 }
 
+# Run one step with log capture and failure diagnostics.
 run_step() {
   local message="$1"
   shift
@@ -68,6 +89,7 @@ run_step() {
   fi
 }
 
+# Wait for one URL to return an HTTP success code before continuing.
 wait_for_url() {
   local url="$1"
   local max_attempts=60
@@ -93,6 +115,7 @@ wait_for_url() {
   return 1
 }
 
+# Step 1: ensure all required .env files exist and sync DB values from root env.
 run_step "Prepare env files" bash -lc "
   upsert_env_value() {
     local file=\"\$1\"
@@ -124,6 +147,7 @@ run_step "Prepare env files" bash -lc "
   [[ -n \"\$db_host\" ]] && upsert_env_value \"\$laravel_env\" 'DB_HOST' \"\$db_host\"
 "
 
+# Step 2: ensure shared docker network exists for cross-service communication.
 run_step "Create shared docker network" bash -lc "
   env_file='$ROOT_DIR/.env'
   network_name='shared_net'
@@ -136,12 +160,24 @@ run_step "Create shared docker network" bash -lc "
   docker network inspect \"\$network_name\" >/dev/null 2>&1 || docker network create \"\$network_name\" >/dev/null
 "
 
-if [[ $FORCE_REBUILD -eq 1 ]]; then
-  run_step "Build and start containers" docker compose up -d --build
+# Step 3: bring containers up (with rebuild when requested).
+if [[ $FULL_STACK -eq 1 ]]; then
+  if [[ $FORCE_REBUILD -eq 1 ]]; then
+    run_step "Build and start containers" docker compose --profile automation up -d --build
+  else
+    run_step "Start containers" docker compose --profile automation up -d
+  fi
 else
-  run_step "Start containers" docker compose up -d
+  run_step "Stop optional automation services" docker compose stop "${OPTIONAL_SERVICES[@]}"
+
+  if [[ $FORCE_REBUILD -eq 1 ]]; then
+    run_step "Build and start core containers" docker compose up -d --build "${CORE_SERVICES[@]}"
+  else
+    run_step "Start core containers" docker compose up -d "${CORE_SERVICES[@]}"
+  fi
 fi
 
+# Step 4: install composer dependencies only when missing or forced.
 if [[ $FORCE_REBUILD -eq 1 || ! -f "$ROOT_DIR/apps/laravel/vendor/autoload.php" ]]; then
   run_step "Install Laravel PHP dependencies" docker compose exec -T laravel composer install --no-interaction --prefer-dist --no-progress
 else
@@ -149,13 +185,20 @@ else
   printf '[%d/%d] Laravel PHP dependencies already available, skipping\n' "$step_index" "$step_total"
 fi
 
+# Step 5: build frontend assets only when missing or forced.
 if [[ $FORCE_REBUILD -eq 1 || ! -f "$ROOT_DIR/apps/laravel/public/build/manifest.json" ]]; then
-  run_step "Build Laravel React frontend assets" docker run --rm -v "$ROOT_DIR/apps/laravel:/app" -w /app node:20-alpine sh -lc "npm ci --silent && npm run build -- --logLevel error"
+  run_step "Build Laravel React frontend assets" docker run --rm -v "$ROOT_DIR/apps/laravel:/app" -w /app node:20-alpine sh -lc "
+    if [ ! -d node_modules ] || [ ! -f node_modules/.package-lock.json ] || [ package-lock.json -nt node_modules/.package-lock.json ]; then
+      npm ci --silent
+    fi
+    npm run build -- --logLevel error
+  "
 else
   step_index=$((step_index + 1))
   printf '[%d/%d] Laravel frontend assets already built, skipping\n' "$step_index" "$step_total"
 fi
 
+# Step 6: generate APP_KEY when missing or forced.
 if [[ $FORCE_REBUILD -eq 1 || ! -f "$ROOT_DIR/apps/laravel/.env" || -z "$(grep -E '^APP_KEY=' "$ROOT_DIR/apps/laravel/.env" | tail -n 1 | cut -d= -f2-)" ]]; then
   run_step "Generate Laravel app key" docker compose exec -T laravel php artisan key:generate --force --ansi
 else
@@ -163,19 +206,38 @@ else
   printf '[%d/%d] Laravel app key already set, skipping\n' "$step_index" "$step_total"
 fi
 
+# Steps 7-9: migrate, seed, and wait for web readiness.
 run_step "Run Laravel migrations" docker compose exec -T laravel php artisan migrate --force --graceful --ansi
 run_step "Seed Laravel database" docker compose exec -T laravel php artisan db:seed --force --ansi
 
 run_step "Wait for local web" wait_for_url "http://localhost:8881"
 
-open "http://localhost:8881" >/dev/null 2>&1 || true
+# Open browser only when one platform opener command exists.
+if command -v open >/dev/null 2>&1; then
+  open "http://localhost:8881" >/dev/null 2>&1 || true
+elif command -v xdg-open >/dev/null 2>&1; then
+  xdg-open "http://localhost:8881" >/dev/null 2>&1 || true
+fi
 
 cat <<'EOF'
 
 Local stack is ready.
 
 - Laravel App:      http://localhost:8881
+
+EOF
+
+if [[ $FULL_STACK -eq 1 ]]; then
+  cat <<'EOF'
 - n8n:              http://localhost:5678
 - LibreTranslate:   http://localhost:8884
 
 EOF
+else
+  cat <<'EOF'
+Core Docker services are ready.
+Optional automation services are stopped because --core was used.
+Run ./scripts/start-local.sh to start the full Docker stack.
+
+EOF
+fi

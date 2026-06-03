@@ -25,6 +25,12 @@ class PromptContextAssemblerTest extends TestCase
         $package = $assembler->assemble([
             'task_summary' => 'Plan local auto coding task',
             'issue_key' => 'OPAS-0070',
+            'issue_context' => [
+                'branch_name' => 'feature/opas-0070',
+                'pull_request' => [
+                    'url' => 'https://github.com/example/repo/pull/70',
+                ],
+            ],
             'repository_context' => [
                 'repository_path' => '/tmp/example-repo',
                 'branch_name' => 'feature/opas-0070',
@@ -33,6 +39,28 @@ class PromptContextAssemblerTest extends TestCase
 
         self::assertStringContainsString('orchestration assistant', $package['system_prompt']);
         self::assertStringContainsString('"issue_key": "OPAS-0070"', $package['user_prompt']);
+        self::assertStringContainsString('"branch_name": "feature/opas-0070"', $package['user_prompt']);
         self::assertSame('Plan local auto coding task', $package['goal']);
+    }
+
+    /**
+     * Confirm an empty env-backed prompt path still falls back to the repo prompt.
+     *
+     * @return void
+     */
+    public function test_it_falls_back_when_prompt_path_is_empty(): void
+    {
+        config()->set('opas.auto_coding.providers.ollama.prompt_path', '');
+
+        $assembler = new PromptContextAssembler;
+        $package = $assembler->assemble([
+            'task_summary' => 'Check Telegram prompt fallback',
+            'repository_context' => [
+                'repository_path' => base_path('../..'),
+            ],
+        ]);
+
+        self::assertStringContainsString('orchestration assistant', $package['system_prompt']);
+        self::assertStringContainsString('Check Telegram prompt fallback', $package['user_prompt']);
     }
 }

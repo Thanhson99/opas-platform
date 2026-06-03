@@ -29,6 +29,7 @@ describe('AuthContext', () => {
     afterEach(() => {
         cleanup();
         vi.clearAllMocks();
+        window.history.pushState({}, '', '/');
     });
 
     it('keeps an empty provider list empty when the backend exposes no providers', async () => {
@@ -87,5 +88,51 @@ describe('AuthContext', () => {
         expect(screen.getByTestId('login-providers')).toHaveTextContent('0');
         expect(screen.getByTestId('register-providers')).toHaveTextContent('0');
         expect(screen.getByTestId('providers-error')).toHaveTextContent('load_failed');
+    });
+
+    it('skips user-session hydration on public auth routes', async () => {
+        window.history.pushState({}, '', '/login');
+
+        api.get.mockImplementation((url) => {
+            if (url === '/auth/providers') {
+                return Promise.resolve({ data: { data: [] } });
+            }
+
+            throw new Error(`Unexpected url: ${url}`);
+        });
+
+        render(
+            <AuthProvider>
+                <AuthSnapshot />
+            </AuthProvider>,
+        );
+
+        await waitFor(() => {
+            expect(screen.getByTestId('loading')).toHaveTextContent('no');
+        });
+
+        expect(api.get).not.toHaveBeenCalledWith('/auth/me');
+    });
+
+    it('skips auth-provider hydration on public recovery routes', async () => {
+        window.history.pushState({}, '', '/forgot-password');
+
+        api.get.mockImplementation((url) => {
+            throw new Error(`Unexpected url: ${url}`);
+        });
+
+        render(
+            <AuthProvider>
+                <AuthSnapshot />
+            </AuthProvider>,
+        );
+
+        await waitFor(() => {
+            expect(screen.getByTestId('loading')).toHaveTextContent('no');
+        });
+
+        expect(screen.getByTestId('providers')).toHaveTextContent('0');
+        expect(screen.getByTestId('providers-error')).toHaveTextContent('none');
+        expect(api.get).not.toHaveBeenCalled();
     });
 });

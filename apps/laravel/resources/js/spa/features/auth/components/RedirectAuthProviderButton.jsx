@@ -13,6 +13,7 @@ function buildOauthButtonClass(key) {
  */
 export default function RedirectAuthProviderButton({ provider, action, t }) {
     const actionText = getProviderActionText(provider, action, t);
+    const visualText = provider.display_name || actionText;
 
     return (
         <a
@@ -27,7 +28,7 @@ export default function RedirectAuthProviderButton({ provider, action, t }) {
                     <AppIcon name={provider.icon} />
                 </span>
             ) : null}
-            <span className="app-social-button__label">{actionText}</span>
+            <span className="app-social-button__label">{visualText}</span>
         </a>
     );
 }

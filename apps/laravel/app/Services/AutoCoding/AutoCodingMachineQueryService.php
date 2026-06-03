@@ -35,4 +35,14 @@ class AutoCodingMachineQueryService
     {
         return $this->machineRepository->findDetailedById($machineId);
     }
+
+    /**
+     * Resolve the latest detailed local auto-coding machine.
+     *
+     * @return AutoCodingMachine|null
+     */
+    public function findLatestDetailed(): ?AutoCodingMachine
+    {
+        return $this->machineRepository->findLatestDetailed();
+    }
 }

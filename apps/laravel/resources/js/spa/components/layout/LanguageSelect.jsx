@@ -1,3 +1,4 @@
+import { memo, useCallback } from 'react';
 import { useLanguage } from '../../features/i18n/context/LanguageContext';
 
 /**
@@ -5,16 +6,25 @@ import { useLanguage } from '../../features/i18n/context/LanguageContext';
  *
  * @returns {import('react').JSX.Element}
  */
-export default function LanguageSelect() {
+function LanguageSelect() {
     const { language, setLanguage, t } = useLanguage();
+    const label = t('common.language');
+
+    const handleLanguageChange = useCallback(
+        (event) => {
+            setLanguage(event.target.value);
+        },
+        [setLanguage],
+    );
 
     return (
         <label className="opas-language">
             <select
                 className="opas-language__select"
                 value={language}
-                onChange={(event) => setLanguage(event.target.value)}
-                aria-label={t('common.language')}
+                onChange={handleLanguageChange}
+                aria-label={label}
+                title={label}
             >
                 <option value="en">{t('common.english')}</option>
                 <option value="vi">{t('common.vietnamese')}</option>
@@ -22,3 +32,5 @@ export default function LanguageSelect() {
         </label>
     );
 }
+
+export default memo(LanguageSelect);

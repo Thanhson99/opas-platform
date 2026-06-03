@@ -1,0 +1,901 @@
+.opas-body {
+    margin: 0;
+    color: var(--opas-text);
+    background: var(--opas-gradient);
+}
+
+.opas-app {
+    display: grid;
+    grid-template-columns: 280px minmax(0, 1fr);
+    min-height: 100vh;
+    background: var(--opas-gradient);
+    transition: grid-template-columns 0.22s ease;
+}
+
+.opas-sidebar {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100vh;
+    padding: 1rem 0;
+    border-right: 1px solid var(--opas-line);
+    background:
+        radial-gradient(circle at 0% 0%, rgba(0, 245, 255, 0.08), transparent 34%),
+        linear-gradient(135deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.025)),
+        var(--opas-card);
+    box-shadow: 18px 0 42px rgba(0, 0, 0, 0.24);
+}
+
+.opas-sidebar__scroll {
+    display: grid;
+    gap: 1.1rem;
+    overflow-y: auto;
+    padding: 0 1rem 1rem;
+}
+
+.opas-sidebar__footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin: 0 1rem;
+    padding: 0.9rem 1rem;
+    border: 1px solid var(--opas-line);
+    border-radius: 18px;
+    background:
+        radial-gradient(circle at 100% 0%, rgba(0, 245, 255, 0.08), transparent 32%),
+        var(--opas-card);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.22);
+}
+
+.opas-sidebar__account {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    min-width: 0;
+}
+
+.opas-sidebar__account-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 999px;
+    color: #04111f;
+    background: linear-gradient(135deg, #00f5ff, #a855f7);
+    font-size: 0.76rem;
+    font-weight: 800;
+}
+
+.opas-sidebar__account-copy {
+    display: grid;
+    min-width: 0;
+}
+
+.opas-sidebar__account-copy strong {
+    color: var(--opas-text-strong);
+    font-size: 0.84rem;
+}
+
+.opas-sidebar__account-copy small {
+    overflow: hidden;
+    color: var(--opas-text-soft);
+    font-size: 0.7rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.opas-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    min-height: auto;
+    padding: 0.7rem 0.85rem 0.85rem;
+    border: 1px solid var(--opas-line);
+    border-radius: 20px;
+    background:
+        radial-gradient(circle at 100% 0%, rgba(0, 245, 255, 0.08), transparent 34%),
+        linear-gradient(135deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.025)),
+        var(--opas-card);
+    box-shadow: var(--opas-shadow);
+    text-decoration: none;
+}
+
+.opas-brand__mark {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 52px;
+    height: 52px;
+    flex: 0 0 52px;
+    overflow: hidden;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #00f5ff, #a855f7);
+    box-shadow:
+        inset 0 0 0 1px rgba(255, 255, 255, 0.16),
+        0 12px 24px rgba(0, 245, 255, 0.16);
+}
+
+.opas-brand__mark img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.opas-brand__copy {
+    display: flex;
+    flex-direction: column;
+}
+
+.opas-brand__copy strong {
+    color: var(--opas-text-strong);
+    font-size: 1.2rem;
+    font-weight: 800;
+}
+
+.opas-brand__copy small {
+    margin-top: 0.15rem;
+    color: var(--opas-text-soft);
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+}
+
+.opas-nav {
+    display: grid;
+    gap: 1rem;
+    margin-top: 0;
+    padding: 0.45rem;
+    border: 1px solid var(--opas-line);
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.045);
+    box-shadow:
+        inset 0 0 0 1px rgba(255, 255, 255, 0.035),
+        0 14px 28px rgba(0, 0, 0, 0.2);
+}
+
+.opas-nav__label {
+    margin: 0 0 0.4rem;
+    padding: 0 0.85rem;
+    color: var(--opas-text-soft);
+    font-size: 0.66rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.opas-nav__items {
+    display: grid;
+    gap: 0.2rem;
+}
+
+.opas-nav__link {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-height: 44px;
+    overflow: hidden;
+    padding: 0.78rem 0.95rem;
+    border-radius: 14px;
+    color: var(--opas-text);
+    font-size: 0.95rem;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.opas-nav__link .app-icon {
+    color: #00f5ff;
+}
+
+.opas-nav__link:hover {
+    color: #00f5ff;
+    background:
+        radial-gradient(circle at 0% 0%, rgba(0, 245, 255, 0.12), transparent 35%),
+        linear-gradient(90deg, rgba(0, 245, 255, 0.09), rgba(168, 85, 247, 0.06));
+    box-shadow: inset 0 0 0 1px rgba(0, 245, 255, 0.14);
+}
+
+.opas-nav__link.is-active {
+    border: 1px solid rgba(0, 245, 255, 0.22);
+    color: var(--opas-text-strong);
+    background:
+        linear-gradient(90deg, rgba(0, 245, 255, 0.9) 0 4px, transparent 4px),
+        radial-gradient(circle at 100% 50%, rgba(0, 245, 255, 0.16), transparent 34%),
+        linear-gradient(90deg, rgba(0, 245, 255, 0.12), rgba(168, 85, 247, 0.08));
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+}
+
+.opas-nav__link.is-active .app-icon {
+    color: #00f5ff;
+}
+
+.opas-main {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 100vh;
+    background: var(--opas-gradient);
+}
+
+.opas-header {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    padding: 0.65rem 1.25rem;
+    border-bottom: 1px solid var(--opas-line);
+    background:
+        radial-gradient(circle at 82% 0%, rgba(0, 245, 255, 0.12), transparent 30%),
+        linear-gradient(135deg, rgba(22, 22, 42, 0.96), rgba(10, 10, 23, 0.96));
+}
+
+.opas-header__main,
+.opas-header__intro-wrap,
+.opas-header__actions,
+.opas-account__trigger,
+.opas-header__icon-chip {
+    display: flex;
+    align-items: center;
+}
+
+.opas-header__main {
+    display: grid;
+    grid-template-columns: minmax(0, 390px) minmax(0, 1fr);
+    align-items: center;
+    gap: 1rem;
+    width: min(100%, 1440px);
+    margin: 0 auto;
+}
+
+.opas-header__intro-wrap {
+    gap: 1.1rem;
+    width: 100%;
+    min-width: 0;
+}
+
+.opas-header__toggle,
+.opas-header__icon-chip {
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border: 1px solid rgba(0, 245, 255, 0.2);
+    color: #00f5ff;
+    background:
+        linear-gradient(135deg, rgba(0, 245, 255, 0.07), rgba(168, 85, 247, 0.045)),
+        rgba(9, 9, 22, 0.82);
+    cursor: pointer;
+}
+
+.opas-header__toggle {
+    border-radius: 14px;
+}
+
+.opas-header__icon-chip {
+    border-radius: 999px;
+}
+
+.opas-header__toggle:hover,
+.opas-header__icon-chip:hover,
+.opas-header__toggle:focus-visible,
+.opas-header__icon-chip:focus-visible,
+.opas-header__toggle.is-active {
+    outline: none;
+    color: #00f5ff;
+    border-color: rgba(0, 245, 255, 0.34);
+    background:
+        linear-gradient(135deg, rgba(0, 245, 255, 0.16), rgba(168, 85, 247, 0.1)),
+        rgba(9, 9, 22, 0.92);
+    box-shadow:
+        inset 0 0 0 1px rgba(255, 255, 255, 0.04),
+        0 0 0 3px rgba(0, 245, 255, 0.08);
+}
+
+.opas-header__toggle.is-active {
+    border-color: rgba(168, 85, 247, 0.42);
+    background:
+        linear-gradient(135deg, rgba(168, 85, 247, 0.18), rgba(0, 245, 255, 0.1)),
+        rgba(9, 9, 22, 0.94);
+}
+
+.opas-header__toggle .app-icon {
+    width: 1.05rem;
+    height: 1.05rem;
+}
+
+.opas-header__intro {
+    width: 100%;
+    min-width: 0;
+}
+
+.opas-header__eyebrow {
+    margin: 0 0 0.1rem;
+    color: var(--opas-text-soft);
+    font-size: 0.74rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+.opas-header__title {
+    overflow: hidden;
+    margin: 0;
+    color: var(--opas-text-strong);
+    font-size: clamp(1.45rem, 1.75vw, 2rem);
+    font-weight: 800;
+    line-height: 1.08;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.opas-header__text {
+    display: -webkit-box;
+    overflow: hidden;
+    max-width: 30rem;
+    margin: 0.25rem 0 0;
+    color: var(--opas-text-soft);
+    font-size: 0.9rem;
+    line-height: 1.6;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+}
+
+.opas-header__actions,
+.opas-header__utility {
+    justify-content: flex-end;
+    gap: 0.7rem;
+    min-width: 0;
+}
+
+.opas-header__actions {
+    width: 100%;
+}
+
+.opas-header__utility {
+    display: flex;
+    align-items: center;
+    flex: 1 1 0;
+}
+
+.opas-header__search {
+    position: relative;
+    display: none;
+    min-width: 240px;
+    max-width: 420px;
+    flex: 1 1 280px;
+}
+
+.opas-header__search .app-icon {
+    position: absolute;
+    top: 50%;
+    left: 0.9rem;
+    color: var(--opas-text-soft);
+    transform: translateY(-50%);
+}
+
+.opas-header__search-input {
+    width: 100%;
+    height: 46px;
+    padding: 0 1rem 0 3rem;
+    border: 1px solid rgba(0, 245, 255, 0.18);
+    border-radius: 16px;
+    color: var(--opas-text);
+    background:
+        linear-gradient(135deg, rgba(0, 245, 255, 0.06), rgba(168, 85, 247, 0.04)),
+        rgba(7, 7, 18, 0.78);
+    font-size: 0.95rem;
+}
+
+.opas-header__search-input:focus {
+    border-color: rgba(0, 245, 255, 0.42);
+    outline: 0;
+    box-shadow: 0 0 0 3px rgba(0, 245, 255, 0.1);
+}
+
+.opas-language {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 142px;
+    flex: 0 0 142px;
+    min-height: 46px;
+    padding: 0.55rem 0.85rem;
+    border: 1px solid rgba(0, 245, 255, 0.18);
+    border-radius: 15px;
+    background:
+        linear-gradient(135deg, rgba(0, 245, 255, 0.07), rgba(168, 85, 247, 0.045)),
+        rgba(9, 9, 22, 0.82);
+}
+
+.opas-language__select {
+    width: 100%;
+    border: 0;
+    color: var(--opas-text-strong);
+    background: transparent;
+    font-size: 0.88rem;
+    font-weight: 700;
+    text-align: center;
+    text-align-last: center;
+    cursor: pointer;
+}
+
+.opas-language__select:focus {
+    outline: 0;
+}
+
+.opas-account {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    min-height: 58px;
+    padding: 0.5rem 0.65rem 0.5rem 0.8rem;
+    border: 1px solid var(--opas-line);
+    border-radius: 18px;
+    background: var(--opas-card);
+}
+
+.opas-account--muted {
+    color: var(--opas-text-soft);
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.opas-account.opas-account--menu {
+    width: clamp(12.5rem, 19vw, 15rem);
+    min-width: 12.5rem;
+    max-width: 15rem;
+    padding: 0;
+    overflow: visible;
+}
+
+.opas-account__trigger {
+    gap: 0.8rem;
+    width: 100%;
+    min-width: 0;
+    min-height: 48px;
+    padding: 0.5rem 0.65rem 0.5rem 0.8rem;
+    border: 0;
+    border-radius: 18px;
+    color: inherit;
+    background: transparent;
+    cursor: pointer;
+}
+
+.opas-account__trigger:hover {
+    background: rgba(0, 245, 255, 0.06);
+    box-shadow: inset 0 0 0 1px rgba(0, 245, 255, 0.12);
+}
+
+.opas-account__avatar {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    overflow: hidden;
+    border-radius: 999px;
+    color: #04111f;
+    background: linear-gradient(135deg, #00f5ff, #a855f7);
+    font-size: 0.76rem;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: 0;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.opas-account__meta {
+    display: grid;
+    flex: 1 1 auto;
+    gap: 0.08rem;
+    min-width: 0;
+    text-align: left;
+}
+
+.opas-account__meta strong {
+    display: block;
+    overflow: hidden;
+    color: var(--opas-text-strong);
+    font-size: 0.95rem;
+    line-height: 1.2;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.opas-account__meta span {
+    display: block;
+    overflow: hidden;
+    color: var(--opas-text-soft);
+    font-size: 0.8rem;
+    line-height: 1.4;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.opas-account__chevron {
+    flex: 0 0 auto;
+    color: var(--opas-text-soft);
+    transition: transform 0.18s ease;
+}
+
+.opas-account__chevron.is-open {
+    transform: rotate(180deg);
+}
+
+.opas-account__dropdown {
+    position: absolute;
+    top: calc(100% + 0.65rem);
+    right: 0;
+    left: auto;
+    z-index: 30;
+    display: grid;
+    gap: 0.45rem;
+    min-width: 240px;
+    padding: 0.8rem;
+    border: 1px solid var(--opas-line);
+    border-radius: 20px;
+    background:
+        radial-gradient(circle at 0% 0%, rgba(0, 245, 255, 0.08), transparent 28%),
+        linear-gradient(180deg, rgba(15, 15, 26, 0.98) 0%, rgba(9, 9, 22, 0.98) 100%);
+    box-shadow: 0 22px 48px rgba(0, 0, 0, 0.34);
+}
+
+.opas-account__menu-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.72rem 0.85rem;
+    border: 1px solid rgba(0, 245, 255, 0.18);
+    border-radius: 15px;
+    color: var(--opas-text);
+    background:
+        linear-gradient(135deg, rgba(0, 245, 255, 0.07), rgba(168, 85, 247, 0.045)),
+        rgba(9, 9, 22, 0.82);
+    font-size: 0.86rem;
+    font-weight: 700;
+    text-align: left;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.opas-account__menu-link:hover {
+    border-color: rgba(0, 245, 255, 0.34);
+    color: #00f5ff;
+    background:
+        linear-gradient(135deg, rgba(0, 245, 255, 0.16), rgba(168, 85, 247, 0.1)),
+        rgba(9, 9, 22, 0.92);
+}
+
+.opas-account--guest {
+    align-items: stretch;
+    justify-content: flex-end;
+    gap: 0.65rem;
+    min-width: 0;
+    min-height: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    flex: 0 0 auto;
+}
+
+.opas-account--guest .opas-account__meta {
+    align-content: center;
+    min-width: 0;
+}
+
+.opas-account--guest .opas-account__meta span {
+    max-width: 16rem;
+    font-size: 0.86rem;
+}
+
+.opas-account__actions {
+    display: flex;
+    align-items: stretch;
+    gap: 0.55rem;
+    flex: 0 0 auto;
+}
+
+.opas-account__action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 96px;
+    padding: 0.68rem 0.95rem;
+    border: 1px solid rgba(0, 245, 255, 0.18);
+    border-radius: 16px;
+    color: var(--opas-text);
+    background:
+        linear-gradient(135deg, rgba(0, 245, 255, 0.07), rgba(168, 85, 247, 0.045)),
+        rgba(9, 9, 22, 0.82);
+    font-size: 0.92rem;
+    font-weight: 700;
+    line-height: 1.2;
+    text-align: center;
+    text-decoration: none;
+}
+
+.opas-account__action--primary {
+    border-color: rgba(0, 245, 255, 0.42);
+    color: #04111f;
+    background: linear-gradient(135deg, #00f5ff, #a855f7);
+}
+
+.opas-content {
+    flex: 1;
+    padding: 1.5rem;
+}
+
+.opas-content__inner {
+    width: min(100%, 1440px);
+    margin: 0 auto;
+}
+
+.opas-footer {
+    margin-top: auto;
+    padding: 0 1.5rem 1.5rem;
+}
+
+.opas-footer__surface {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 1.2rem;
+    border: 1px solid var(--opas-line);
+    border-radius: 22px;
+    background: var(--opas-card);
+    box-shadow: var(--opas-shadow);
+}
+
+.opas-footer__brand {
+    display: grid;
+    gap: 0.15rem;
+    flex: 0 0 auto;
+}
+
+.opas-footer__brand strong {
+    color: var(--opas-text-strong);
+    font-size: 0.98rem;
+    font-weight: 800;
+}
+
+.opas-footer__brand span {
+    color: var(--opas-text-soft);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.opas-footer p {
+    margin: 0;
+    color: var(--opas-text-soft);
+    line-height: 1.6;
+    text-align: right;
+    flex: 1 1 auto;
+}
+
+.opas-footer--admin {
+    padding: 1rem 0 0;
+}
+
+.opas-footer--admin .opas-footer__surface {
+    border-color: var(--opas-line);
+    background:
+        radial-gradient(circle at 100% 0%, rgba(0, 245, 255, 0.08), transparent 28%),
+        linear-gradient(135deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.025)),
+        var(--opas-card);
+}
+
+.opas-body,
+.opas-app,
+.opas-main {
+    color: var(--cyber-text, #e5e7eb);
+    background: var(--opas-gradient, linear-gradient(180deg, #050510 0%, #0a0a0f 100%));
+}
+
+.opas-sidebar,
+.opas-header,
+.opas-sidebar__footer,
+.opas-brand,
+.opas-nav,
+.opas-account,
+.opas-footer__surface {
+    border-color: var(--cyber-border, rgba(255, 255, 255, 0.1));
+    color: var(--cyber-text, #e5e7eb);
+    background:
+        radial-gradient(circle at 0% 0%, rgba(0, 245, 255, 0.08), transparent 34%),
+        linear-gradient(135deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.025)),
+        var(--cyber-bg-panel, rgba(15, 15, 26, 0.9));
+    box-shadow: var(--cyber-shadow-card, 0 12px 30px rgba(0, 0, 0, 0.3));
+}
+
+.opas-header__toggle,
+.opas-header__icon-chip,
+.opas-header__search-input,
+.opas-language,
+.opas-account__dropdown,
+.opas-account__menu-link,
+.opas-account__action,
+.opas-nav__link {
+    border-color: rgba(0, 245, 255, 0.18);
+    color: var(--cyber-text, #e5e7eb);
+    background:
+        linear-gradient(135deg, rgba(0, 245, 255, 0.07), rgba(168, 85, 247, 0.045)),
+        rgba(9, 9, 22, 0.82);
+}
+
+.opas-header__toggle:hover,
+.opas-header__toggle:focus-visible,
+.opas-header__icon-chip:hover,
+.opas-header__icon-chip:focus-visible,
+.opas-account__trigger:hover,
+.opas-account__menu-link:hover,
+.opas-account__menu-link:focus-visible,
+.opas-account__action:hover,
+.opas-account__action:focus-visible,
+.opas-nav__link:hover,
+.opas-nav__link:focus-visible,
+.opas-nav__link.is-active {
+    color: var(--cyber-cyan, #00f5ff);
+    border-color: rgba(0, 245, 255, 0.28);
+    background:
+        linear-gradient(135deg, rgba(0, 245, 255, 0.16), rgba(168, 85, 247, 0.1)),
+        rgba(9, 9, 22, 0.92);
+}
+
+.opas-account__trigger:hover {
+    color: var(--cyber-text-strong, #f8fbff);
+    background:
+        linear-gradient(135deg, rgba(0, 245, 255, 0.1), rgba(168, 85, 247, 0.06)),
+        rgba(9, 9, 22, 0.88);
+    box-shadow: inset 0 0 0 1px rgba(0, 245, 255, 0.12);
+}
+
+.opas-account.opas-account--menu:hover {
+    background:
+        linear-gradient(135deg, rgba(0, 245, 255, 0.1), rgba(168, 85, 247, 0.06)),
+        rgba(9, 9, 22, 0.88);
+}
+
+.opas-account.opas-account--menu:hover .opas-account__trigger {
+    background: transparent;
+    box-shadow: none;
+}
+
+.opas-brand__mark,
+.opas-sidebar__account-badge,
+.opas-account__avatar {
+    color: #04111f;
+    background: linear-gradient(135deg, var(--cyber-cyan, #00f5ff), var(--cyber-purple, #a855f7));
+    box-shadow: 0 0 18px rgba(0, 245, 255, 0.18);
+}
+
+.opas-brand__copy strong,
+.opas-sidebar__account-copy strong,
+.opas-header__title,
+.opas-account__meta strong,
+.opas-footer__brand strong,
+.opas-language__select {
+    color: var(--cyber-text-strong, #f8fbff);
+}
+
+.opas-brand__copy small,
+.opas-sidebar__account-copy small,
+.opas-nav__label,
+.opas-header__eyebrow,
+.opas-header__text,
+.opas-header__search .app-icon,
+.opas-account--muted,
+.opas-account__meta span,
+.opas-account__chevron,
+.opas-footer__brand span,
+.opas-footer p {
+    color: var(--cyber-text-muted, #9ca3af);
+}
+
+.opas-header__search-input::placeholder {
+    color: rgba(156, 163, 175, 0.78);
+}
+
+.opas-header__search-input:focus {
+    border-color: rgba(0, 245, 255, 0.42);
+    box-shadow: 0 0 0 3px rgba(0, 245, 255, 0.1);
+}
+
+.opas-account__action--primary {
+    border-color: rgba(0, 245, 255, 0.42);
+    color: #04111f;
+    background: linear-gradient(135deg, var(--cyber-cyan, #00f5ff), var(--cyber-purple, #a855f7));
+}
+
+.opas-account--guest {
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+}
+
+@media (min-width: 992px) {
+    .opas-app.is-sidebar-collapsed {
+        grid-template-columns: 0 minmax(0, 1fr);
+    }
+
+    .opas-app.is-sidebar-collapsed .opas-sidebar {
+        width: 0;
+        min-width: 0;
+        overflow: hidden;
+        padding-inline: 0;
+        border-right: 0;
+        transform: translateX(-100%);
+        box-shadow: none;
+        pointer-events: none;
+    }
+
+    .opas-header__search {
+        display: block;
+    }
+}
+
+@media (max-width: 1399.98px) {
+    .opas-header__main {
+        grid-template-columns: minmax(0, 360px) minmax(0, 1fr);
+    }
+
+    .opas-account--guest {
+        min-width: 0;
+        flex-basis: auto;
+    }
+
+    .opas-account--guest .opas-account__meta span {
+        max-width: 10rem;
+    }
+}
+
+@media (max-width: 1279.98px) and (min-width: 992px) {
+    .opas-header__main {
+        grid-template-columns: 1fr;
+    }
+
+    .opas-header__actions {
+        justify-content: stretch;
+    }
+}
+
+@media (max-width: 991.98px) {
+    .opas-app {
+        grid-template-columns: 1fr;
+    }
+
+    .opas-sidebar {
+        position: fixed;
+        left: 0;
+        width: min(280px, calc(100vw - 24px));
+        transform: translateX(-100%);
+        transition: transform 0.22s ease;
+    }
+
+    .opas-app.is-mobile-sidebar-open .opas-sidebar {
+        transform: translateX(0);
+    }
+
+    .opas-header__actions {
+        display: none;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .opas-header,
+    .opas-content,
+    .opas-footer {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+}

@@ -3,10 +3,10 @@
 // ===============================
 
 // --- Neutral colors
-$color-black: #13242C;  // Base black, used for text and outlines
-$color-white: #fff;     // Pure white, commonly used for backgrounds
-$color-red-1: #D13433;  // Bright red, primary accent for errors or alerts
-$color-red-2: #932422;  // Darker red, used for shadows or depth
+$color-black: #050510;  // Base black, used for text and outlines
+$color-white: #f8fbff;  // Bright text on dark backgrounds
+$color-red-1: #ff4d6d;  // Bright red, primary accent for errors or alerts
+$color-red-2: #7f1d1d;  // Darker red, used for shadows or depth
 
 // --- Skin tones
 $color-skin-1: #EAB08C; // Light skin tone
@@ -19,20 +19,20 @@ $color-wood-1: #601513; // Deep wood tone, primary
 $color-wood-2: #410A09; // Darker wood tone, secondary
 
 // --- Special UI colors
-$color-body-page-error: #FF7F2E; // Highlight for error pages (orange)
+$color-body-page-error: #00f5ff; // Highlight for error pages (cyan)
 
 // ===============================
 // Colors & timing for 404 page
 // ===============================
 
 // --- Color variables
-$button: hsl(0, 0%, 100%);
-$button-color: hsl(0, 0%, 4%);
+$button: linear-gradient(135deg, #00f5ff 0%, #a855f7 100%);
+$button-color: #050510;
 $shadow: hsl(0, 0%, 0%);
-$bg: hsl(53, 0%, 45%);
-$header: hsl(53, 0%, 48%);
-$color-text: hsl(0, 0%, 98%);
-$lit-header: hsl(53, 0%, 90%);
+$bg: #050510;
+$header: #a855f7;
+$color-text: #e5e7eb;
+$lit-header: #00f5ff;
 
 // --- Animation speed
 $speed: 2s;

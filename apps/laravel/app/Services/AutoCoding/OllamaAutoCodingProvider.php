@@ -103,9 +103,9 @@ class OllamaAutoCodingProvider implements AutoCodingProviderInterface
      */
     protected function resolveBaseUrl(): string
     {
-        $baseUrl = config('opas.auto_coding.providers.ollama.base_url', 'http://127.0.0.1:11434');
+        $baseUrl = config('opas.auto_coding.providers.ollama.base_url');
 
-        return is_string($baseUrl) && $baseUrl !== '' ? $baseUrl : 'http://127.0.0.1:11434';
+        return is_string($baseUrl) && $baseUrl !== '' ? $baseUrl : '';
     }
 
     /**
@@ -124,9 +124,9 @@ class OllamaAutoCodingProvider implements AutoCodingProviderInterface
             }
         }
 
-        $model = config('opas.auto_coding.providers.ollama.model', 'qwen2.5:7b');
+        $model = config('opas.auto_coding.providers.ollama.model');
 
-        return is_string($model) && $model !== '' ? $model : 'qwen2.5:7b';
+        return is_string($model) && $model !== '' ? $model : '';
     }
 
     /**
@@ -136,8 +136,8 @@ class OllamaAutoCodingProvider implements AutoCodingProviderInterface
      */
     protected function resolveTimeoutSeconds(): int
     {
-        $timeout = config('opas.auto_coding.providers.ollama.timeout_seconds', 30);
+        $timeout = config('opas.auto_coding.providers.ollama.timeout_seconds');
 
-        return is_int($timeout) ? $timeout : 30;
+        return is_int($timeout) ? $timeout : 0;
     }
 }

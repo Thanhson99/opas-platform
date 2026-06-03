@@ -8,6 +8,7 @@ use App\Enums\AutoCodingExecutionStatus;
 use App\Enums\AutoCodingWorkflowStep;
 use App\Models\AutoCodingTask;
 use App\Models\AutoCodingTaskRun;
+use App\Services\AutoCoding\Telegram\AutoCodingTelegramNotificationService;
 
 /**
  * Persist task and run state transitions for auto-coding workflow executions.
@@ -17,6 +18,7 @@ class AutoCodingExecutionStateService
     public function __construct(
         private readonly AutoCodingCompletionChecklistService $completionChecklistService,
         private readonly AutoCodingExecutionContextService $executionContextService,
+        private readonly AutoCodingTelegramNotificationService $telegramNotificationService,
         private readonly AutoCodingWorkflowReportService $workflowReportService,
         private readonly AutoCodingWorkflowTracker $workflowTracker,
         private readonly RunArtifactService $runArtifactService,
@@ -177,6 +179,10 @@ class AutoCodingExecutionStateService
 
         /** @var AutoCodingTaskRun $freshRun */
         $freshRun = $run->fresh(['artifacts', 'steps']);
+        /** @var AutoCodingTask $freshTask */
+        $freshTask = $task->fresh(['runs']);
+
+        $this->telegramNotificationService->notifyOutcome($freshTask, $freshRun);
 
         return $freshRun;
     }

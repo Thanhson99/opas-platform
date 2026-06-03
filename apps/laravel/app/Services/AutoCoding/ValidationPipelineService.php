@@ -117,12 +117,12 @@ class ValidationPipelineService
      */
     protected function normalizeConfiguredGroups(): array
     {
-        $configuredGroups = config('opas.auto_coding.validation_commands', []);
+        $configuredGroups = config('opas.auto_coding.validation_commands');
         if (! is_array($configuredGroups)) {
             return [];
         }
 
-        $retryableGroups = config('opas.auto_coding.workflow.retryable_validation_groups', []);
+        $retryableGroups = config('opas.auto_coding.workflow.retryable_validation_groups');
         $retryableGroupNames = is_array($retryableGroups) ? $retryableGroups : [];
         $normalizedGroups = [];
 

@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
+import { memo, useCallback, useEffect, useId, useState } from 'react';
 import { createPortal } from 'react-dom';
+import AppIcon from '../icons/AppIcon';
 
 /**
  * Render the shared confirmation modal used for destructive or important actions.
@@ -12,12 +13,14 @@ import { createPortal } from 'react-dom';
  *   confirmLabel: string,
  *   cancelLabel: string,
  *   tone?: 'primary' | 'danger',
+ *   confirmDisabled?: boolean,
+ *   cancelDisabled?: boolean,
  *   onConfirm: () => void,
  *   onCancel: () => void,
  * }} props
  * @returns {import('react').ReactPortal | import('react').JSX.Element | null}
  */
-export default function ConfirmModal({
+function ConfirmModal({
     open,
     eyebrow,
     title,
@@ -25,9 +28,13 @@ export default function ConfirmModal({
     confirmLabel,
     cancelLabel,
     tone = 'primary',
+    confirmDisabled = false,
+    cancelDisabled = false,
     onConfirm,
     onCancel,
 }) {
+    const titleId = useId();
+    const textId = useId();
     const [modalViewportPosition, setModalViewportPosition] = useState({
         top: 0,
         left: 0,
@@ -68,14 +75,38 @@ export default function ConfirmModal({
         updateModalViewportPosition();
         body.style.overflow = 'hidden';
         documentElement.style.overflow = 'hidden';
+        const handleKeyDown = (event) => {
+            if (event.key === 'Escape' && !cancelDisabled) {
+                onCancel();
+            }
+        };
+
         window.addEventListener('resize', updateModalViewportPosition);
+        window.addEventListener('keydown', handleKeyDown);
 
         return () => {
             body.style.overflow = previousBodyOverflow;
             documentElement.style.overflow = previousHtmlOverflow;
             window.removeEventListener('resize', updateModalViewportPosition);
+            window.removeEventListener('keydown', handleKeyDown);
         };
-    }, [open]);
+    }, [cancelDisabled, onCancel, open]);
+
+    const handleBackdropClick = useCallback(() => {
+        if (!cancelDisabled) {
+            onCancel();
+        }
+    }, [cancelDisabled, onCancel]);
+
+    const handleModalClick = useCallback((event) => {
+        event.stopPropagation();
+    }, []);
+
+    const handleConfirm = useCallback(() => {
+        if (!confirmDisabled) {
+            onConfirm();
+        }
+    }, [confirmDisabled, onConfirm]);
 
     if (!open) {
         return null;
@@ -86,42 +117,49 @@ export default function ConfirmModal({
             className="app-modal-backdrop"
             role="presentation"
             style={{ minHeight: `${modalViewportPosition.backdropHeight}px` }}
-            onClick={onCancel}
+            onClick={handleBackdropClick}
         >
             <div
-                className="app-modal"
+                className={`app-modal app-modal--${tone}`}
                 role="dialog"
                 aria-modal="true"
-                aria-labelledby="confirm-modal-title"
+                aria-labelledby={titleId}
+                aria-describedby={textId}
                 style={{
                     top: `${modalViewportPosition.top}px`,
                     left: `${modalViewportPosition.left}px`,
                 }}
-                onClick={(event) => event.stopPropagation()}
+                onClick={handleModalClick}
             >
                 <div className="app-modal__body">
                     {eyebrow ? <p className="app-modal__eyebrow">{eyebrow}</p> : null}
-                    <h3 className="app-modal__title" id="confirm-modal-title">
+                    <h3 className="app-modal__title" id={titleId}>
                         {title}
                     </h3>
-                    <p className="app-modal__text">{text}</p>
+                    <p className="app-modal__text" id={textId}>
+                        {text}
+                    </p>
                 </div>
 
                 <div className="app-modal__actions">
                     <button
                         type="button"
                         className="app-button app-button--ghost"
+                        disabled={cancelDisabled}
                         onClick={onCancel}
                     >
+                        <AppIcon name="x" />
                         {cancelLabel}
                     </button>
                     <button
                         type="button"
-                        className={`app-button ${
+                        className={`app-button app-modal__confirm ${
                             tone === 'danger' ? 'app-button--danger' : 'app-button--primary'
                         }`}
-                        onClick={onConfirm}
+                        disabled={confirmDisabled}
+                        onClick={handleConfirm}
                     >
+                        <AppIcon name={tone === 'danger' ? 'trash' : 'check'} />
                         {confirmLabel}
                     </button>
                 </div>
@@ -135,3 +173,5 @@ export default function ConfirmModal({
 
     return createPortal(content, document.body);
 }
+
+export default memo(ConfirmModal);

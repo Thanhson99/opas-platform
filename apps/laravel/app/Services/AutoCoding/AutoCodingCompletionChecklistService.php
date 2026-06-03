@@ -266,6 +266,14 @@ class AutoCodingCompletionChecklistService
             ];
         }
 
+        if ($task->status === AutoCodingExecutionStatus::Cancelled && $run->status === AutoCodingExecutionStatus::Cancelled) {
+            return [
+                'key' => 'state',
+                'status' => 'passed',
+                'message' => 'Task and run were cancelled by operator request.',
+            ];
+        }
+
         return [
             'key' => 'state',
             'status' => 'failed',

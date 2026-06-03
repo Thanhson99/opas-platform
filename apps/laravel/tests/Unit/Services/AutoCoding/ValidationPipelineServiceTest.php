@@ -91,7 +91,7 @@ final class ValidationFakeCommandRunner implements CommandRunnerInterface
      * @param  string|null  $workingDirectory
      * @return array{successful: bool, exit_code: int, output: string, error_output: string}
      */
-    public function run(string $command, ?string $workingDirectory = null): array
+    public function run(string $command, ?string $workingDirectory = null, ?int $timeoutSeconds = null): array
     {
         return $this->results[$command];
     }

@@ -11,7 +11,8 @@ interface CommandRunnerInterface
      *
      * @param  string  $command
      * @param  string|null  $workingDirectory
+     * @param  int|null  $timeoutSeconds
      * @return array{successful: bool, exit_code: int, output: string, error_output: string}
      */
-    public function run(string $command, ?string $workingDirectory = null): array;
+    public function run(string $command, ?string $workingDirectory = null, ?int $timeoutSeconds = null): array;
 }

@@ -78,9 +78,15 @@ class AutoCodingExecutionContextService
         array $followUpAnswers,
         array $followUpAnswerSummary,
     ): array {
+        $taskContext = is_array($task->context_payload) ? $task->context_payload : [];
+        $issueContext = is_array($taskContext['issue_context'] ?? null)
+            ? $taskContext['issue_context']
+            : [];
+
         return [
             'task_summary' => $task->summary,
             'issue_key' => $task->issue_key,
+            'issue_context' => $issueContext,
             'repository_context' => $repositoryContext,
             'provider_options' => $providerOptions,
             'follow_up_answers' => $followUpAnswers,

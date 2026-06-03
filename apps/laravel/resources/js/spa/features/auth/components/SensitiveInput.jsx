@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { memo, useCallback, useState } from 'react';
 import AppIcon from '../../../components/icons/AppIcon';
 
 /**
@@ -22,7 +22,7 @@ import AppIcon from '../../../components/icons/AppIcon';
  * }} props
  * @returns {import('react').JSX.Element}
  */
-export default function SensitiveInput({
+function SensitiveInput({
     id,
     value,
     onChange,
@@ -39,6 +39,11 @@ export default function SensitiveInput({
     className = '',
 }) {
     const [revealed, setRevealed] = useState(false);
+    const toggleLabel = revealed ? concealLabel : revealLabel;
+
+    const handleToggleReveal = useCallback(() => {
+        setRevealed((current) => !current);
+    }, []);
 
     return (
         <div className={`app-sensitive-input ${className}`.trim()}>
@@ -59,16 +64,21 @@ export default function SensitiveInput({
                 placeholder={placeholder}
                 onBlur={onBlur}
                 onChange={onChange}
+                aria-invalid={invalid ? 'true' : undefined}
             />
             <button
                 type="button"
                 className="app-sensitive-input__toggle"
-                onClick={() => setRevealed((current) => !current)}
-                aria-label={revealed ? concealLabel : revealLabel}
-                title={revealed ? concealLabel : revealLabel}
+                onClick={handleToggleReveal}
+                disabled={disabled}
+                aria-label={toggleLabel}
+                aria-pressed={revealed}
+                title={toggleLabel}
             >
                 <AppIcon name={revealed ? 'eye-off' : 'eye'} />
             </button>
         </div>
     );
 }
+
+export default memo(SensitiveInput);

@@ -12,7 +12,7 @@
     <meta name="twitter:image" content="{{ asset('storage/images/brand/opas-banner.png') }}">
     <title>{{ config('opas.brand.name', 'OPAS') }}</title>
     @viteReactRefresh
-    @vite(['resources/js/app.jsx', 'resources/scss/app.scss'])
+    @vite(['resources/js/app.jsx'])
 </head>
 <body class="opas-body">
     <div id="root"></div>

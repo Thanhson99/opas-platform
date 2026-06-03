@@ -64,6 +64,7 @@ class AutoCodingTaskDispatchServiceTest extends TestCase
     public function test_it_can_claim_and_execute_one_pending_task(): void
     {
         config()->set('opas.auto_coding.default_repository_path', base_path('..'));
+        config()->set('opas.auto_coding.provider', 'null');
 
         $taskService = $this->app->make(LocalAutoCodingTaskService::class);
         $taskService->createPendingTask('Dispatch executes task', 'OPAS-0070');
