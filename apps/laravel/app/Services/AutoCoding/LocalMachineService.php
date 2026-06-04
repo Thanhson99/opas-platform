@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services\AutoCoding;
 
 use App\Models\AutoCodingMachine;
+use App\Support\RepositoryPathMatcher;
 
 class LocalMachineService
 {
@@ -35,7 +36,11 @@ class LocalMachineService
      *   machine_key:string,
      *   hostname:string,
      *   operating_system:string,
+     *   availability_status?:string|null,
      *   repository_path?:string|null,
+     *   capabilities?:array<string, mixed>|null,
+     *   workspace_bindings?:array<int, array<string, mixed>>|null,
+     *   max_parallel_tasks?:int|null,
      *   metadata?:array<string, mixed>|null
      * }  $heartbeat
      * @return AutoCodingMachine
@@ -49,7 +54,14 @@ class LocalMachineService
 
         $machine->hostname = trim($heartbeat['hostname']);
         $machine->operating_system = trim($heartbeat['operating_system']);
+        $machine->availability_status = $this->normalizeAvailabilityStatus($heartbeat['availability_status'] ?? null);
         $machine->repository_path = $this->resolveRepositoryPath($heartbeat);
+        $machine->capabilities = $this->normalizeCapabilities($heartbeat['capabilities'] ?? null);
+        $machine->workspace_bindings = $this->normalizeWorkspaceBindings(
+            $heartbeat['workspace_bindings'] ?? null,
+            $machine->repository_path,
+        );
+        $machine->max_parallel_tasks = $this->normalizeMaxParallelTasks($heartbeat['max_parallel_tasks'] ?? null);
         $machine->metadata = $this->normalizeMetadata($heartbeat);
         $machine->last_seen_at = now();
         $machine->save();
@@ -70,6 +82,159 @@ class LocalMachineService
         return is_string($repositoryPath) && trim($repositoryPath) !== ''
             ? trim($repositoryPath)
             : null;
+    }
+
+    /**
+     * Normalize one reported machine availability value.
+     *
+     * @param  mixed  $availabilityStatus
+     * @return string
+     */
+    protected function normalizeAvailabilityStatus(mixed $availabilityStatus): string
+    {
+        if (! is_string($availabilityStatus)) {
+            return 'idle';
+        }
+
+        $normalizedStatus = trim($availabilityStatus);
+
+        return in_array($normalizedStatus, ['idle', 'busy', 'draining', 'offline'], true)
+            ? $normalizedStatus
+            : 'idle';
+    }
+
+    /**
+     * Normalize machine capability flags into a string-keyed payload.
+     *
+     * @param  mixed  $capabilities
+     * @return array<string, bool>|null
+     */
+    protected function normalizeCapabilities(mixed $capabilities): ?array
+    {
+        if (! is_array($capabilities)) {
+            return null;
+        }
+
+        $normalizedCapabilities = [];
+
+        foreach ($capabilities as $key => $value) {
+            $capabilityName = is_string($key) ? $key : $value;
+
+            if (! is_string($capabilityName) || trim($capabilityName) === '') {
+                continue;
+            }
+
+            $normalizedCapabilities[strtolower(trim($capabilityName))] = is_bool($value) ? $value : true;
+        }
+
+        return $normalizedCapabilities !== [] ? $normalizedCapabilities : null;
+    }
+
+    /**
+     * Normalize reported workspace bindings and keep the primary repository addressable.
+     *
+     * @param  mixed  $workspaceBindings
+     * @param  string|null  $repositoryPath
+     * @return array<int, array<string, mixed>>|null
+     */
+    protected function normalizeWorkspaceBindings(mixed $workspaceBindings, ?string $repositoryPath): ?array
+    {
+        $bindings = is_array($workspaceBindings) ? $this->normalizeReportedWorkspaceBindings($workspaceBindings) : [];
+
+        if ($repositoryPath !== null && ! $this->hasRepositoryBinding($bindings, $repositoryPath)) {
+            array_unshift($bindings, [
+                'repository_path' => $repositoryPath,
+                'workspace_path' => $repositoryPath,
+                'active_branch' => null,
+            ]);
+        }
+
+        return $bindings !== [] ? array_values($bindings) : null;
+    }
+
+    /**
+     * Normalize explicit workspace binding rows from a heartbeat payload.
+     *
+     * @param  array<mixed>  $workspaceBindings
+     * @return array<int, array<string, mixed>>
+     */
+    protected function normalizeReportedWorkspaceBindings(array $workspaceBindings): array
+    {
+        $bindings = [];
+
+        foreach ($workspaceBindings as $binding) {
+            if (! is_array($binding)) {
+                continue;
+            }
+
+            $repositoryPath = $this->normalizeBindingString($binding['repository_path'] ?? null);
+            if ($repositoryPath === null) {
+                continue;
+            }
+
+            if ($this->hasRepositoryBinding($bindings, $repositoryPath)) {
+                continue;
+            }
+
+            $bindings[] = [
+                'repository_path' => $repositoryPath,
+                'workspace_path' => $this->normalizeBindingString($binding['workspace_path'] ?? null) ?? $repositoryPath,
+                'active_branch' => $this->normalizeBindingString($binding['active_branch'] ?? null),
+            ];
+        }
+
+        return $bindings;
+    }
+
+    /**
+     * Determine whether a binding list already includes one repository path.
+     *
+     * @param  array<int, array<string, mixed>>  $bindings
+     * @param  string  $repositoryPath
+     * @return bool
+     */
+    protected function hasRepositoryBinding(array $bindings, string $repositoryPath): bool
+    {
+        foreach ($bindings as $binding) {
+            if (
+                is_string($binding['repository_path'] ?? null)
+                && RepositoryPathMatcher::matches($binding['repository_path'], $repositoryPath)
+            ) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Normalize one optional workspace binding string.
+     *
+     * @param  mixed  $value
+     * @return string|null
+     */
+    protected function normalizeBindingString(mixed $value): ?string
+    {
+        if (! is_string($value)) {
+            return null;
+        }
+
+        $normalizedValue = trim($value);
+
+        return $normalizedValue !== '' ? $normalizedValue : null;
+    }
+
+    /**
+     * Normalize one reported machine parallelism limit.
+     *
+     * @param  mixed  $maxParallelTasks
+     * @return int
+     */
+    protected function normalizeMaxParallelTasks(mixed $maxParallelTasks): int
+    {
+        return is_numeric($maxParallelTasks) && (int) $maxParallelTasks > 0
+            ? min((int) $maxParallelTasks, 10)
+            : 1;
     }
 
     /**

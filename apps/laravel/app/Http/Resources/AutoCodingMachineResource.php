@@ -32,6 +32,10 @@ class AutoCodingMachineResource extends JsonResource
             'operating_system' => $machine->operating_system,
             'repository_path' => $machine->repository_path,
             'status' => $this->resolveStatus($machine),
+            'availability_status' => $machine->availability_status,
+            'capabilities' => $machine->capabilities,
+            'workspace_bindings' => $machine->workspace_bindings,
+            'max_parallel_tasks' => $machine->max_parallel_tasks,
             'last_seen_at' => $machine->last_seen_at instanceof DateTimeInterface
                 ? $machine->last_seen_at->format(DateTimeInterface::ATOM)
                 : null,

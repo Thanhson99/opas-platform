@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\AutoCoding;
 
+use App\Models\AutoCodingMachine;
 use App\Models\AutoCodingTask;
 
 class AutoCodingTaskDispatchService
@@ -11,6 +12,7 @@ class AutoCodingTaskDispatchService
     public function __construct(
         private readonly LocalAutoCodingTaskService $localAutoCodingTaskService,
         private readonly AutoCodingTaskQueryService $taskQueryService,
+        private readonly AutoCodingMachineRoutingService $machineRoutingService,
     ) {}
 
     /**
@@ -20,6 +22,8 @@ class AutoCodingTaskDispatchService
      *   summary:string,
      *   issue_key?:string,
      *   repository_path?:string,
+     *   preferred_machine_key?:string,
+     *   required_capabilities?:array<int, string>,
      *   validate?:bool,
      *   provider?:string,
      *   provider_options?:array<string, mixed>,
@@ -42,6 +46,12 @@ class AutoCodingTaskDispatchService
             $this->normalizeDirtyWorkspacePolicy($payload['dirty_workspace_policy'] ?? null),
             $this->normalizeScopePaths($payload['scope_paths'] ?? []),
             $this->normalizeScopePolicy($payload['scope_policy'] ?? null),
+        );
+
+        $task = $this->machineRoutingService->routePendingTask(
+            $task,
+            $this->normalizeRequiredCapabilities($payload['required_capabilities'] ?? []),
+            $this->normalizeOptionalString($payload['preferred_machine_key'] ?? null),
         );
 
         $contextMetadata = $this->normalizeContextMetadata($payload['context_metadata'] ?? []);
@@ -68,18 +78,26 @@ class AutoCodingTaskDispatchService
      *
      * @param  string|null  $repositoryPath
      * @param  bool  $shouldExecute
+     * @param  AutoCodingMachine|null  $machine
      * @return AutoCodingTask|null
      */
-    public function claimAndOptionallyExecute(?string $repositoryPath, bool $shouldExecute): ?AutoCodingTask
-    {
-        $task = $this->localAutoCodingTaskService->claimNextPendingTask($repositoryPath);
+    public function claimAndOptionallyExecute(
+        ?string $repositoryPath,
+        bool $shouldExecute,
+        ?AutoCodingMachine $machine = null,
+    ): ?AutoCodingTask {
+        if ($machine instanceof AutoCodingMachine && ! $this->machineRoutingService->canClaimNewTask($machine)) {
+            return null;
+        }
+
+        $task = $this->localAutoCodingTaskService->claimNextPendingTask($repositoryPath, $machine);
 
         if (! $task instanceof AutoCodingTask) {
             return null;
         }
 
         if ($shouldExecute) {
-            $this->localAutoCodingTaskService->executePendingTask($task->id);
+            $this->localAutoCodingTaskService->executePendingTask($task->id, $machine);
 
             return $this->taskQueryService->findDetailedById($task->id);
         }
@@ -266,6 +284,31 @@ class AutoCodingTaskDispatchService
         return in_array($normalizedPolicy, ['warn', 'block', 'allow'], true)
             ? $normalizedPolicy
             : 'warn';
+    }
+
+    /**
+     * Normalize required machine capability names from a transport payload.
+     *
+     * @param  mixed  $requiredCapabilities
+     * @return array<int, string>
+     */
+    protected function normalizeRequiredCapabilities(mixed $requiredCapabilities): array
+    {
+        if (! is_array($requiredCapabilities)) {
+            return [];
+        }
+
+        $capabilities = [];
+
+        foreach ($requiredCapabilities as $capability) {
+            if (! is_string($capability) || trim($capability) === '') {
+                continue;
+            }
+
+            $capabilities[] = strtolower(trim($capability));
+        }
+
+        return array_values(array_unique($capabilities));
     }
 
     /**

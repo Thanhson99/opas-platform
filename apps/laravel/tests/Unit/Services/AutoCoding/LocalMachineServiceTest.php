@@ -38,4 +38,37 @@ class LocalMachineServiceTest extends TestCase
         self::assertSame('vscode', $machine->metadata['editor'] ?? null);
         self::assertNotNull($machine->last_seen_at);
     }
+
+    /**
+     * Confirm workspace binding normalization dedupes Windows path variants.
+     *
+     * @return void
+     */
+    public function test_it_dedupes_workspace_bindings_across_windows_path_variants(): void
+    {
+        $service = $this->app->make(LocalMachineService::class);
+
+        $machine = $service->recordHeartbeat([
+            'machine_key' => 'windows-binding-worker',
+            'hostname' => 'windows-binding.local',
+            'operating_system' => 'Windows',
+            'repository_path' => 'C:\\Workspaces\\OPAS',
+            'workspace_bindings' => [
+                [
+                    'repository_path' => 'c:/workspaces/opas',
+                    'workspace_path' => 'c:/workspaces/opas',
+                    'active_branch' => 'feature/windows-path',
+                ],
+                [
+                    'repository_path' => 'C:\\Workspaces\\OPAS',
+                    'workspace_path' => 'C:\\Workspaces\\OPAS',
+                    'active_branch' => 'duplicate',
+                ],
+            ],
+        ]);
+
+        self::assertCount(1, $machine->workspace_bindings);
+        self::assertSame('c:/workspaces/opas', $machine->workspace_bindings[0]['repository_path'] ?? null);
+        self::assertSame('feature/windows-path', $machine->workspace_bindings[0]['active_branch'] ?? null);
+    }
 }

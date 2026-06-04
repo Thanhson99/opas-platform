@@ -53,6 +53,10 @@ class AutoCodingTaskStatusResource extends JsonResource
             'status' => $task->status->value,
             'branch_name' => $task->branch_name,
             'repository_path' => $task->repository_path,
+            'assigned_machine_id' => $task->assigned_machine_id,
+            'claimed_at' => $task->claimed_at instanceof DateTimeInterface
+                ? $task->claimed_at->format(DateTimeInterface::ATOM)
+                : null,
             'completed_at' => $task->completed_at instanceof DateTimeInterface
                 ? $task->completed_at->format(DateTimeInterface::ATOM)
                 : null,
@@ -76,6 +80,11 @@ class AutoCodingTaskStatusResource extends JsonResource
                 'last_seen_at' => $latestRun->machine->last_seen_at instanceof DateTimeInterface
                     ? $latestRun->machine->last_seen_at->format(DateTimeInterface::ATOM)
                     : null,
+            ],
+            'assigned_machine' => $task->assignedMachine === null ? null : [
+                'id' => $task->assignedMachine->id,
+                'machine_key' => $task->assignedMachine->machine_key,
+                'availability_status' => $task->assignedMachine->availability_status,
             ],
             'progress' => [
                 'artifact_count' => $artifactCount,

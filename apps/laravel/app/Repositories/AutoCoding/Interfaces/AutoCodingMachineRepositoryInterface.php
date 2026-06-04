@@ -31,4 +31,12 @@ interface AutoCodingMachineRepositoryInterface
      * @return AutoCodingMachine|null
      */
     public function findLatestDetailed(): ?AutoCodingMachine;
+
+    /**
+     * Return machines that expose one repository path, newest heartbeat first.
+     *
+     * @param  string  $repositoryPath
+     * @return list<AutoCodingMachine>
+     */
+    public function getLatestForRepository(string $repositoryPath): array;
 }

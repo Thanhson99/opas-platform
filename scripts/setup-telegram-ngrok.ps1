@@ -15,20 +15,22 @@ $LogFile = Join-Path $LogDir "ngrok.log"
 $WorkerPidFile = Join-Path $LogDir "auto-coding-worker.pid"
 $WorkerLogFile = Join-Path $LogDir "auto-coding-worker.log"
 $ApiUrl = "http://127.0.0.1:4040/api/tunnels"
+$TunnelUrlFile = Join-Path $LogDir "public-url.txt"
 
 $Mode = "start"
 $LaravelPort = if ($env:LARAVEL_PORT) { $env:LARAVEL_PORT } else { "8881" }
 $NgrokBin = if ($env:NGROK_BIN) { $env:NGROK_BIN } else { "ngrok" }
+$TelegramLocale = if ($env:TELEGRAM_LOCALE) { $env:TELEGRAM_LOCALE } else { "en" }
 $DropPendingUpdates = $false
 $StepIndex = 0
-$StepTotal = 6
+$StepTotal = 9
 
 New-Item -ItemType Directory -Force -Path $LogDir | Out-Null
 
 # Show CLI usage for all supported operational modes.
 function Show-Usage {
     Write-Host "Usage:"
-    Write-Host "  .\scripts\setup-telegram-ngrok.ps1 start [--port=8881] [--drop-pending-updates]"
+    Write-Host "  .\scripts\setup-telegram-ngrok.ps1 start [--port=8881] [--lang=en|vi] [--drop-pending-updates]"
     Write-Host "  .\scripts\setup-telegram-ngrok.ps1 status"
     Write-Host "  .\scripts\setup-telegram-ngrok.ps1 stop"
 }
@@ -53,6 +55,12 @@ function Show-InteractiveMenu {
 
             if (-not [string]::IsNullOrWhiteSpace($customPort)) {
                 $script:LaravelPort = $customPort
+            }
+
+            $language = Read-Host "Language [EN/VI] ($TelegramLocale)"
+
+            if (-not [string]::IsNullOrWhiteSpace($language)) {
+                $script:TelegramLocale = $language
             }
 
             $dropPending = Read-Host "Drop pending Telegram updates? [Y/N]"
@@ -111,6 +119,127 @@ function Should-UseDocker {
     param([string]$DbHost)
 
     return $DbHost -in @("postgres", "pgsql", "mysql", "mariadb", "laravel", "laravel-app")
+}
+
+# Run Laravel artisan in the runtime that can reach the configured database.
+function Invoke-Artisan {
+    param([string[]]$Arguments)
+
+    $dbHost = Read-EnvValue -FilePath $LaravelEnvFile -Key "DB_HOST"
+
+    if (Should-UseDocker $dbHost) {
+        Push-Location $RootDir
+
+        try {
+            & docker compose exec -T laravel php artisan @Arguments
+            if ($LASTEXITCODE -ne 0) {
+                throw "[OPAS] Laravel artisan command failed: $($Arguments -join ' ')"
+            }
+        } finally {
+            Pop-Location
+        }
+
+        return
+    }
+
+    Push-Location $AppDir
+
+    try {
+        & php artisan @Arguments
+        if ($LASTEXITCODE -ne 0) {
+            throw "[OPAS] Laravel artisan command failed: $($Arguments -join ' ')"
+        }
+    } finally {
+        Pop-Location
+    }
+}
+
+# Normalize Telegram locale to supported values.
+function Normalize-Locale {
+    param([string]$Value)
+
+    $normalized = $Value.ToLowerInvariant().Trim()
+
+    if ($normalized -eq "vi") {
+        return "vi"
+    }
+
+    return "en"
+}
+
+# Import .env Telegram bootstrap settings into the database default bot.
+function Bootstrap-TelegramBotFromEnv {
+    Invoke-Artisan @("opas:auto-coding:telegram:default-bot:import-env") | Out-Null
+}
+
+# Persist the selected Telegram locale on the database default bot.
+function Persist-TelegramLocale {
+    $script:TelegramLocale = Normalize-Locale $script:TelegramLocale
+    Invoke-Artisan @("opas:auto-coding:telegram:default-bot:update", "--locale=$script:TelegramLocale") | Out-Null
+}
+
+# Validate the database-backed Telegram runtime before opening webhook traffic.
+function Assert-ReadyTelegramRuntime {
+    $runtimeJson = Invoke-Artisan @("opas:auto-coding:telegram:runtime")
+    $payload = $runtimeJson | ConvertFrom-Json
+
+    if ($null -eq $payload) {
+        throw "[OPAS] Unable to decode Telegram runtime payload."
+    }
+
+    $missing = @()
+
+    if ($payload.enabled -ne $true) {
+        $source = if ($payload.source) { $payload.source } else { "runtime" }
+        $missing += "bot runtime is disabled (source: $source)"
+    }
+
+    if ([string]::IsNullOrWhiteSpace($payload.bot_token)) {
+        $missing += "bot token is missing"
+    }
+
+    if ([string]::IsNullOrWhiteSpace($payload.webhook_secret)) {
+        $missing += "webhook secret is missing"
+    }
+
+    $chatIds = @($payload.allowed_chat_ids)
+    $userIds = @($payload.allowed_user_ids)
+
+    if ($chatIds.Count -eq 0 -and $userIds.Count -eq 0) {
+        $missing += "at least one allowed chat id or user id is required"
+    }
+
+    if ($missing.Count -gt 0) {
+        throw "[OPAS] Telegram bot config is not ready: $($missing -join '; '). Configure /admin/auto-coding/telegram-bots or bootstrap AUTO_CODING_TELEGRAM_* env keys."
+    }
+}
+
+# Resolve provider name from .env for choosing Docker vs host Codex worker.
+function Get-AutoCodingProvider {
+    $provider = Read-EnvValue -FilePath $LaravelEnvFile -Key "AUTO_CODING_PROVIDER"
+
+    if ([string]::IsNullOrWhiteSpace($provider)) {
+        return "null"
+    }
+
+    return $provider.ToLowerInvariant().Trim()
+}
+
+# Resolve Codex CLI from configured path or PATH.
+function Resolve-CodexExecutable {
+    param([string]$ConfiguredExecutable)
+
+    if (-not [string]::IsNullOrWhiteSpace($ConfiguredExecutable) -and (Test-Path $ConfiguredExecutable)) {
+        return $ConfiguredExecutable
+    }
+
+    $command = Get-Command $ConfiguredExecutable -ErrorAction SilentlyContinue
+
+    if ($null -ne $command) {
+        return $command.Source
+    }
+
+    throw "[OPAS] AUTO_CODING_PROVIDER=codex but Codex CLI is not available. Set AUTO_CODING_CODEX_EXECUTABLE to codex.exe or its full path."
 }
 
 # Verify docker compose service "laravel" is running.
@@ -381,11 +510,17 @@ function Wait-HttpsTunnelToFile {
     param([string]$Pid)
 
     $url = Wait-HttpsTunnelUrl $Pid
-    Set-Content -Path (Join-Path $LogDir "public-url.txt") -Value $url
+    Set-Content -Path $TunnelUrlFile -Value $url
 }
 
 function Start-AutoCodingWorker {
     $dbHost = Read-EnvValue -FilePath $LaravelEnvFile -Key "DB_HOST"
+    $provider = Get-AutoCodingProvider
+
+    if ($provider -eq "codex") {
+        Start-LocalCodexWorker $dbHost
+        return
+    }
 
     if (-not (Should-UseDocker $dbHost)) {
         throw "[OPAS] Docker worker auto-start is only supported when DB_HOST points to the Docker stack."
@@ -407,6 +542,70 @@ function Start-AutoCodingWorker {
 
     if ($process.HasExited) {
         throw "[OPAS] Docker auto-coding worker exited immediately."
+    }
+}
+
+function Start-LocalCodexWorker {
+    param([string]$DbHost)
+
+    if (-not (Command-Exists "php")) {
+        throw "[OPAS] Host PHP is required for AUTO_CODING_PROVIDER=codex because Codex runs outside Docker on this machine."
+    }
+
+    if ((Should-UseDocker $DbHost) -and -not (Test-DockerLaravelRunning)) {
+        throw "[OPAS] Docker Laravel service is not running. Start it first with: scripts/start-local.ps1"
+    }
+
+    $configuredCodex = Read-EnvValue -FilePath $LaravelEnvFile -Key "AUTO_CODING_CODEX_EXECUTABLE"
+    $configuredCodex = if ([string]::IsNullOrWhiteSpace($configuredCodex)) { "codex" } else { $configuredCodex }
+    $codexExecutable = Resolve-CodexExecutable $configuredCodex
+    $hostDbHost = Read-EnvValue -FilePath $LaravelEnvFile -Key "AUTO_CODING_HOST_DB_HOST"
+    $hostDbHost = if ([string]::IsNullOrWhiteSpace($hostDbHost)) { "127.0.0.1" } else { $hostDbHost }
+    $dbPort = Read-EnvValue -FilePath $LaravelEnvFile -Key "AUTO_CODING_HOST_DB_PORT"
+    $dbPort = if ([string]::IsNullOrWhiteSpace($dbPort)) { Read-EnvValue -FilePath $LaravelEnvFile -Key "DB_PORT" } else { $dbPort }
+    $dbPort = if ([string]::IsNullOrWhiteSpace($dbPort)) { "5432" } else { $dbPort }
+    $dbDatabase = Read-EnvValue -FilePath $LaravelEnvFile -Key "DB_DATABASE"
+    $dbUsername = Read-EnvValue -FilePath $LaravelEnvFile -Key "DB_USERNAME"
+    $dbPassword = Read-EnvValue -FilePath $LaravelEnvFile -Key "DB_PASSWORD"
+    $repositoryPath = Read-EnvValue -FilePath $LaravelEnvFile -Key "AUTO_CODING_LOCAL_WORKER_REPOSITORY_PATH"
+    $repositoryPath = if ([string]::IsNullOrWhiteSpace($repositoryPath)) { Read-EnvValue -FilePath $LaravelEnvFile -Key "AUTO_CODING_DEFAULT_REPOSITORY_PATH" } else { $repositoryPath }
+    $repositoryPath = if ([string]::IsNullOrWhiteSpace($repositoryPath)) { $RootDir } else { $repositoryPath }
+    $promptPath = Read-EnvValue -FilePath $LaravelEnvFile -Key "AUTO_CODING_LOCAL_WORKER_PROMPT_PATH"
+    $promptPath = if ([string]::IsNullOrWhiteSpace($promptPath)) { Read-EnvValue -FilePath $LaravelEnvFile -Key "AUTO_CODING_PROMPT_PATH" } else { $promptPath }
+    $promptPath = if ([string]::IsNullOrWhiteSpace($promptPath)) { Join-Path $repositoryPath "ai-local/agents/laravel-n8n-orchestrator.md" } else { $promptPath }
+
+    $environment = @{
+        DB_HOST = $hostDbHost
+        DB_PORT = $dbPort
+        DB_DATABASE = if ([string]::IsNullOrWhiteSpace($dbDatabase)) { "laravel" } else { $dbDatabase }
+        DB_USERNAME = if ([string]::IsNullOrWhiteSpace($dbUsername)) { "root" } else { $dbUsername }
+        DB_PASSWORD = if ($null -eq $dbPassword) { "" } else { $dbPassword }
+        AUTO_CODING_DEFAULT_REPOSITORY_PATH = $repositoryPath
+        AUTO_CODING_PROMPT_PATH = $promptPath
+        AUTO_CODING_CODEX_EXECUTABLE = $codexExecutable
+    }
+
+    $previousEnvironment = @{}
+
+    foreach ($key in $environment.Keys) {
+        $previousEnvironment[$key] = [Environment]::GetEnvironmentVariable($key, "Process")
+        [Environment]::SetEnvironmentVariable($key, [string]$environment[$key], "Process")
+    }
+
+    try {
+        $process = Start-Process -FilePath "php" -ArgumentList @("artisan", "opas:auto-coding:work", "--execute", "--interval=5", "--max-iterations=0") -WorkingDirectory $AppDir -RedirectStandardOutput $WorkerLogFile -RedirectStandardError $WorkerLogFile -PassThru -WindowStyle Hidden
+    } finally {
+        foreach ($key in $previousEnvironment.Keys) {
+            [Environment]::SetEnvironmentVariable($key, $previousEnvironment[$key], "Process")
+        }
+    }
+
+    Set-Content -Path $WorkerPidFile -Value $process.Id
+
+    Start-Sleep -Seconds 1
+
+    if ($process.HasExited) {
+        throw "[OPAS] Local Codex auto-coding worker exited immediately."
     }
 }
 
@@ -433,7 +632,7 @@ function Ensure-LocalRuntimeReady {
 }
 
 function Register-TelegramWebhookFromTunnel {
-    $publicBaseUrl = (Get-Content -Path (Join-Path $LogDir "public-url.txt") -Raw).Trim()
+    $publicBaseUrl = (Get-Content -Path $TunnelUrlFile -Raw).Trim()
     $command = @($publicBaseUrl)
 
     if ($DropPendingUpdates) {
@@ -449,6 +648,7 @@ foreach ($arg in $args) {
         '^status$' { $Mode = "status" }
         '^stop$' { $Mode = "stop" }
         '^--port=(.+)$' { $LaravelPort = $Matches[1] }
+        '^--lang=(.+)$' { $TelegramLocale = $Matches[1] }
         '^--drop-pending-updates$' { $DropPendingUpdates = $true }
         '^--status$' { $Mode = "status" }
         '^--stop$' { $Mode = "stop" }
@@ -485,9 +685,12 @@ switch ($Mode) {
 
 Stop-ExistingNgrok
 Stop-ExistingWorker
-Invoke-Step "Check or install ngrok" "install-ngrok.log" { Install-NgrokIfMissing }
 Invoke-Step "Verify Docker and Laravel target" "verify-runtime.log" { Ensure-LocalRuntimeReady }
-Invoke-Step "Start Docker auto-coding worker" "start-auto-coding-worker.log" { Start-AutoCodingWorker }
+Invoke-Step "Bootstrap Telegram bot config" "bootstrap-telegram-bot.log" { Bootstrap-TelegramBotFromEnv }
+Invoke-Step "Persist Telegram locale" "persist-telegram-locale.log" { Persist-TelegramLocale }
+Invoke-Step "Validate Telegram bot config" "validate-telegram-bot.log" { Assert-ReadyTelegramRuntime }
+Invoke-Step "Check or install ngrok" "install-ngrok.log" { Install-NgrokIfMissing }
+Invoke-Step "Start auto-coding worker" "start-auto-coding-worker.log" { Start-AutoCodingWorker }
 Invoke-Step "Start ngrok tunnel" "start-ngrok.log" { Start-Ngrok }
 
 $ngrokPid = Read-Pid
@@ -496,7 +699,7 @@ if ([string]::IsNullOrWhiteSpace($ngrokPid)) {
     throw "[OPAS] ngrok process id was not recorded."
 }
 
-Invoke-Step "Wait for public HTTPS tunnel" "wait-tunnel.log" { Wait-HttpsTunnelToFile $using:ngrokPid }
+Invoke-Step "Wait for public HTTPS tunnel" "wait-tunnel.log" { Wait-HttpsTunnelToFile $ngrokPid }
 Invoke-Step "Register Telegram webhook" "register-webhook.log" { Register-TelegramWebhookFromTunnel }
 
 Write-Host ""

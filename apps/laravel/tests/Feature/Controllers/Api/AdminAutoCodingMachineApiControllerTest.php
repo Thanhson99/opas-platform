@@ -87,7 +87,20 @@ class AdminAutoCodingMachineApiControllerTest extends TestCase
             'machine_key' => 'mac-studio-main',
             'hostname' => 'mac-studio.local',
             'operating_system' => 'Darwin',
+            'availability_status' => 'idle',
             'repository_path' => '/Users/hopee/Downloads/laravel-n8n-automation',
+            'capabilities' => [
+                'codex' => true,
+                'php' => true,
+            ],
+            'workspace_bindings' => [
+                [
+                    'repository_path' => '/Users/hopee/Downloads/laravel-n8n-automation',
+                    'workspace_path' => '/Users/hopee/Downloads/laravel-n8n-automation',
+                    'active_branch' => 'feature/opas-0073',
+                ],
+            ],
+            'max_parallel_tasks' => 1,
             'metadata' => [
                 'editor' => 'vscode',
                 'runtime' => 'codex',
@@ -101,12 +114,15 @@ class AdminAutoCodingMachineApiControllerTest extends TestCase
                 'hostname' => 'mac-studio.local',
                 'operating_system' => 'Darwin',
                 'status' => 'online',
+                'availability_status' => 'idle',
             ]);
 
         $machine = AutoCodingMachine::query()->where('machine_key', 'mac-studio-main')->first();
 
         self::assertNotNull($machine);
         self::assertSame('/Users/hopee/Downloads/laravel-n8n-automation', $machine->repository_path);
+        self::assertTrue($machine->capabilities['codex'] ?? false);
+        self::assertSame('feature/opas-0073', $machine->workspace_bindings[0]['active_branch'] ?? null);
         self::assertSame('vscode', $machine->metadata['editor'] ?? null);
     }
 

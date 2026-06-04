@@ -6,6 +6,7 @@ namespace App\Models;
 
 use App\Enums\AutoCodingExecutionStatus;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
@@ -15,6 +16,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string|null $issue_key
  * @property string $repository_path
  * @property string|null $branch_name
+ * @property int|null $assigned_machine_id
+ * @property \Illuminate\Support\Carbon|null $claimed_at
  * @property AutoCodingExecutionStatus $status
  * @property array<string, mixed>|null $context_payload
  * @property array<string, mixed>|null $latest_report
@@ -32,6 +35,8 @@ class AutoCodingTask extends Model
         'issue_key',
         'repository_path',
         'branch_name',
+        'assigned_machine_id',
+        'claimed_at',
         'status',
         'context_payload',
         'latest_report',
@@ -49,8 +54,19 @@ class AutoCodingTask extends Model
             'status' => AutoCodingExecutionStatus::class,
             'context_payload' => 'array',
             'latest_report' => 'array',
+            'claimed_at' => 'datetime',
             'completed_at' => 'datetime',
         ];
+    }
+
+    /**
+     * Get the machine currently assigned to execute this task.
+     *
+     * @return BelongsTo<AutoCodingMachine, $this>
+     */
+    public function assignedMachine(): BelongsTo
+    {
+        return $this->belongsTo(AutoCodingMachine::class, 'assigned_machine_id');
     }
 
     /**

@@ -178,6 +178,8 @@ One-command helper for local Telegram testing with ngrok.
 
 This script:
 - verifies the Docker/Laravel runtime before opening any public tunnel
+- imports Telegram `.env` bootstrap values into the database-backed default bot when present
+- validates the active database-backed bot runtime before opening public webhook traffic
 - starts an ngrok tunnel for the Laravel app port
 - starts the auto-coding worker; `AUTO_CODING_PROVIDER=codex` runs it on the host so it can use the host Codex CLI
 - waits for a public HTTPS URL
@@ -274,8 +276,11 @@ Notes:
 
 Windows versions of the one-command Telegram tunnel + webhook setup flow.
 
+The PowerShell flow uses the same database-backed Telegram bot config as macOS/Linux. It also supports `AUTO_CODING_PROVIDER=codex` by running the auto-coding worker on the Windows host so it can use the host Codex CLI.
+
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\scripts\setup-telegram-ngrok.ps1
+powershell -ExecutionPolicy Bypass -File .\scripts\setup-telegram-ngrok.ps1 start --lang=vi
 powershell -ExecutionPolicy Bypass -File .\scripts\setup-telegram-ngrok.ps1 status
 powershell -ExecutionPolicy Bypass -File .\scripts\setup-telegram-ngrok.ps1 stop
 ```
@@ -289,6 +294,8 @@ scripts\setup-telegram-ngrok.bat stop
 ## 0.10 Windows - `setup-telegram-webhook.ps1` / `setup-telegram-webhook.bat`
 
 Windows versions of the Telegram webhook management flow.
+
+When the Laravel `.env` points at a Docker database host such as `postgres`, the PowerShell webhook script runs artisan through `docker compose exec -T laravel`, so Windows machines do not need host PHP just to inspect, register, delete, or sync Telegram webhook state.
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\scripts\setup-telegram-webhook.ps1

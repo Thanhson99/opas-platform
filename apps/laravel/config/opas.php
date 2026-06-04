@@ -106,6 +106,15 @@ return [
         'local_worker' => [
             'repository_path' => env('AUTO_CODING_LOCAL_WORKER_REPOSITORY_PATH'),
             'prompt_path' => env('AUTO_CODING_LOCAL_WORKER_PROMPT_PATH'),
+            'capabilities' => array_values(array_filter(array_map(
+                static fn (string $capability): string => trim($capability),
+                explode(',', (string) env('AUTO_CODING_LOCAL_WORKER_CAPABILITIES', 'codex,php,composer,node'))
+            ), static fn (string $capability): bool => $capability !== '')),
+            'workspace_bindings' => array_values(array_filter(array_map(
+                static fn (string $binding): string => trim($binding),
+                explode(';', (string) env('AUTO_CODING_LOCAL_WORKER_WORKSPACE_BINDINGS', ''))
+            ), static fn (string $binding): bool => $binding !== '')),
+            'max_parallel_tasks' => (int) env('AUTO_CODING_LOCAL_WORKER_MAX_PARALLEL_TASKS', 1),
         ],
         'machine_key' => env('AUTO_CODING_MACHINE_KEY'),
         'machine_stale_seconds' => (int) env('AUTO_CODING_MACHINE_STALE_SECONDS', 300),
