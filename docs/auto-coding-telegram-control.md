@@ -64,6 +64,70 @@ Routing behavior:
 Current limitation:
 - execution still uses the existing local worker/provider flow; the routing layer records ownership and claim safety, and prepares the contract for fully distributed execution in later phases
 
+## Observability And Operational Reports
+
+Phase 5 introduces a centralized visibility surface for auto-coding operations.
+
+Admin operators can inspect it from:
+
+```text
+/admin/auto-coding/observability
+```
+
+The page reads:
+
+```text
+GET /api/admin/auto-coding/observability?days=7
+```
+
+Optional filters:
+- `repository_path`: limit task/run/log/artifact summaries to one repository path
+- `machine_key`: limit task/run/log/artifact summaries to one machine
+
+The report includes:
+- `filter_options` for known repository paths and machine identities so operators can filter without retyping long paths
+- an `operational_summary` health snapshot with critical/warning notification counts, stale/offline machines, failed repositories, and validation failures
+- prioritized `review_actions` generated from failures, validation issues, repeated errors, machine capacity, heartbeat state, and critical notifications
+- task status counters and recent task history
+- active queue health, including pending/running/blocked counts, oldest active task age, average active age, and oldest open tasks
+- daily activity buckets for task creation, run creation, completed runs, and failed runs within the selected window
+- repository-level task/run summaries so operators can see which repositories have active work or repeated failures
+- recent run history with provider/model, duration, changed-file count, artifact count, and workflow-step count
+- run performance summaries with average/min/max duration and slowest completed runs
+- `reliability_summary` with run success/failure rates and failure pressure grouped by machine and provider
+- machine health, fleet status/OS/capability summaries, heartbeat freshness, workspace count, workspace binding coverage, capacity slots, capabilities, and optional resource metrics from heartbeat `metadata.resources`
+- fleet-level `resource_summary` aggregates for reported machine count, average/max resource metrics, and highest resource pressure rows
+- AI usage summaries from `provider_result`, including provider/model run counts and prompt/completion/total token counts when the provider reports token usage
+- changed-file and artifact review summaries, including changed-file status/extension counts and artifact type counts
+- `review_packages` that group changed files and artifacts by run so operators can prioritize review-heavy executions
+- failure summaries from task `latest_report.failure`, grouped by category
+- validation summaries from run `validation_results`, including recent failed validation messages
+- repeated-error summaries across validation failures and workflow-step error messages
+- execution summaries from workflow-step logs, including status counts, retryable step count, max attempt, and failed/blocked step hotspots
+- a unified activity timeline combining task, run, artifact, and workflow-step events
+- workflow-step execution logs for debugging failed or blocked runs
+- notification candidates for failed, blocked, running, stale, offline, unknown, or high-resource machine states, sorted by severity and recency
+- `notification_summary` severity/type counters and latest critical notification context for quick triage
+
+Machine resource metrics are intentionally metadata-backed for compatibility across Mac, Linux, and Windows agents. A heartbeat may include values such as:
+
+```json
+{
+  "metadata": {
+    "resources": {
+      "disk_percent": 72,
+      "disk_free_mb": 512000,
+      "disk_total_mb": 1024000,
+      "load_average": 1.4,
+      "process_memory_mb": 48,
+      "process_peak_memory_mb": 64
+    }
+  }
+}
+```
+
+Local worker heartbeats generate these portable PHP-backed metrics automatically when the platform exposes them. If a machine does not report resource metrics, the dashboard still shows identity, routing, heartbeat, and execution health.
+
 ## Setup Flow
 
 ### Provider mode

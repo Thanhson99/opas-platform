@@ -29,6 +29,12 @@ function AdminTopbar({ currentPageLabel, user, t, onLogoutClick }) {
                 meta: t('adminConsole.nav.management'),
             },
             {
+                href: '/admin/auto-coding/observability',
+                icon: 'activity',
+                label: t('adminAutoCodingOps.menuLabel'),
+                meta: t('adminConsole.nav.management'),
+            },
+            {
                 href: '/admin/auto-coding/telegram-bots',
                 icon: 'bot',
                 label: t('adminTelegramBots.menuLabel'),

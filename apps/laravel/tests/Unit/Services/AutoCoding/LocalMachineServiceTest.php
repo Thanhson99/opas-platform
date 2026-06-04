@@ -71,4 +71,21 @@ class LocalMachineServiceTest extends TestCase
         self::assertSame('c:/workspaces/opas', $machine->workspace_bindings[0]['repository_path'] ?? null);
         self::assertSame('feature/windows-path', $machine->workspace_bindings[0]['active_branch'] ?? null);
     }
+
+    /**
+     * Confirm resolved local machines include portable resource metadata.
+     *
+     * @return void
+     */
+    public function test_it_records_portable_resource_metadata_when_resolving_local_machine(): void
+    {
+        $service = $this->app->make(LocalMachineService::class);
+
+        $machine = $service->resolve(base_path());
+
+        self::assertIsArray($machine->metadata['resources'] ?? null);
+        self::assertArrayHasKey('process_memory_mb', $machine->metadata['resources']);
+        self::assertArrayHasKey('process_peak_memory_mb', $machine->metadata['resources']);
+        self::assertArrayHasKey('disk_percent', $machine->metadata['resources']);
+    }
 }

@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AccountApiController;
 use App\Http\Controllers\Api\AdminAuthProviderApiController;
 use App\Http\Controllers\Api\AdminAutoCodingMachineApiController;
+use App\Http\Controllers\Api\AdminAutoCodingObservabilityApiController;
 use App\Http\Controllers\Api\AdminAutoCodingTaskApiController;
 use App\Http\Controllers\Api\AdminAutoCodingTaskRunApiController;
 use App\Http\Controllers\Api\AdminTelegramBotConfigApiController;
@@ -64,6 +65,8 @@ Route::middleware('throttle:api')->group(function (): void {
 
     // Admin auto-coding endpoints expose the control plane for machines, tasks, runs, and artifacts.
     Route::prefix('admin/auto-coding')->middleware(['web', 'auth', 'verified-email', 'admin', 'no-store'])->name('api.admin.auto-coding.')->group(function (): void {
+        Route::get('/observability', [AdminAutoCodingObservabilityApiController::class, 'show'])
+            ->name('observability.show');
         Route::get('/machines', [AdminAutoCodingMachineApiController::class, 'index'])->name('machines.index');
         Route::post('/machines/heartbeat', [AdminAutoCodingMachineApiController::class, 'heartbeat'])
             ->name('machines.heartbeat');
