@@ -25,6 +25,7 @@ class LocalMachineService
             'metadata' => [
                 'php_version' => PHP_VERSION,
                 'user' => get_current_user(),
+                'resources' => $this->buildLocalResourceMetadata($repositoryPath),
             ],
         ]);
     }
@@ -248,6 +249,66 @@ class LocalMachineService
         $metadata = $heartbeat['metadata'] ?? null;
 
         return is_array($metadata) ? $metadata : null;
+    }
+
+    /**
+     * Build portable local resource metrics for machine health reporting.
+     *
+     * @param  string  $repositoryPath
+     * @return array<string, int|float|null>
+     */
+    protected function buildLocalResourceMetadata(string $repositoryPath): array
+    {
+        $diskTotal = $this->diskSpaceMetric('disk_total_space', $repositoryPath);
+        $diskFree = $this->diskSpaceMetric('disk_free_space', $repositoryPath);
+        $diskUsedPercent = $diskTotal !== null && $diskFree !== null && $diskTotal > 0
+            ? round((($diskTotal - $diskFree) / $diskTotal) * 100, 2)
+            : null;
+
+        return [
+            'load_average' => $this->loadAverageMetric(),
+            'process_memory_mb' => round(memory_get_usage(true) / 1048576, 2),
+            'process_peak_memory_mb' => round(memory_get_peak_usage(true) / 1048576, 2),
+            'disk_free_mb' => $diskFree !== null ? round($diskFree / 1048576, 2) : null,
+            'disk_total_mb' => $diskTotal !== null ? round($diskTotal / 1048576, 2) : null,
+            'disk_percent' => $diskUsedPercent,
+        ];
+    }
+
+    /**
+     * Return a portable load-average value when the platform exposes one.
+     *
+     * @return float|null
+     */
+    protected function loadAverageMetric(): ?float
+    {
+        if (! function_exists('sys_getloadavg')) {
+            return null;
+        }
+
+        $loadAverages = sys_getloadavg();
+
+        return is_array($loadAverages) && is_numeric($loadAverages[0] ?? null)
+            ? round((float) $loadAverages[0], 2)
+            : null;
+    }
+
+    /**
+     * Return one disk-space metric while tolerating unsupported paths.
+     *
+     * @param  string  $function
+     * @param  string  $repositoryPath
+     * @return float|null
+     */
+    protected function diskSpaceMetric(string $function, string $repositoryPath): ?float
+    {
+        $space = match ($function) {
+            'disk_total_space' => @disk_total_space($repositoryPath),
+            'disk_free_space' => @disk_free_space($repositoryPath),
+            default => false,
+        };
+
+        return is_numeric($space) ? (float) $space : null;
     }
 
     /**

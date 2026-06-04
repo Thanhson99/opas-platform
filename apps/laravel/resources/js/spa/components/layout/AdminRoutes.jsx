@@ -1,6 +1,9 @@
 import { lazy } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 
+const AdminAutoCodingObservabilityPage = lazy(
+    () => import('../../features/auto-coding/pages/admin/AdminAutoCodingObservabilityPage'),
+);
 const AdminTelegramBotsPage = lazy(
     () => import('../../features/auto-coding/pages/admin/AdminTelegramBotsPage'),
 );
@@ -23,6 +26,10 @@ export default function AdminRoutes() {
             <Route path="/users" element={<AdminUsersPage />} />
             <Route path="/auth/providers" element={<AuthProvidersDashboardPage />} />
             <Route path="/auth/providers/:key" element={<AuthProviderAdminPage />} />
+            <Route
+                path="/auto-coding/observability"
+                element={<AdminAutoCodingObservabilityPage />}
+            />
             <Route path="/auto-coding/telegram-bots" element={<AdminTelegramBotsPage />} />
             <Route path="/auto-coding/telegram-bots/:key" element={<AdminTelegramBotsPage />} />
             <Route path="*" element={<Navigate to="/admin/users" replace />} />

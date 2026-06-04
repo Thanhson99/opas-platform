@@ -24,6 +24,10 @@ function isAuthProviderDetailPath(pathname) {
 }
 
 function resolveAdminPageLabel(pathname, t) {
+    if (pathname.startsWith('/admin/auto-coding/observability')) {
+        return t('adminAutoCodingOps.menuLabel');
+    }
+
     if (pathname.startsWith('/admin/auto-coding/telegram-bots')) {
         return t('adminTelegramBots.menuLabel');
     }

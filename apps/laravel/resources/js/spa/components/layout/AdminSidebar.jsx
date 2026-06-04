@@ -56,6 +56,15 @@ function AdminSidebar({
                                 <span>{t('adminUsers.menuLabel')}</span>
                             </NavLink>
                             <NavLink
+                                to="/admin/auto-coding/observability"
+                                className={({ isActive }) =>
+                                    `admin-console__nav-link ${isActive ? 'is-active' : ''}`
+                                }
+                            >
+                                <AppIcon name="activity" />
+                                <span>{t('adminAutoCodingOps.menuLabel')}</span>
+                            </NavLink>
+                            <NavLink
                                 to="/admin/auto-coding/telegram-bots"
                                 className={({ isActive }) =>
                                     `admin-console__nav-link ${isActive ? 'is-active' : ''}`
