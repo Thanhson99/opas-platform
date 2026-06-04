@@ -65,7 +65,11 @@ class AdminAutoCodingMachineApiController extends Controller
          *   machine_key:string,
          *   hostname:string,
          *   operating_system:string,
+         *   availability_status?:string,
          *   repository_path?:string,
+         *   capabilities?:array<string, mixed>,
+         *   workspace_bindings?:array<int, array<string, mixed>>,
+         *   max_parallel_tasks?:int,
          *   metadata?:array<string, mixed>
          * } $validated
          */

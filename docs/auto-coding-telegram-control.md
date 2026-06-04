@@ -23,6 +23,47 @@ It currently supports:
 - all tracked bot-message cleanup
 - stop/delete controls for queued work
 
+## Multi-Machine Coordination
+
+Phase 4 introduces machine-aware routing for auto-coding tasks.
+
+Machine records now track:
+- stable `machine_key`
+- hostname and operating system
+- heartbeat freshness through `last_seen_at`
+- `availability_status`: `idle`, `busy`, `draining`, or `offline`
+- primary `repository_path`
+- `workspace_bindings` for additional repositories or workspace paths on the same machine
+- `capabilities` such as `codex` or `php`, reported as either a list (`["codex"]`) or a boolean map (`{"codex": true}`); names are normalized to lowercase
+- `max_parallel_tasks`
+
+Task records now support:
+- `assigned_machine_id`
+- `claimed_at`
+- a persisted `routing` block in `context_payload` and `latest_report`
+- routing diagnostics including candidate count and `unassigned_reason`
+
+Routing behavior:
+- task creation through the admin, Telegram, or dispatch service tries to assign the task to the newest online idle machine that matches the requested repository
+- routing assignment only mutates pending tasks using a status-guarded database update; running, blocked, or terminal tasks are not reassigned by the routing pass
+- a task can request a `preferred_machine_key` and `required_capabilities`; capability requirements are normalized by the routing layer before matching
+- machine agents can only claim pending tasks assigned to that machine or unassigned tasks for one of their bound repositories
+- stale, busy, draining, or offline machines are not given new claims
+- `max_parallel_tasks` is enforced at assignment time by counting pending and running tasks already reserved for that machine
+- `max_parallel_tasks` is also enforced at claim time, so worker and agent claim paths cannot bypass running-task capacity
+- when multiple machines bind the same repository, task assignment prevents the wrong machine from claiming the task
+- agent task-status polling respects workspace bindings and hides tasks assigned to another machine
+- agent task claiming can omit `repository_path` to search all bound repositories, or pass `repository_path` to pull work for one bound workspace repository; unbound repository paths are rejected
+- agent task claiming refreshes heartbeat freshness before capacity checks while preserving the machine's reported availability and routing context
+- when a worker cycle is constrained to one repository path, claim and stale-assignment reroute only consider that repository even if the machine has multiple workspace bindings
+- repository matching tolerates Windows and Unix slash variants such as `C:\repo` and `C:/repo`, including Windows drive-letter and directory case differences
+- unassigned tasks record why routing could not choose a machine, such as `no_repository_binding`, `preferred_machine_not_bound`, `no_online_machine`, `no_idle_machine`, `capacity_full`, or `missing_capability`
+- claimed task reports keep the original routing diagnostics while adding claim ownership and `claimed_at`
+- pending tasks assigned to a stale or unavailable machine can be rerouted when another eligible machine asks for work, so machine handoff does not leave pending tasks stuck forever
+
+Current limitation:
+- execution still uses the existing local worker/provider flow; the routing layer records ownership and claim safety, and prepares the contract for fully distributed execution in later phases
+
 ## Setup Flow
 
 ### Provider mode
@@ -50,6 +91,9 @@ AUTO_CODING_HOST_DB_HOST=127.0.0.1
 AUTO_CODING_HOST_DB_PORT=5432
 AUTO_CODING_LOCAL_WORKER_REPOSITORY_PATH=/path/to/repository
 AUTO_CODING_LOCAL_WORKER_PROMPT_PATH=/path/to/repository/ai-local/agents/laravel-n8n-orchestrator.md
+AUTO_CODING_LOCAL_WORKER_CAPABILITIES=codex,php,composer,node
+AUTO_CODING_LOCAL_WORKER_WORKSPACE_BINDINGS="/path/to/repository|/path/to/workspace|feature/branch"
+AUTO_CODING_LOCAL_WORKER_MAX_PARALLEL_TASKS=1
 ```
 
 For a server deployment, change only these `.env` paths/hosts to match the server:
@@ -58,6 +102,10 @@ For a server deployment, change only these `.env` paths/hosts to match the serve
 - `AUTO_CODING_PROMPT_PATH`: absolute prompt file path on that runtime
 - `AUTO_CODING_CODEX_EXECUTABLE`: `codex` or an absolute Codex CLI path
 - `AUTO_CODING_HOST_DB_HOST` and `AUTO_CODING_HOST_DB_PORT`: DB endpoint visible from a host-run Codex worker
+- `AUTO_CODING_MACHINE_KEY`: stable unique key for each machine, for example `mac-studio-main` or `windows-dev-box`
+- `AUTO_CODING_LOCAL_WORKER_CAPABILITIES`: comma-separated capability names used by routing
+- `AUTO_CODING_LOCAL_WORKER_WORKSPACE_BINDINGS`: semicolon-separated `repository_path|workspace_path|active_branch` rows when one machine can serve multiple workspaces
+- `AUTO_CODING_LOCAL_WORKER_MAX_PARALLEL_TASKS`: keep `1` unless the machine has isolated worktrees for parallel execution
 
 Telegram bot runtime config is database-first. Bot token, webhook secret, allowed chat IDs, allowed user IDs, allowed actions, locale, API base URL, and chat-history limits are managed in `telegram_bot_configs` through the admin screen.
 
@@ -78,6 +126,27 @@ php artisan opas:auto-coding:telegram:default-bot:import-env
 ```
 
 After import, runtime still reads from the database. The env values are only the deployment/bootstrap source.
+
+Mac, Linux, and Windows setup scripts all use the same database-backed default bot:
+- `scripts/setup-telegram-ngrok.sh` imports `.env` Telegram bootstrap values into `telegram_bot_configs`, persists the selected locale, validates the active runtime config, starts the worker, opens ngrok, and registers the webhook.
+- `scripts/setup-telegram-ngrok.ps1` performs the same flow on Windows and can run either a Docker worker or a host Codex worker based on `AUTO_CODING_PROVIDER`.
+- `scripts/setup-telegram-webhook.sh` and `scripts/setup-telegram-webhook.ps1` read the active bot runtime from Laravel and use Docker-aware artisan execution when the Laravel database host is a Docker service.
+
+Per-machine values should stay machine-specific:
+- `AUTO_CODING_MACHINE_KEY`
+- `AUTO_CODING_LOCAL_WORKER_REPOSITORY_PATH`
+- `AUTO_CODING_LOCAL_WORKER_PROMPT_PATH`
+- `AUTO_CODING_LOCAL_WORKER_CAPABILITIES`
+- `AUTO_CODING_LOCAL_WORKER_WORKSPACE_BINDINGS`
+- `AUTO_CODING_CODEX_EXECUTABLE`
+- `AUTO_CODING_HOST_DB_HOST` and `AUTO_CODING_HOST_DB_PORT`
+
+Shared bot values can be configured once in the admin UI or bootstrapped from `.env` on any machine:
+- `AUTO_CODING_TELEGRAM_BOT_TOKEN`
+- `AUTO_CODING_TELEGRAM_WEBHOOK_SECRET`
+- `AUTO_CODING_TELEGRAM_ALLOWED_CHAT_IDS`
+- `AUTO_CODING_TELEGRAM_ALLOWED_USER_IDS`
+- `AUTO_CODING_TELEGRAM_ALLOWED_ACTIONS`
 
 ### 1. Configure the default bot in admin
 

@@ -83,12 +83,17 @@ Artisan::command(
 
 Artisan::command(
     'opas:auto-coding:pull {--path=} {--execute}',
-    function (LocalAutoCodingTaskService $taskService): int {
+    function (LocalAutoCodingTaskService $taskService, LocalMachineService $machineService): int {
         $repositoryPath = $this->option('path');
+        $effectiveRepositoryPath = is_string($repositoryPath) && $repositoryPath !== ''
+            ? $repositoryPath
+            : base_path('..');
         $shouldExecute = (bool) $this->option('execute');
+        $machine = $machineService->resolve($effectiveRepositoryPath);
 
         $task = $taskService->claimNextPendingTask(
-            is_string($repositoryPath) && $repositoryPath !== '' ? $repositoryPath : null,
+            $effectiveRepositoryPath,
+            $machine,
         );
 
         if (! $task instanceof AutoCodingTask) {
@@ -101,7 +106,7 @@ Artisan::command(
         }
 
         if ($shouldExecute) {
-            $run = $taskService->executePendingTask($task->id);
+            $run = $taskService->executePendingTask($task->id, $machine);
             $this->line(json_encode($run->final_report, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) ?: '{}');
 
             return Command::SUCCESS;
@@ -163,7 +168,7 @@ Artisan::command(
 )->purpose('Resume one blocked local auto-coding task with follow-up input.');
 
 Artisan::command(
-    'opas:auto-coding:work {--path=} {--execute} {--interval=5} {--max-iterations=1}',
+    'opas:auto-coding:work {--path=} {--execute} {--interval=5} {--max-iterations=1} {--capability=*} {--workspace=*} {--max-parallel=}',
     function (LocalAutoCodingWorkerService $workerService): int {
         $repositoryPath = $this->option('path');
         $shouldExecute = (bool) $this->option('execute');
@@ -171,6 +176,42 @@ Artisan::command(
         $intervalSeconds = is_numeric($rawInterval) ? max(0, (int) $rawInterval) : 5;
         $rawMaxIterations = $this->option('max-iterations');
         $maxIterations = is_numeric($rawMaxIterations) ? (int) $rawMaxIterations : 1;
+        $rawWorkspaces = $this->option('workspace');
+        $workspaceBindings = [];
+
+        if (is_array($rawWorkspaces)) {
+            foreach ($rawWorkspaces as $rawWorkspace) {
+                if (! is_string($rawWorkspace) || trim($rawWorkspace) === '') {
+                    continue;
+                }
+
+                $parts = array_map('trim', explode('|', $rawWorkspace));
+                $repositoryPath = $parts[0];
+
+                if ($repositoryPath === '') {
+                    continue;
+                }
+
+                $workspaceBindings[] = [
+                    'repository_path' => $repositoryPath,
+                    'workspace_path' => $parts[1] ?? $repositoryPath,
+                    'active_branch' => $parts[2] ?? null,
+                ];
+            }
+        }
+
+        $machineContext = [
+            'max_parallel_tasks' => $this->option('max-parallel'),
+        ];
+        $rawCapabilities = $this->option('capability');
+
+        if (is_array($rawCapabilities) && $rawCapabilities !== []) {
+            $machineContext['capabilities'] = $rawCapabilities;
+        }
+
+        if ($workspaceBindings !== []) {
+            $machineContext['workspace_bindings'] = $workspaceBindings;
+        }
         $iteration = 0;
 
         while ($maxIterations === 0 || $iteration < $maxIterations) {
@@ -179,6 +220,7 @@ Artisan::command(
             $payload = $workerService->runCycle(
                 is_string($repositoryPath) && $repositoryPath !== '' ? $repositoryPath : null,
                 $shouldExecute,
+                $machineContext,
             );
 
             $this->line(json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) ?: '{}');

@@ -31,6 +31,10 @@ class AutoCodingTaskResource extends JsonResource
             'issue_key' => $task->issue_key,
             'repository_path' => $task->repository_path,
             'branch_name' => $task->branch_name,
+            'assigned_machine_id' => $task->assigned_machine_id,
+            'claimed_at' => $task->claimed_at instanceof DateTimeInterface
+                ? $task->claimed_at->format(DateTimeInterface::ATOM)
+                : null,
             'status' => $task->status->value,
             'completed_at' => $task->completed_at instanceof DateTimeInterface
                 ? $task->completed_at->format(DateTimeInterface::ATOM)
@@ -47,6 +51,11 @@ class AutoCodingTaskResource extends JsonResource
                     ? $latestRun->completed_at->format(DateTimeInterface::ATOM)
                     : null,
             ] : null,
+            'assigned_machine' => $task->assignedMachine === null ? null : [
+                'id' => $task->assignedMachine->id,
+                'machine_key' => $task->assignedMachine->machine_key,
+                'availability_status' => $task->assignedMachine->availability_status,
+            ],
             'artifact_types' => $latestRun instanceof AutoCodingTaskRun
                 ? $latestRun->artifacts->pluck('type')->values()->all()
                 : [],

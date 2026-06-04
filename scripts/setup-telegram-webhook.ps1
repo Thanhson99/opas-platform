@@ -96,6 +96,13 @@ function Read-EnvValue {
     return $line.Substring($Key.Length + 1).Trim('"')
 }
 
+# Infer docker-first execution based on DB host conventions.
+function Should-UseDocker {
+    param([string]$DbHost)
+
+    return $DbHost -in @("postgres", "pgsql", "mysql", "mariadb", "laravel", "laravel-app")
+}
+
 # Validate binary dependency availability.
 function Require-Command {
     param([string]$CommandName)
@@ -137,14 +144,33 @@ function Assert-HttpsUrl {
     }
 }
 
-# Run artisan from the Laravel app directory.
+# Run artisan from the runtime that can reach the configured database.
 function Invoke-Artisan {
     param([string[]]$Arguments)
 
-    Push-Location $AppDir
+    $dbHost = Read-EnvValue -FilePath $LaravelEnvFile -Key "DB_HOST"
+
+    if (Should-UseDocker $dbHost) {
+        Push-Location $RootDir
+
+        try {
+            & docker compose exec -T laravel php artisan @Arguments
+            if ($LASTEXITCODE -ne 0) {
+                throw "[OPAS] Laravel artisan command failed: $($Arguments -join ' ')"
+            }
+        } finally {
+            Pop-Location
+        }
+
+        return
+    }
 
     try {
+        Push-Location $AppDir
         & php artisan @Arguments
+        if ($LASTEXITCODE -ne 0) {
+            throw "[OPAS] Laravel artisan command failed: $($Arguments -join ' ')"
+        }
     } finally {
         Pop-Location
     }
@@ -246,9 +272,14 @@ if ($args.Count -eq 0) {
     Show-InteractiveMenu
 }
 
-Require-Command "php"
 Require-File (Join-Path $AppDir "artisan")
 Require-File $LaravelEnvFile
+
+if (Should-UseDocker (Read-EnvValue -FilePath $LaravelEnvFile -Key "DB_HOST")) {
+    Require-Command "docker"
+} else {
+    Require-Command "php"
+}
 
 switch ($Mode) {
     "inspect" {

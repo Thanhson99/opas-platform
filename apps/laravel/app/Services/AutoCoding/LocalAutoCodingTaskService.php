@@ -6,9 +6,11 @@ namespace App\Services\AutoCoding;
 
 use App\Enums\AutoCodingExecutionStatus;
 use App\Enums\AutoCodingTaskPurgeScope;
+use App\Models\AutoCodingMachine;
 use App\Models\AutoCodingTask;
 use App\Models\AutoCodingTaskRun;
 use App\Repositories\AutoCoding\Interfaces\AutoCodingTaskRepositoryInterface;
+use App\Support\RepositoryPathMatcher;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Throwable;
@@ -93,6 +95,7 @@ class LocalAutoCodingTaskService
         private readonly AutoCodingFollowUpResponseService $followUpResponseService,
         private readonly AutoCodingFollowUpWorkflowService $followUpWorkflowService,
         private readonly AutoCodingWorkflowStepRunnerService $workflowStepRunnerService,
+        private readonly AutoCodingMachineRoutingService $machineRoutingService,
     ) {}
 
     /**
@@ -139,13 +142,17 @@ class LocalAutoCodingTaskService
      * Execute one previously queued local auto-coding task.
      *
      * @param  int  $taskId
+     * @param  AutoCodingMachine|null  $executionMachine
      * @return AutoCodingTaskRun
      */
-    public function executePendingTask(int $taskId): AutoCodingTaskRun
+    public function executePendingTask(int $taskId, ?AutoCodingMachine $executionMachine = null): AutoCodingTaskRun
     {
         $task = $this->findTaskOrFail($taskId);
         $executionContext = $this->executionContextService->buildExecutionContext($task);
-        $machine = $this->localMachineService->resolve($executionContext['repository_path']);
+        $machine = $executionMachine instanceof AutoCodingMachine
+            ? $executionMachine
+            : $this->localMachineService->resolve($executionContext['repository_path']);
+        $this->assertTaskCanRunOnMachine($task, $machine);
         $run = $this->executionStateService->createRunningTaskRun($task, $machine->id, [
             'repository_path' => $executionContext['repository_path'],
         ]);
@@ -435,33 +442,62 @@ class LocalAutoCodingTaskService
     }
 
     /**
+     * Ensure a routed task only executes on its assigned machine.
+     *
+     * @param  AutoCodingTask  $task
+     * @param  AutoCodingMachine  $machine
+     * @return void
+     */
+    protected function assertTaskCanRunOnMachine(AutoCodingTask $task, AutoCodingMachine $machine): void
+    {
+        if ($task->assigned_machine_id === null || (int) $task->assigned_machine_id === (int) $machine->id) {
+            return;
+        }
+
+        throw ValidationException::withMessages([
+            'machine' => 'This auto-coding task is assigned to another machine.',
+        ]);
+    }
+
+    /**
      * Claim the oldest pending local auto-coding task for one repository path.
      *
      * @param  string|null  $repositoryPath
+     * @param  AutoCodingMachine|null  $machine
      * @return AutoCodingTask|null
      */
-    public function claimNextPendingTask(?string $repositoryPath = null): ?AutoCodingTask
+    public function claimNextPendingTask(?string $repositoryPath = null, ?AutoCodingMachine $machine = null): ?AutoCodingTask
     {
-        return DB::transaction(function () use ($repositoryPath): ?AutoCodingTask {
-            $task = $this->taskRepository->findOldestPending($repositoryPath);
+        return DB::transaction(function () use ($repositoryPath, $machine): ?AutoCodingTask {
+            $claimMachine = $this->lockClaimMachine($machine);
+
+            if ($machine instanceof AutoCodingMachine && ! $claimMachine instanceof AutoCodingMachine) {
+                return null;
+            }
+
+            $task = $this->resolveClaimablePendingTask($repositoryPath, $claimMachine);
 
             if (! $task instanceof AutoCodingTask) {
                 return null;
             }
 
-            $updated = AutoCodingTask::query()
-                ->whereKey($task->id)
-                ->where('status', AutoCodingExecutionStatus::Pending->value)
-                ->update([
-                    'status' => AutoCodingExecutionStatus::Running,
-                    'latest_report' => $this->queueStateService->buildClaimedLatestReport($task),
-                ]);
+            $claimableTask = $this->lockClaimableTask($task, $repositoryPath, $claimMachine);
 
-            if ($updated !== 1) {
+            if (! $claimableTask instanceof AutoCodingTask) {
                 return null;
             }
 
-            $claimedTask = $this->taskRepository->findDetailedById($task->id);
+            $assignedMachineId = $claimMachine instanceof AutoCodingMachine
+                ? $claimMachine->id
+                : $claimableTask->assigned_machine_id;
+            $claimableTask->update([
+                'status' => AutoCodingExecutionStatus::Running,
+                'assigned_machine_id' => $assignedMachineId,
+                'claimed_at' => now(),
+                'latest_report' => $this->buildClaimedLatestReport($claimableTask, $claimMachine),
+            ]);
+
+            $claimedTask = $this->taskRepository->findDetailedById($claimableTask->id);
 
             if ($claimedTask instanceof AutoCodingTask) {
                 $this->telegramNotificationService->notifyRunning($claimedTask);
@@ -469,6 +505,178 @@ class LocalAutoCodingTaskService
 
             return $claimedTask;
         });
+    }
+
+    /**
+     * Lock and reload the claiming machine before capacity-sensitive task selection.
+     *
+     * @param  AutoCodingMachine|null  $machine
+     * @return AutoCodingMachine|null
+     */
+    protected function lockClaimMachine(?AutoCodingMachine $machine): ?AutoCodingMachine
+    {
+        if (! $machine instanceof AutoCodingMachine) {
+            return null;
+        }
+
+        /** @var AutoCodingMachine|null $claimMachine */
+        $claimMachine = AutoCodingMachine::query()
+            ->whereKey($machine->id)
+            ->lockForUpdate()
+            ->first();
+
+        if (! $claimMachine instanceof AutoCodingMachine) {
+            return null;
+        }
+
+        return $this->machineRoutingService->canClaimNewTask($claimMachine)
+            ? $claimMachine
+            : null;
+    }
+
+    /**
+     * Lock and revalidate the selected task before claiming it.
+     *
+     * @param  AutoCodingTask  $task
+     * @param  string|null  $repositoryPath
+     * @param  AutoCodingMachine|null  $machine
+     * @return AutoCodingTask|null
+     */
+    protected function lockClaimableTask(
+        AutoCodingTask $task,
+        ?string $repositoryPath,
+        ?AutoCodingMachine $machine,
+    ): ?AutoCodingTask {
+        /** @var AutoCodingTask|null $claimableTask */
+        $claimableTask = AutoCodingTask::query()
+            ->whereKey($task->id)
+            ->lockForUpdate()
+            ->first();
+
+        if (! $claimableTask instanceof AutoCodingTask) {
+            return null;
+        }
+
+        if ($claimableTask->status !== AutoCodingExecutionStatus::Pending) {
+            return null;
+        }
+
+        if (! $this->claimAssignmentMatches($claimableTask, $machine)) {
+            return null;
+        }
+
+        if (! $this->claimRepositoryMatches($claimableTask, $repositoryPath, $machine)) {
+            return null;
+        }
+
+        return $claimableTask;
+    }
+
+    /**
+     * Determine whether the locked task assignment still permits this claim.
+     *
+     * @param  AutoCodingTask  $task
+     * @param  AutoCodingMachine|null  $machine
+     * @return bool
+     */
+    protected function claimAssignmentMatches(AutoCodingTask $task, ?AutoCodingMachine $machine): bool
+    {
+        if ($task->assigned_machine_id === null) {
+            return true;
+        }
+
+        return $machine instanceof AutoCodingMachine
+            && (int) $task->assigned_machine_id === (int) $machine->id;
+    }
+
+    /**
+     * Determine whether the locked task repository still permits this claim.
+     *
+     * @param  AutoCodingTask  $task
+     * @param  string|null  $repositoryPath
+     * @param  AutoCodingMachine|null  $machine
+     * @return bool
+     */
+    protected function claimRepositoryMatches(
+        AutoCodingTask $task,
+        ?string $repositoryPath,
+        ?AutoCodingMachine $machine,
+    ): bool {
+        $requestedRepositoryPath = is_string($repositoryPath) ? trim($repositoryPath) : '';
+
+        if ($requestedRepositoryPath !== '' && ! RepositoryPathMatcher::matches($task->repository_path, $requestedRepositoryPath)) {
+            return false;
+        }
+
+        if (! $machine instanceof AutoCodingMachine) {
+            return true;
+        }
+
+        return $this->machineRoutingService->machineMatchesRepository($machine, $task->repository_path);
+    }
+
+    /**
+     * Resolve the next pending task a machine can claim, rerouting stale assignments when possible.
+     *
+     * @param  string|null  $repositoryPath
+     * @param  AutoCodingMachine|null  $machine
+     * @return AutoCodingTask|null
+     */
+    protected function resolveClaimablePendingTask(
+        ?string $repositoryPath,
+        ?AutoCodingMachine $machine,
+    ): ?AutoCodingTask {
+        if (! $machine instanceof AutoCodingMachine) {
+            return $this->taskRepository->findOldestPending($repositoryPath);
+        }
+
+        $task = $this->taskRepository->findOldestPendingForMachine($machine, $repositoryPath);
+
+        if ($task instanceof AutoCodingTask) {
+            return $task;
+        }
+
+        foreach ($this->taskRepository->getOldestPendingAssignedOutsideMachine($machine, $repositoryPath) as $assignedTask) {
+            $reroutedTask = $this->machineRoutingService->rerouteIfAssignedMachineUnavailable($assignedTask);
+
+            if ((int) $reroutedTask->assigned_machine_id === (int) $machine->id) {
+                return $reroutedTask;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Build a claimed report and include machine routing context when available.
+     *
+     * @param  AutoCodingTask  $task
+     * @param  AutoCodingMachine|null  $machine
+     * @return array<string, mixed>
+     */
+    protected function buildClaimedLatestReport(AutoCodingTask $task, ?AutoCodingMachine $machine): array
+    {
+        $latestReport = $this->queueStateService->buildClaimedLatestReport($task);
+
+        if (! $machine instanceof AutoCodingMachine) {
+            return $latestReport;
+        }
+
+        $existingRouting = is_array($latestReport['routing'] ?? null)
+            ? $latestReport['routing']
+            : [];
+        $contextRouting = is_array($task->context_payload['routing'] ?? null)
+            ? $task->context_payload['routing']
+            : [];
+
+        return array_merge($latestReport, [
+            'routing' => array_merge($contextRouting, $existingRouting, [
+                'status' => 'claimed',
+                'assigned_machine_id' => $machine->id,
+                'assigned_machine_key' => $machine->machine_key,
+                'claimed_at' => now()->toIso8601String(),
+            ]),
+        ]);
     }
 
     /**

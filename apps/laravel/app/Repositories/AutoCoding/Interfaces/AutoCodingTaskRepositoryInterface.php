@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Repositories\AutoCoding\Interfaces;
 
+use App\Models\AutoCodingMachine;
 use App\Models\AutoCodingTask;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
@@ -44,6 +45,29 @@ interface AutoCodingTaskRepositoryInterface
      * @return AutoCodingTask|null
      */
     public function findOldestPending(?string $repositoryPath = null): ?AutoCodingTask;
+
+    /**
+     * Find the oldest pending task that one machine is allowed to claim.
+     *
+     * @param  AutoCodingMachine  $machine
+     * @param  string|null  $repositoryPath
+     * @return AutoCodingTask|null
+     */
+    public function findOldestPendingForMachine(AutoCodingMachine $machine, ?string $repositoryPath = null): ?AutoCodingTask;
+
+    /**
+     * Return oldest pending tasks assigned away from one machine but matching its repositories.
+     *
+     * @param  AutoCodingMachine  $machine
+     * @param  string|null  $repositoryPath
+     * @param  int  $limit
+     * @return list<AutoCodingTask>
+     */
+    public function getOldestPendingAssignedOutsideMachine(
+        AutoCodingMachine $machine,
+        ?string $repositoryPath = null,
+        int $limit = 10,
+    ): array;
 
     /**
      * Find the latest detailed local auto-coding task.

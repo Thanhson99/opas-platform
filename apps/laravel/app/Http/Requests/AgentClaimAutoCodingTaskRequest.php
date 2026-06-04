@@ -28,6 +28,7 @@ class AgentClaimAutoCodingTaskRequest extends FormRequest
     {
         return [
             'execute' => ['nullable', 'boolean'],
+            'repository_path' => ['nullable', 'string', 'max:1000'],
         ];
     }
 }

@@ -11,6 +11,7 @@ use App\Http\Resources\AutoCodingTaskResource;
 use App\Http\Resources\AutoCodingTaskStatusResource;
 use App\Models\AutoCodingMachine;
 use App\Services\AutoCoding\AutoCodingAgentAuthService;
+use App\Services\AutoCoding\AutoCodingMachineRoutingService;
 use App\Services\AutoCoding\AutoCodingTaskDispatchService;
 use App\Services\AutoCoding\AutoCodingTaskQueryService;
 use App\Services\AutoCoding\LocalMachineService;
@@ -25,6 +26,7 @@ class AgentAutoCodingApiController extends Controller
         private readonly LocalMachineService $localMachineService,
         private readonly AutoCodingTaskDispatchService $taskDispatchService,
         private readonly AutoCodingTaskQueryService $taskQueryService,
+        private readonly AutoCodingMachineRoutingService $machineRoutingService,
     ) {}
 
     /**
@@ -37,14 +39,32 @@ class AgentAutoCodingApiController extends Controller
     {
         $machine = $this->resolveAuthenticatedMachine($request->bearerToken());
 
-        /** @var array{repository_path?:string,metadata?:array<string, mixed>} $validated */
+        /** @var array{
+         *   availability_status?:string,
+         *   repository_path?:string,
+         *   capabilities?:array<string, mixed>,
+         *   workspace_bindings?:array<int, array<string, mixed>>,
+         *   max_parallel_tasks?:int,
+         *   metadata?:array<string, mixed>
+         * } $validated
+         */
         $validated = $request->validated();
 
         $updatedMachine = $this->localMachineService->recordHeartbeat([
             'machine_key' => $machine->machine_key,
             'hostname' => $machine->hostname,
             'operating_system' => $machine->operating_system,
+            'availability_status' => $validated['availability_status'] ?? $machine->availability_status,
             'repository_path' => isset($validated['repository_path']) ? trim($validated['repository_path']) : $machine->repository_path,
+            'capabilities' => is_array($validated['capabilities'] ?? null)
+                ? $validated['capabilities']
+                : $machine->capabilities,
+            'workspace_bindings' => is_array($validated['workspace_bindings'] ?? null)
+                ? $validated['workspace_bindings']
+                : $machine->workspace_bindings,
+            'max_parallel_tasks' => is_numeric($validated['max_parallel_tasks'] ?? null)
+                ? (int) $validated['max_parallel_tasks']
+                : $machine->max_parallel_tasks,
             'metadata' => is_array($validated['metadata'] ?? null) ? $validated['metadata'] : $machine->metadata,
         ]);
 
@@ -53,6 +73,8 @@ class AgentAutoCodingApiController extends Controller
                 'id' => $updatedMachine->id,
                 'machine_key' => $updatedMachine->machine_key,
                 'repository_path' => $updatedMachine->repository_path,
+                'availability_status' => $updatedMachine->availability_status,
+                'workspace_bindings' => $updatedMachine->workspace_bindings,
                 'last_seen_at' => $updatedMachine->last_seen_at?->toIso8601String(),
             ],
         ]);
@@ -67,12 +89,15 @@ class AgentAutoCodingApiController extends Controller
     public function claim(AgentClaimAutoCodingTaskRequest $request): JsonResponse
     {
         $machine = $this->resolveAuthenticatedMachine($request->bearerToken());
-        /** @var array{execute?:bool} $validated */
+        /** @var array{execute?:bool,repository_path?:string} $validated */
         $validated = $request->validated();
+        $repositoryPath = $this->resolveClaimRepositoryPath($machine, $validated['repository_path'] ?? null);
+        $machine = $this->refreshMachineHeartbeatForClaim($machine);
 
         $task = $this->taskDispatchService->claimAndOptionallyExecute(
-            $machine->repository_path,
+            $repositoryPath,
             (bool) ($validated['execute'] ?? false),
+            $machine,
         );
 
         if ($task === null) {
@@ -99,7 +124,12 @@ class AgentAutoCodingApiController extends Controller
 
         abort_if($task === null, Response::HTTP_NOT_FOUND, 'Local auto-coding task not found.');
         abort_if(
-            $task->repository_path !== $machine->repository_path,
+            ! $this->machineRoutingService->machineMatchesRepository($machine, $task->repository_path),
+            Response::HTTP_NOT_FOUND,
+            'Local auto-coding task not found.'
+        );
+        abort_if(
+            $task->assigned_machine_id !== null && (int) $task->assigned_machine_id !== (int) $machine->id,
             Response::HTTP_NOT_FOUND,
             'Local auto-coding task not found.'
         );
@@ -120,5 +150,50 @@ class AgentAutoCodingApiController extends Controller
         abort_if($machine === null, Response::HTTP_UNAUTHORIZED, 'Invalid auto-coding agent token.');
 
         return $machine;
+    }
+
+    /**
+     * Resolve and validate the repository path requested by one claim call.
+     *
+     * @param  AutoCodingMachine  $machine
+     * @param  string|null  $repositoryPath
+     * @return string|null
+     */
+    protected function resolveClaimRepositoryPath(AutoCodingMachine $machine, ?string $repositoryPath): ?string
+    {
+        if (! is_string($repositoryPath) || trim($repositoryPath) === '') {
+            return null;
+        }
+
+        $requestedRepositoryPath = trim($repositoryPath);
+
+        abort_if(
+            ! $this->machineRoutingService->machineMatchesRepository($machine, $requestedRepositoryPath),
+            Response::HTTP_UNPROCESSABLE_ENTITY,
+            'Repository path is not bound to this auto-coding machine.'
+        );
+
+        return $requestedRepositoryPath;
+    }
+
+    /**
+     * Refresh heartbeat freshness before claim without changing machine routing context.
+     *
+     * @param  AutoCodingMachine  $machine
+     * @return AutoCodingMachine
+     */
+    protected function refreshMachineHeartbeatForClaim(AutoCodingMachine $machine): AutoCodingMachine
+    {
+        return $this->localMachineService->recordHeartbeat([
+            'machine_key' => $machine->machine_key,
+            'hostname' => $machine->hostname,
+            'operating_system' => $machine->operating_system,
+            'availability_status' => $machine->availability_status,
+            'repository_path' => $machine->repository_path,
+            'capabilities' => $machine->capabilities,
+            'workspace_bindings' => $machine->workspace_bindings,
+            'max_parallel_tasks' => $machine->max_parallel_tasks,
+            'metadata' => $machine->metadata,
+        ]);
     }
 }
