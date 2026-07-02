@@ -84,6 +84,13 @@ export default function AppShell({ children }) {
             };
         }
 
+        if (location.pathname.startsWith('/realtime-translate')) {
+            return {
+                title: t('shell.realtimeTranslateTitle'),
+                description: t('shell.realtimeTranslateDescription'),
+            };
+        }
+
         if (location.pathname.startsWith('/admin/auth/providers')) {
             return {
                 title: t('shell.authProvidersTitle'),
