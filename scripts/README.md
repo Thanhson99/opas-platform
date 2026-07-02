@@ -25,6 +25,7 @@ scripts/
 ├── setup-telegram-webhook.sh     # macOS/Linux: inspect/register/delete Telegram webhook
 ├── start-local.sh                # macOS/Linux: bootstrap full Docker stack
 ├── start-local-lite.sh           # macOS/Linux: run only Laravel + Vite locally
+├── start-realtime-audio-capture.sh # macOS/Linux: run OPAS realtime audio capture service
 ├── test-laravel.sh               # macOS/Linux: run Laravel checks separately from startup
 ├── start-local.ps1               # Windows PowerShell: bootstrap full Docker stack
 ├── start-local.bat               # Windows CMD wrapper for start-local.ps1
@@ -83,7 +84,28 @@ chmod +x scripts/start-local-lite.sh
 scripts/start-local-lite.sh
 ```
 
-## 0.3 Windows PowerShell - `start-local.ps1`
+## 0.3 macOS / Linux - `start-realtime-audio-capture.sh`
+
+One-command startup for the OPAS-0101 realtime audio capture service. The script installs only the Python requirements for this module and starts the local FastAPI server used by the Chromium extension bridge and web screen.
+
+It prints only high-level loading steps. Detailed server and install output goes to `.codex-tmp/realtime-audio-capture.log`.
+
+```bash
+chmod +x scripts/start-realtime-audio-capture.sh
+scripts/start-realtime-audio-capture.sh
+scripts/start-realtime-audio-capture.sh --no-open
+scripts/start-realtime-audio-capture.sh --open-browser
+scripts/start-realtime-audio-capture.sh --managed-browser
+scripts/start-realtime-audio-capture.sh --port=5011
+scripts/start-realtime-audio-capture.sh --with-stt
+scripts/start-realtime-audio-capture.sh --capture-only
+```
+
+By default, the script installs the local `faster-whisper` STT dependency so the Live Text panel can transcribe captured tab audio. Use `--capture-only` when you only want to test audio capture without transcript. Stop any existing realtime audio server before rerunning after dependency changes.
+
+The script does not open a browser by default. Click the loaded `apps/realtime-audio-extension` icon and press `Open Web` to open `http://127.0.0.1:5010/realtime-audio/ui`. Use `--open-browser` to open the configured browser, or `--managed-browser` when you intentionally want a separate Chromium profile with the extension loaded by command-line flags.
+
+## 0.4 Windows PowerShell - `start-local.ps1`
 
 Windows PowerShell version of the full Docker stack startup.
 
@@ -92,7 +114,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\start-local.ps1
 powershell -ExecutionPolicy Bypass -File .\scripts\start-local.ps1 --fresh
 ```
 
-## 0.4 Windows CMD - `start-local.bat`
+## 0.5 Windows CMD - `start-local.bat`
 
 CMD wrapper that forwards to `start-local.ps1`.
 
@@ -101,7 +123,7 @@ scripts\start-local.bat
 scripts\start-local.bat --fresh
 ```
 
-## 0.5 Quality / CI commands after local boot
+## 0.6 Quality / CI commands after local boot
 
 Startup scripts only boot services. Use the Laravel test script when you want verification.
 

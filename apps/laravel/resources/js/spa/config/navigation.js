@@ -78,6 +78,17 @@ export const navigation = [
         ],
     },
     {
+        labelKey: 'nav.realtimeTools',
+        items: [
+            {
+                labelKey: 'nav.realtimeTranslate',
+                href: '/realtime-translate',
+                icon: 'headset',
+                activePrefixes: ['/realtime-translate'],
+            },
+        ],
+    },
+    {
         labelKey: 'nav.admin',
         items: [
             {

@@ -30,3 +30,8 @@ Examples:
 - roadmap files are primarily operator-facing planning documents
 - assistants should inspect roadmap files when the active task depends on phase boundaries, delivery intent, or issue-level planning context
 - roadmap files are not universal mandatory input for every coding change
+
+## Current Roadmap Files
+
+- `opas-0069-ai-coding-control-system-vi.md`: Telegram/local/multi-machine AI coding control system roadmap.
+- `opas-0101-realtime-audio-capture-service-vi.md`: OPAS-0100 realtime translation phase map, with OPAS-0101 audio capture implementation detail.

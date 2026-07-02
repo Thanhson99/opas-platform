@@ -35,6 +35,9 @@ Route::prefix('video-automation')->name('video-automation.')->group(function ():
     Route::view('/trending', 'spa')->name('trending.index');
 });
 
+// Realtime translate stays inside the SPA shell while capture remains owned by the local extension.
+Route::view('/realtime-translate', 'spa')->name('realtime-translate.index');
+
 // Keep a final SPA fallback for browser routes while excluding API endpoints.
 Route::view('/{any}', 'spa')
     ->where('any', '^(?!api).*$');

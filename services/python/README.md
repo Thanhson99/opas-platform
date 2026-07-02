@@ -33,6 +33,13 @@ services/python/
 |   +-- requirements.txt
 |   +-- README.md
 |   `-- __init__.py
++-- tool_realtime_audio_capture/
+|   +-- router.py
+|   +-- service.py
+|   +-- models.py
+|   +-- requirements.txt
+|   +-- README.md
+|   `-- __init__.py
 +-- tool_trending_keywords/
 |   +-- main.py
 |   +-- requirements.txt
@@ -49,5 +56,6 @@ services/python/
 - `tool_download_video_douyin`: service for crawling and downloading Douyin videos.
 - `tool_ai_video_caption`: service for generating video captions.
 - `tool_cn_proxy_gateway`: service that forwards requests through an upstream China proxy for Douyin.
+- `tool_realtime_audio_capture`: local service for Chromium tab-audio capture and realtime speech-to-text.
 - `tool_trending_keywords`: service for collecting trending keywords.
 - `shared-libs`: shared libraries used by the Python services.
