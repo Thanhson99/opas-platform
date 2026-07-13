@@ -1,0 +1,224 @@
+.douyin-dashboard {
+    --douyin-line: rgba(148, 163, 184, 0.2);
+}
+
+.douyin-hero .app-hero-card {
+    background: linear-gradient(160deg, #17324d 0%, #225269 54%, #2a7b78 100%);
+}
+
+.douyin-alert,
+.douyin-empty {
+    border: 1px solid rgba(248, 113, 113, 0.32);
+    border-radius: 16px;
+    padding: 1rem;
+    color: #fecaca;
+    background: rgba(127, 29, 29, 0.28);
+}
+
+.douyin-empty {
+    border-color: var(--douyin-line);
+    color: var(--opas-text-soft);
+    background: rgba(15, 23, 42, 0.52);
+}
+
+.douyin-controls,
+.douyin-preview,
+.douyin-library {
+    display: grid;
+    gap: 1rem;
+    padding: 1.25rem;
+}
+
+.douyin-keyword-grid,
+.douyin-actions,
+.douyin-tabs,
+.douyin-table-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+}
+
+.douyin-chip,
+.douyin-tab,
+.douyin-dashboard .app-chip {
+    border: 1px solid var(--douyin-line);
+    border-radius: 999px;
+    padding: 0.52rem 0.82rem;
+    color: var(--opas-text);
+    background: rgba(15, 23, 42, 0.68);
+    font-weight: 700;
+}
+
+.douyin-chip,
+.douyin-tab {
+    cursor: pointer;
+}
+
+.douyin-chip.is-active,
+.douyin-tab.is-active,
+.douyin-dashboard .app-chip {
+    border-color: rgba(34, 211, 238, 0.5);
+    color: #ecfeff;
+    background: linear-gradient(135deg, rgba(8, 145, 178, 0.52), rgba(37, 99, 235, 0.36));
+}
+
+.douyin-form-grid {
+    display: grid;
+    grid-template-columns: minmax(220px, 1fr) minmax(130px, 0.35fr) auto;
+    gap: 0.8rem;
+    align-items: end;
+}
+
+.douyin-field {
+    display: grid;
+    gap: 0.35rem;
+    color: var(--opas-text-soft);
+    font-size: 0.86rem;
+    font-weight: 700;
+}
+
+.douyin-field input {
+    min-height: 44px;
+    border: 1px solid var(--douyin-line);
+    border-radius: 14px;
+    padding: 0.72rem 0.8rem;
+    color: var(--opas-text);
+    background: rgba(2, 6, 23, 0.72);
+}
+
+.douyin-field input:focus {
+    border-color: rgba(34, 211, 238, 0.62);
+    outline: none;
+}
+
+.douyin-section-header {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    justify-content: space-between;
+}
+
+.douyin-card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 0.9rem;
+}
+
+.douyin-card {
+    display: grid;
+    gap: 0.8rem;
+    overflow: hidden;
+    border: 1px solid var(--douyin-line);
+    border-radius: 18px;
+    background: rgba(15, 23, 42, 0.7);
+}
+
+.douyin-card.is-rejected {
+    opacity: 0.58;
+}
+
+.douyin-card__media {
+    display: grid;
+    place-items: center;
+    min-height: 140px;
+    color: var(--opas-text-soft);
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.88), rgba(8, 47, 73, 0.62));
+}
+
+.douyin-card__media img {
+    width: 100%;
+    height: 100%;
+    min-height: 140px;
+    object-fit: cover;
+}
+
+.douyin-card__body,
+.douyin-card__actions {
+    display: grid;
+    gap: 0.6rem;
+    padding: 0 0.9rem;
+}
+
+.douyin-card__actions {
+    padding-bottom: 0.9rem;
+}
+
+.douyin-card h2 {
+    margin: 0;
+    color: var(--opas-text-strong);
+    font-size: 1rem;
+}
+
+.douyin-card p {
+    margin: 0;
+    color: var(--opas-text-soft);
+}
+
+.douyin-card a {
+    color: #67e8f9;
+    font-weight: 700;
+}
+
+.douyin-checkbox {
+    display: flex;
+    gap: 0.45rem;
+    align-items: center;
+    color: var(--opas-text);
+}
+
+.douyin-table-wrap {
+    overflow-x: auto;
+}
+
+.douyin-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 820px;
+}
+
+.douyin-table th,
+.douyin-table td {
+    border-bottom: 1px solid var(--douyin-line);
+    padding: 0.82rem;
+    text-align: left;
+    vertical-align: top;
+}
+
+.douyin-table th {
+    color: var(--opas-text-soft);
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.douyin-status {
+    display: inline-flex;
+    border: 1px solid var(--douyin-line);
+    border-radius: 999px;
+    padding: 0.28rem 0.5rem;
+    color: var(--opas-text);
+    background: rgba(15, 23, 42, 0.68);
+}
+
+.douyin-status--downloaded,
+.douyin-status--posted {
+    border-color: rgba(74, 222, 128, 0.42);
+    color: #bbf7d0;
+}
+
+.douyin-status--failed,
+.douyin-status--rejected {
+    border-color: rgba(248, 113, 113, 0.42);
+    color: #fecaca;
+}
+
+@media (max-width: 760px) {
+    .douyin-form-grid,
+    .douyin-section-header {
+        grid-template-columns: 1fr;
+    }
+
+    .douyin-section-header {
+        display: grid;
+    }
+}

@@ -31,6 +31,7 @@ export const viMessages = {
         stocks: 'Stocks',
         videoAutomation: 'Tự động hóa video',
         trendingVideos: 'Video trending',
+        douyinDashboard: 'Douyin Dashboard',
         admin: 'Quản trị',
         authProviders: 'Kênh đăng nhập',
         telegramBots: 'Bot Telegram',
@@ -54,6 +55,9 @@ export const viMessages = {
         stocksDescription: 'Tập trung danh sách cổ phiếu và watchlist theo dõi hằng ngày.',
         videosTitle: 'Trending Videos',
         videosDescription: 'Tổng hợp nhóm video nguồn để xử lý automation.',
+        douyinTitle: 'Douyin Dashboard',
+        douyinDescription:
+            'Crawl preview theo keyword, tải video đã chọn và theo dõi trạng thái đăng.',
         authProvidersTitle: 'Nhà cung cấp đăng nhập',
         authProvidersDescription:
             'Bật tắt phương thức đăng nhập và quản lý cấu hình xác thực cho từng provider.',

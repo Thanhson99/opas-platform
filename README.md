@@ -157,9 +157,10 @@ LARAVEL-N8N-AUTOMATION/
 ├── docs/                         # Architecture and runbooks
 ├── nginx/                        # nginx configuration
 ├── services/
-│   ├── libretranslate/           # LibreTranslate service + Argos models
-│   ├── n8n/                      # n8n data, credentials, workflows
-│   └── python/                   # Python helper microservices
+│   ├── README.md                 # Service extension policy and notes
+│   ├── libretranslate/           # Default LibreTranslate service + Argos models
+│   ├── n8n/                      # Default n8n package/config scaffolding
+│   └── python/                   # Default Python helper microservices
 ├── scripts/                      # Automation scripts (macOS + Windows)
 ├── videos/
 ├── videos_uploaded/
@@ -174,6 +175,7 @@ LARAVEL-N8N-AUTOMATION/
 - `services/python/` replaces the old `python-services/` folder
 - `services/n8n/` replaces the old root `n8n/` folder
 - `services/libretranslate/` now contains both the LibreTranslate Docker setup and local Argos model packages
+- Additional service implementations are developed separately and connected only when intentionally enabled for a deployment. See `services/README.md`.
 
 ### Internal docs
 

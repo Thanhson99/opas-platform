@@ -17,6 +17,18 @@ package-lock.json
 !services/n8n/nodes/package-lock.json
 npm-debug.log
 
+# ---- Local service extensions ----
+# New service source is developed separately by default. Add an explicit
+# allow-list entry here only when a service should be shipped with this repo.
+services/*
+!services/README.md
+!services/libretranslate/
+!services/libretranslate/**
+!services/n8n/
+!services/n8n/**
+!services/python/
+!services/python/**
+
 # Laravel test coverage
 apps/laravel/tests/_output/
 

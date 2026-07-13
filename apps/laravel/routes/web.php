@@ -35,6 +35,9 @@ Route::prefix('video-automation')->name('video-automation.')->group(function ():
     Route::view('/trending', 'spa')->name('trending.index');
 });
 
+// Douyin dashboard is a direct SPA entrypoint for the video sourcing workflow.
+Route::view('/douyin', 'spa')->name('douyin.index');
+
 // Keep a final SPA fallback for browser routes while excluding API endpoints.
 Route::view('/{any}', 'spa')
     ->where('any', '^(?!api).*$');

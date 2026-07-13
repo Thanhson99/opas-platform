@@ -75,6 +75,12 @@ export const navigation = [
                 icon: 'videos',
                 activePrefixes: ['/video-automation/trending'],
             },
+            {
+                labelKey: 'nav.douyinDashboard',
+                href: '/douyin',
+                icon: 'workflow',
+                activePrefixes: ['/douyin'],
+            },
         ],
     },
     {
