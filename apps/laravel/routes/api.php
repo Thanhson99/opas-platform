@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\AuthProviderApiController;
 use App\Http\Controllers\Api\AuthProviderOAuthApiController;
 use App\Http\Controllers\Api\CoinAlertSettingApiController;
 use App\Http\Controllers\Api\CoinApiController;
+use App\Http\Controllers\Api\DouyinApiController;
 use App\Http\Controllers\Api\FavoriteCoinApiController;
 use App\Http\Controllers\Api\FavoriteStockApiController;
 use App\Http\Controllers\Api\FeedKeywordApiController;
@@ -182,5 +183,22 @@ Route::middleware('throttle:api')->group(function (): void {
     // Video automation APIs stay separate so feed-specific expansion remains isolated.
     Route::prefix('videos')->name('api.videos.')->group(function (): void {
         Route::get('/trending', [TrendingVideoApiController::class, 'index'])->name('trending.index');
+    });
+
+    // Douyin dashboard routes keep browser users behind Laravel while the worker API key stays server-side.
+    Route::prefix('douyin')->middleware(['web', 'auth', 'verified-email', 'no-store'])->name('api.douyin.')->group(function (): void {
+        Route::get('/keywords', [DouyinApiController::class, 'keywords'])->name('keywords.index');
+        Route::post('/keywords', [DouyinApiController::class, 'storeKeyword'])->name('keywords.store');
+        Route::post('/crawl', [DouyinApiController::class, 'crawl'])->name('crawl.store');
+        Route::get('/jobs', [DouyinApiController::class, 'jobs'])->name('jobs.index');
+        Route::get('/jobs/{job}', [DouyinApiController::class, 'showJob'])->name('jobs.show');
+        Route::post('/jobs/{job}/process-selected', [DouyinApiController::class, 'processSelected'])
+            ->name('jobs.process-selected');
+        Route::get('/videos', [DouyinApiController::class, 'videos'])->name('videos.index');
+        Route::patch('/videos/{video}/selection', [DouyinApiController::class, 'updateSelection'])
+            ->name('videos.selection');
+        Route::post('/videos/{video}/mark-posted', [DouyinApiController::class, 'markPosted'])
+            ->name('videos.mark-posted');
+        Route::delete('/videos/{video}', [DouyinApiController::class, 'destroyVideo'])->name('videos.destroy');
     });
 });

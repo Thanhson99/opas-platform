@@ -20,5 +20,6 @@ class DatabaseSeeder extends Seeder
         $this->call(FeedKeywordSeeder::class);
         $this->call(CoinAlertSettingsSeeder::class);
         $this->call(StockSeeder::class);
+        $this->call(DouyinKeywordSeeder::class);
     }
 }

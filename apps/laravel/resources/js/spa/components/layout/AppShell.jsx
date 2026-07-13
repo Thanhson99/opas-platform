@@ -84,6 +84,13 @@ export default function AppShell({ children }) {
             };
         }
 
+        if (location.pathname.startsWith('/douyin')) {
+            return {
+                title: t('shell.douyinTitle'),
+                description: t('shell.douyinDescription'),
+            };
+        }
+
         if (location.pathname.startsWith('/admin/auth/providers')) {
             return {
                 title: t('shell.authProvidersTitle'),

@@ -24,6 +24,7 @@ const CoinsPage = lazy(() => import('./features/coins/pages/CoinsPage'));
 const KeywordsPage = lazy(() => import('./features/coins/pages/KeywordsPage'));
 const StocksPage = lazy(() => import('./features/stocks/pages/StocksPage'));
 const VideosPage = lazy(() => import('./features/video-automation/pages/VideosPage'));
+const DouyinDashboardPage = lazy(() => import('./features/douyin/pages/DouyinDashboardPage'));
 
 /**
  * Root SPA router.
@@ -103,6 +104,10 @@ export default function App() {
                                             <Route
                                                 path="/video-automation/trending"
                                                 element={<VideosPage />}
+                                            />
+                                            <Route
+                                                path="/douyin"
+                                                element={<DouyinDashboardPage />}
                                             />
                                             <Route path="*" element={<Navigate to="/" replace />} />
                                         </Routes>

@@ -41,6 +41,39 @@ Folder `apps/laravel/` trong repo nay dong vai tro:
 3. Tach them service/client rieng cho n8n webhook va external providers.
 4. Dung workflow CI chay `php artisan test`, `pint`, `phpstan`, `eslint`, `prettier`.
 
+## Douyin dashboard
+
+Laravel co man hinh `/douyin` de dieu khien workflow Douyin qua mot worker Node.js dat tai
+`services/douyin-worker` khi deployment chu dong bat workflow nay. Frontend chi goi Laravel API;
+Laravel moi goi worker bang `x-api-key`, khong expose secret ra SPA.
+
+Them env trong `apps/laravel/.env`:
+
+```env
+DOUYIN_WORKER_URL=http://localhost:3101
+DOUYIN_WORKER_API_KEY=change_me_local_secret
+DOUYIN_VIDEO_STORAGE_DISK=local
+```
+
+Chay local khi da co service implementation:
+
+```bash
+cd services/douyin-worker
+npm run dev
+
+cd apps/laravel
+php artisan migrate --seed
+npm run dev
+php artisan serve
+```
+
+Mo `http://localhost:8000/douyin`, chon keyword, bam `Crawl Preview`, bo cac video khong muon,
+roi bam `Process selected` de worker download video. Keyword mode lay URL truc tiep tu card search
+`waterfall_item_<videoId>`, khong scroll trong detail video de tranh lech sang related feed.
+
+MVP dang process selected dong bo trong controller nen neu download nhieu video co the cham hoac timeout.
+Phase sau nen chuyen process-selected sang Queue Job va cap nhat tien do theo polling/websocket.
+
 ## Lien ket tai lieu
 
 - `../docs/architecture.md`

@@ -109,4 +109,19 @@ return [
         'caption_path' => env('PYTHON_CAPTION_PATH', '/caption'),
         'trending_path' => env('PYTHON_TRENDING_PATH', '/trending'),
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Douyin Worker
+    |--------------------------------------------------------------------------
+    |
+    | Internal Node.js worker used for visible-browser Douyin crawling and
+    | downloading. The API key is never exposed to the frontend SPA.
+    |
+    */
+    'douyin_worker' => [
+        'url' => env('DOUYIN_WORKER_URL', 'http://localhost:3101'),
+        'api_key' => env('DOUYIN_WORKER_API_KEY'),
+        'video_storage_disk' => env('DOUYIN_VIDEO_STORAGE_DISK', 'local'),
+    ],
 ];

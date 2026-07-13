@@ -31,6 +31,7 @@ export const enMessages = {
         stocks: 'Stocks',
         videoAutomation: 'Video Automation',
         trendingVideos: 'Trending Videos',
+        douyinDashboard: 'Douyin Dashboard',
         admin: 'Admin',
         authProviders: 'Auth Providers',
         telegramBots: 'Telegram Bots',
@@ -54,6 +55,9 @@ export const enMessages = {
         stocksDescription: 'Keep daily stock lists and watchlists in one place.',
         videosTitle: 'Trending Videos',
         videosDescription: 'Collect video sources for automation flows.',
+        douyinTitle: 'Douyin Dashboard',
+        douyinDescription:
+            'Crawl keyword previews, download selected videos, and track posting status.',
         authProvidersTitle: 'Auth Providers',
         authProvidersDescription:
             'Control which authentication methods are enabled and how each provider is configured.',

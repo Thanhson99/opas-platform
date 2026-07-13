@@ -137,7 +137,50 @@ Behavior:
 - `--docker`: always runs `php artisan queue:work` inside the `laravel` container
 - `--local`: always runs `php artisan queue:work` on the local machine
 
-## 0.7 macOS / Linux - `setup-telegram-webhook.sh`
+## 0.7 macOS / Linux - `douyin-youtube-once.sh`
+
+One-command Douyin keyword sourcing flow for Shorts-style videos.
+
+This workflow expects the Douyin worker and YouTube uploader service implementations
+to be present under `services/douyin-worker` and `services/youtube-uploader`.
+When those folders are not installed, the script exits with a clear missing-service
+message instead of trying to run a partial workflow.
+
+The script:
+- starts `services/douyin-worker` when it is not already running
+- crawls and downloads videos for one keyword
+- prints matched video/metadata JSON pairs for review
+- skips videos without matching JSON
+- ignores JSON files without matching videos
+- asks for confirmation before uploading matched pairs to YouTube
+
+```bash
+chmod +x scripts/douyin-youtube-once.sh
+scripts/douyin-youtube-once.sh --keyword "funny dance" --limit 10 --privacy private --hashtags "#shorts,#viral,#funny"
+```
+
+Run the default Chinese dance/beauty keyword batch and upload once at the end:
+
+```bash
+chmod +x scripts/douyin-youtube-dance-batch.sh
+scripts/douyin-youtube-dance-batch.sh --limit 3 --privacy private --hashtags "#shorts,#viral,#dance,#beauty,#trend"
+```
+
+Use `--delete-orphan-json` when you want metadata JSON without a matching video to be removed during the review step.
+
+Good starter keyword directions for Shorts are mostly visual and need little translation:
+- funny dance
+- dance challenge
+- street dance
+- funny reaction
+- comedy skit
+- magic trick
+- satisfying
+- gym fail
+- cute pet reaction
+- street performance
+
+## 0.8 macOS / Linux - `setup-telegram-webhook.sh`
 
 Inspect, register, delete, and sync Telegram bot commands for the auto-coding remote-control flow.
 
@@ -172,7 +215,7 @@ Behavior:
 - syncs Telegram bot commands automatically after successful registration
 - when started without arguments, shows an interactive menu for register / inspect / delete / sync
 
-## 0.8 macOS / Linux - `setup-telegram-ngrok.sh`
+## 0.9 macOS / Linux - `setup-telegram-ngrok.sh`
 
 One-command helper for local Telegram testing with ngrok.
 
@@ -272,7 +315,7 @@ Notes:
 - `stop` now stops both the ngrok tunnel and the background auto-coding worker process.
 - when started without arguments, shows an interactive menu for start / status / stop
 
-## 0.9 Windows - `setup-telegram-ngrok.ps1` / `setup-telegram-ngrok.bat`
+## 0.10 Windows - `setup-telegram-ngrok.ps1` / `setup-telegram-ngrok.bat`
 
 Windows versions of the one-command Telegram tunnel + webhook setup flow.
 
@@ -291,7 +334,7 @@ scripts\setup-telegram-ngrok.bat status
 scripts\setup-telegram-ngrok.bat stop
 ```
 
-## 0.10 Windows - `setup-telegram-webhook.ps1` / `setup-telegram-webhook.bat`
+## 0.11 Windows - `setup-telegram-webhook.ps1` / `setup-telegram-webhook.bat`
 
 Windows versions of the Telegram webhook management flow.
 
